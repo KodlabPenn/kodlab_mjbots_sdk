@@ -34,3 +34,7 @@ Add the following lines to your `~/.bashrc`
 * Download lcm from git
 * Try to make lcm - java issue can be fixed here: https://github.com/lcm-proj/lcm/issues/241 
 
+#Building
+Current command to build clean is
+
+    cd .. && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_sdk/external/pi.cmake && make
