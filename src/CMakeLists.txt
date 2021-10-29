@@ -11,7 +11,8 @@ set(HEADER_LIST "${kodlab_sdk_SOURCE_DIR}/include/kodlab_sdk/pi3hat.h"
 add_library(kodlab_sdk pi3hat.cpp ${HEADER_LIST})
 
 # We need this directory, and users of our library will need it too
-target_include_directories(kodlab_sdk PUBLIC ../include)
+target_include_directories(kodlab_sdk PUBLIC ../include ../thirdparty)
+
 
 # All users of this library will need at least C++11
 target_compile_features(kodlab_sdk PUBLIC cxx_std_11)
