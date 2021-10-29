@@ -2,7 +2,10 @@
 # show up in IDEs unless they are listed in add_library.
 
 # Optionally glob, but only for CMake 3.12 or later:
-set(HEADER_LIST "${kodlab_sdk_SOURCE_DIR}/include/kodlab_sdk/pi3hat.h")
+set(HEADER_LIST "${kodlab_sdk_SOURCE_DIR}/include/kodlab_sdk/pi3hat.h"
+                "${kodlab_sdk_SOURCE_DIR}/include/kodlab_sdk/moteus_protocol.h"
+                "${kodlab_sdk_SOURCE_DIR}/include/kodlab_sdk/realtime.h"
+                "${kodlab_sdk_SOURCE_DIR}/include/kodlab_sdk/pi3hat_moteus_interface")
 
 # Make an automatic library - will be static or dynamic based on user setting
 add_library(kodlab_sdk pi3hat.cpp ${HEADER_LIST})
