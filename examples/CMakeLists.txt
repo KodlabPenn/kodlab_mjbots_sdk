@@ -1,3 +1,5 @@
 add_executable(moteus_control_example moteus_control_example.cpp)
+add_executable(hello_world hello_world.cpp)
 
 target_link_libraries(moteus_control_example PRIVATE kodlab_sdk)
+target_link_libraries(hello_world PRIVATE kodlab_sdk)

@@ -31,6 +31,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <stdarg.h>
 
 #include <bcm_host.h>
 
