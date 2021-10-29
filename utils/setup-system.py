@@ -187,15 +187,8 @@ BACKSPACE="guess"
 # Include files from /etc/network/interfaces.d:
 source-directory /etc/network/interfaces.d
 
-auto eth0
-iface eth0 inet static
-    address 192.168.17.47
-    netmask 255.255.255.0
-    network 192.168.17.0
-    broadcast 192.168.17.255
-    # gateway 192.168.17.1
-    dns-nameservers 8.8.8.8 8.8.4.4
-    post-up ip route add 239.89.108.0/24 dev eth0
+allow-hotplug eth0
+iface eth0 inet dhcp
 
 allow-hotplug wlan0
 iface wlan0 inet static
@@ -249,7 +242,7 @@ rsn_pairwise=CCMP
     ensure_contents('/etc/systemd/system/hostapd.service.d/10-select-ssid.conf',
                     '''
 [Service]
-ExecStartPre=bash -c "SSID=kodlab-$(iw dev wlan0 info | grep addr | perl -pe 's/.*addr //; s/://g'); perl -pi -e \"s/ssid=.*/ssid=$SSID/\" /etc/hostapd/hostapd.conf"
+ExecStartPre=bash -c "SSID=kodlab-jerboa; perl -pi -e \"s/ssid=.*/ssid=$SSID/\" /etc/hostapd/hostapd.conf"
 ''')
 
     ensure_present('/etc/default/hostapd',

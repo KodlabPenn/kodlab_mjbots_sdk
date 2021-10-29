@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.17)
 project(kodlab_sdk)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_TOOLCHAIN_FILE $HOME/raspberrypi/pi.cmake)
+set(CMAKE_TOOLCHAIN_FILE ${kodlab_sdk_SOURCE_DIR}/external/pi.cmake)
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -15,7 +15,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 endif()
-
 
 # The compiled library code is here
 add_subdirectory(src)
