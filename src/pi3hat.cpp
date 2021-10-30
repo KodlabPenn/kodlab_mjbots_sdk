@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kodlab_sdk/pi3hat.h"
+#include "kodlab_mjbots_sdk/pi3hat.h"
 
 #include <errno.h>
 #include <fcntl.h>

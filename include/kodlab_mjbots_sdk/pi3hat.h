@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KODLAB_SDK_INCLUDE_PI3HAT_H_
-#define KODLAB_SDK_INCLUDE_PI3HAT_H_
+#ifndef kodlab_mjbots_sdk_INCLUDE_PI3HAT_H_
+#define kodlab_mjbots_sdk_INCLUDE_PI3HAT_H_
 
 /// @file
 ///
@@ -291,4 +291,4 @@ class Pi3Hat {
 }
 }
 
-#endif //KODLAB_SDK_INCLUDE_PI3HAT_H_
+#endif //kodlab_mjbots_sdk_INCLUDE_PI3HAT_H_

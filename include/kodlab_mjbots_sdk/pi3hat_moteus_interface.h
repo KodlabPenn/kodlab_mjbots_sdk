@@ -22,9 +22,9 @@
 #include <thread>
 #include <vector>
 
-#include "kodlab_sdk/pi3hat.h"
+#include "kodlab_mjbots_sdk/pi3hat.h"
 
-#include "kodlab_sdk/realtime.h"
+#include "kodlab_mjbots_sdk/realtime.h"
 
 namespace mjbots {
 namespace moteus {

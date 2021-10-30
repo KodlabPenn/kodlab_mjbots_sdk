@@ -37,8 +37,8 @@
 #include <thread>
 #include <vector>
 
-#include "kodlab_sdk/moteus_protocol.h"
-#include "kodlab_sdk/pi3hat_moteus_interface.h"
+#include "kodlab_mjbots_sdk/moteus_protocol.h"
+#include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 
 using namespace mjbots;
 

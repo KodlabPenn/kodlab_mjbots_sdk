@@ -5,7 +5,7 @@
 * Configure ubuntu local network to share wifi and connect pi over ethernet
 * Use nmap to find pi ipaddress `sudo nmap -sn IP/24`
 * ssh onto pi `ssh pi@IP`
-* scp setup script onto pi `scp <path to kodlab_sdk>/utils/setup-system.py pi@IP:~/`
+* scp setup script onto pi `scp <path to kodlab_mjbots_sdk>/utils/setup-system.py pi@IP:~/`
 * run setup script (change password and ssid) `sudo python3 setup-system.py`
 * install bcm_host
 
@@ -48,7 +48,7 @@ Add the following lines to your `~/.bashrc`
 #Building
 Current command to build clean is
 
-    cd .. && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_sdk/cmake/pi.cmake && make
+    cd .. && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake && make
 
 Normal build is 
-    cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_sdk/cmake/pi.cmake
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake

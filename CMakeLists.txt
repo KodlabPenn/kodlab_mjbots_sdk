@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
-project(kodlab_sdk)
+project(kodlab_mjbots_sdk)
 
 set(CMAKE_CXX_STANDARD 11)
 
