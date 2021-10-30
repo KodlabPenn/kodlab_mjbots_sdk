@@ -13,8 +13,8 @@ add_library(kodlab_sdk pi3hat.cpp ${HEADER_LIST})
 target_include_directories(kodlab_sdk PUBLIC ../include ../thirdparty $ENV{RASPBIAN_ROOTFS}/opt/vc/include)
 target_link_libraries(kodlab_sdk PUBLIC $ENV{RASPBIAN_ROOTFS}/opt/vc/lib/libbcm_host.so)
 
-#find_package(lcm)
-#target_link_libraries(kodlab_sdk PRIVATE ${LCM_NAMESPACE}lcm)
+find_package(lcm)
+target_link_libraries(kodlab_sdk PRIVATE ${LCM_NAMESPACE}lcm)
 
 # All users of this library will need at least C++11
 target_compile_features(kodlab_sdk PUBLIC cxx_std_11)
