@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD 11)
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-
-
     # Let's ensure -std=c++xx instead of -std=g++xx
     set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -15,6 +13,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 endif()
+find_package(lcm)
+include(${LCM_USE_FILE})
 
 # The compiled library code is here
 add_subdirectory(src)

@@ -1,0 +1,5 @@
+struct bulk_data
+{
+  int64_t  timestamp;
+  float   position[100];
+}
