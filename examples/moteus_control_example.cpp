@@ -143,7 +143,7 @@ class SampleController {
   /// initialization like setting the resolution of commands and
   /// queries.
   void Initialize(std::vector<MoteusInterface::ServoCommand>* commands) {
-    moteus::PositionResolution res;
+    moteus::PositionResolution res; // This is just for the command
     res.position = moteus::Resolution::kInt16;
     res.velocity = moteus::Resolution::kInt16;
     res.feedforward_torque = moteus::Resolution::kInt16;
@@ -217,23 +217,28 @@ template <typename Controller>
     return;
   }
 
+  //Setup realtime for behavior thread
   moteus::ConfigureRealtime(args.main_cpu);
+
+  // Setup moteus options and initialize moteus interface
   MoteusInterface::Options moteus_options;
   moteus_options.cpu = args.can_cpu;
   moteus_options.servo_bus_map = controller->servo_bus_map();
   MoteusInterface moteus_interface{moteus_options};
 
+  // Create and initialize parts of the command
   std::vector<MoteusInterface::ServoCommand> commands;
   for (const auto& pair : moteus_options.servo_bus_map) {
     commands.push_back({});
-    commands.back().id = pair.first;
+    commands.back().id = pair.first; //id
   }
+  controller->Initialize(&commands);// resolution
 
+  // Create replies object
   std::vector<MoteusInterface::ServoReply> replies{commands.size()};
   std::vector<MoteusInterface::ServoReply> saved_replies;
 
-  controller->Initialize(&commands);
-
+  // moteus data has pointers to replies and commands
   MoteusInterface::Data moteus_data;
   moteus_data.commands = { commands.data(), commands.size() };
   moteus_data.replies = { replies.data(), replies.size() };
@@ -256,6 +261,7 @@ template <typename Controller>
     margin_cycles++;
     {
       const auto now = std::chrono::steady_clock::now();
+      // Every 100 miliseconds print out status
       if (now > next_status) {
         // NOTE: iomanip is not a recommended pattern.  We use it here
         // simply to not require any external dependencies, like 'fmt'.
@@ -303,11 +309,14 @@ template <typename Controller>
     }
     next_cycle += period;
 
-
+    // Loop is sleep, run controller off of saved replies, copy previous replies to saved replies, send command to pi3hat
     controller->Run(saved_replies, &commands);
 
-
-    if (can_result.valid()) {
+    //{TODO} Why is saved_replies updated for previous command after the controller runs??
+    //{TODO} What is the reason for replies vs. saved replies (maybe memory management)
+    //{SUGGESTION} Send command sleep wait for replies to be ready run controller with replies
+    if (can_result.valid()) { // will be false the first time we run it, thus controller probably should not run which
+                              // why the controller doesn't command anything the first few dt
       // Now we get the result of our last query and send off our new
       // one.
       const auto current_values = can_result.get();

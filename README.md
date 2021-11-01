@@ -13,6 +13,7 @@
 * Install cmake, libglib2.0-dev, 
 * scp lcm zip onto pi
 * install lcm https://lcm-proj.github.io/build_instructions.html
+* install boost onto pi `sudo apt-get install libboost-all-dev`
 * Reboot pi
 * Add pi to `etc/hosts` to make ssh easier
 * Add ssh key
