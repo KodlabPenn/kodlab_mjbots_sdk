@@ -195,10 +195,22 @@ class SampleController {
       }
       if (!std::isnan(primary_initial_) && !std::isnan(secondary_initial_)) {
         // We have everything we need to start commanding.
+        auto& primary_out = output->at(0);  // We constructed this, so we know the order.
+        primary_out.mode = moteus::Mode::kPosition;
+//        secondary_out.position.position = secondary_initial_ + (primary_pos - primary_initial_);
+//        secondary_out.position.velocity = primary.velocity;
+        primary_out.position.feedforward_torque = 0.01;
+        primary_out.position.kp_scale = 0.0;
+        primary_out.position.kd_scale = 0.0;
+
         auto& secondary_out = output->at(1);  // We constructed this, so we know the order.
         secondary_out.mode = moteus::Mode::kPosition;
-        secondary_out.position.position = secondary_initial_ + (primary_pos - primary_initial_);
-        secondary_out.position.velocity = primary.velocity;
+//        secondary_out.position.position = secondary_initial_ + (primary_pos - primary_initial_);
+//        secondary_out.position.velocity = primary.velocity;
+        secondary_out.position.feedforward_torque = 0.1;
+        secondary_out.position.kp_scale = 0.0;
+        secondary_out.position.kd_scale = 0.0;
+
       }
     }
   }
