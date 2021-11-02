@@ -1,4 +1,5 @@
 build/*
 .idea
 cmake-build-debug
-lcm-types/*.hpp
+lcm_types/*.hpp
+lcm_types/*.py

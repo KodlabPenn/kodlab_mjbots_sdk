@@ -13,6 +13,8 @@
 * Install cmake, libglib2.0-dev, 
 * scp lcm zip onto pi
 * install lcm https://lcm-proj.github.io/build_instructions.html
+* Open `/etc/ld.so.conf` and add to end`/usr/local/lib`
+* add the following line to network interface `up route add -net 224.0.0.0 netmask 240.0.0.0 dev lo`
 * install boost onto pi `sudo apt-get install libboost-all-dev`
 * Reboot pi
 * Add pi to `etc/hosts` to make ssh easier
@@ -45,7 +47,13 @@ Add the following lines to your `~/.bashrc`
 ## LCM
 * Download lcm from git
 * Try to make lcm - java issue can be fixed here: https://github.com/lcm-proj/lcm/issues/241 
-
+* Install python with
+    
+    
+    cd ../lcm-python
+    
+    sudo python3 setup.py install
+    
 ## Building
 Current command to build clean is
 
