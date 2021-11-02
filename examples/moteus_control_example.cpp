@@ -39,7 +39,8 @@
 
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
-
+#include <lcm/lcm-cpp.hpp>
+#include "motor_log.hpp"
 using namespace mjbots;
 
 using MoteusInterface = moteus::Pi3HatMoteusInterface;
@@ -74,7 +75,7 @@ struct Arguments {
   bool help = false;
   int main_cpu = 1;
   int can_cpu = 2;
-  double period_s = 0.002;
+  double period_s = 0.001;
   int primary_id = 1;
   int primary_bus = 1;
   int secondary_id = 2;
@@ -151,9 +152,10 @@ class SampleController {
     res.kd_scale = moteus::Resolution::kInt16;
     res.maximum_torque = moteus::Resolution::kIgnore;
     res.stop_position = moteus::Resolution::kIgnore;
-    res.watchdog_timeout = moteus::Resolution::kIgnore;
+    res.watchdog_timeout = moteus::Resolution::kInt8;
     for (auto& cmd : *commands) {
       cmd.resolution = res;
+      cmd.position.watchdog_timeout = 0.3;
     }
   }
 
@@ -207,7 +209,7 @@ class SampleController {
         secondary_out.mode = moteus::Mode::kPosition;
 //        secondary_out.position.position = secondary_initial_ + (primary_pos - primary_initial_);
 //        secondary_out.position.velocity = primary.velocity;
-        secondary_out.position.feedforward_torque = 0.1;
+        secondary_out.position.feedforward_torque = 0.2;
         secondary_out.position.kp_scale = 0.0;
         secondary_out.position.kd_scale = 0.0;
 
@@ -261,12 +263,16 @@ template <typename Controller>
       std::chrono::microseconds(static_cast<int64_t>(args.period_s * 1e6));
   auto next_cycle = std::chrono::steady_clock::now() + period;
 
-  const auto status_period = std::chrono::milliseconds(100);
+  const auto status_period = std::chrono::milliseconds(1);
   auto next_status = next_cycle + status_period;
   uint64_t cycle_count = 0;
   double total_margin = 0.0;
   uint64_t margin_cycles = 0;
 
+  lcm::LCM lcm;
+  motor_log my_data{};
+
+  const auto start = std::chrono::steady_clock::now();
   // We will run at a fixed cycle time.
   while (true) {
     cycle_count++;
@@ -277,26 +283,18 @@ template <typename Controller>
       if (now > next_status) {
         // NOTE: iomanip is not a recommended pattern.  We use it here
         // simply to not require any external dependencies, like 'fmt'.
-        const auto volts = MinMaxVoltage(saved_replies);
-        const std::string modes = [&]() {
-          std::ostringstream result;
-          result.precision(4);
-          result << std::fixed;
-          for (const auto& item : saved_replies) {
-            result << item.id << "/"
-                   << static_cast<int>(item.result.mode) << "/"
-                   << item.result.position << " ";
-          }
-          return result.str();
-        }();
-        std::cout << std::setprecision(6) << std::fixed
-                  << "Cycles " << cycle_count
-                  << "  margin: " << (total_margin / margin_cycles)
-                  << std::setprecision(1)
-                  << "  volts: " << volts.first << "/" << volts.second
-                  << "  modes: " << modes
-                  << "   \r";
-        std::cout.flush();
+
+        for(int motor =0; motor< 2; motor ++){
+          my_data.positions[motor]=saved_replies[motor].result.position;
+          my_data.velocities[motor]=saved_replies[motor].result.velocity;
+          my_data.modes[motor]=static_cast<int>(saved_replies[motor].result.mode);
+          my_data.torques[motor] = commands[motor].position.feedforward_torque;
+        }
+        my_data.mean_margin = total_margin / margin_cycles * 1000;
+        std::chrono::duration<double, std::milli> elapsed = now-start;
+        my_data.timestamp = elapsed.count();
+        lcm.publish("EXAMPLE", &my_data);
+
         next_status += status_period;
         total_margin = 0;
         margin_cycles = 0;

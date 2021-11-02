@@ -1,15 +1,15 @@
 import lcm
-from python_types.bulk_data import bulk_data
+from python_types.motor_log import motor_log
 
 
-log = lcm.EventLog('lcmlog-2021-10-30.01', "r")
+log = lcm.EventLog('lcmlog-2021-11-02.04', "r")
 
 
 for event in log:
     if event.channel == "EXAMPLE":
-        msg = bulk_data.decode(event.data)
+        msg = motor_log.decode(event.data)
 
         print("Message:")
-        print("   timestamp   = %s" % str(msg.timestamp))
-        print("   position    = %s" % str(msg.position))
+        print("   timestamp (ms)   = %s" % str(msg.timestamp))
+        print("   margin (ms)      = %s" % str(msg.mean_margin))
         print("")
