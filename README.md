@@ -14,7 +14,7 @@
 * scp lcm zip onto pi
 * install lcm https://lcm-proj.github.io/build_instructions.html
 * Open `/etc/ld.so.conf` and add to end`/usr/local/lib`
-* add the following line to network interface `up route add -net 224.0.0.0 netmask 240.0.0.0 dev lo`
+* {TODO} figure out commands to make sure LCM works with out extra commands each boot
 * install boost onto pi `sudo apt-get install libboost-all-dev`
 * Reboot pi
 * Add pi to `etc/hosts` to make ssh easier
@@ -53,11 +53,13 @@ Add the following lines to your `~/.bashrc`
     cd ../lcm-python
     
     sudo python3 setup.py install
-    
+* Instructions to setup python path
+* Instructions to build LCM messages
 ## Building
 Current command to build clean is
 
     cd .. && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake && make
 
 Normal build is 
+
     cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake
