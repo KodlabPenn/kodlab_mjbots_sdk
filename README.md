@@ -53,7 +53,7 @@ Add the following lines to your `~/.bashrc`
     cd ../lcm-python
     
     sudo python3 setup.py install
-* Instructions to setup python path
+* Add `export PYTHONPATH="${PYTHONPATH}:$HOME/mjbots/kodlab_mjbots_sdk"` to your `~/.bashrc`
 * Instructions to build LCM messages
 ## Building
 Current command to build clean is

@@ -1,6 +1,5 @@
 import lcm
-from python_types.motor_log import motor_log
-
+from python_scripts.python_types.motor_log import motor_log
 
 log = lcm.EventLog('lcmlog-2021-11-02.04', "r")
 
