@@ -64,3 +64,19 @@ Current command to build clean is
 Normal build is 
 
     cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake
+    
+## Remote lcm
+To get LCM to work remotely you need to install libbot2 on both computers
+* I've found its helpful to remove `bot2-vis` and `bot2-lcmgl` from `tobuild.txt` since they have lots of dependencies and we won't be using them
+
+On the pi, add the following to you `/etc/rc.local`
+
+    ifconfig wlan0 multicast
+    sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev wlan0
+    bot-lcm-tunnel
+
+This scripts runs as boot as sudo and will configure multicast and launch the lcm bot tunnel
+
+On the host computer to setup the connection run `bot-lcm-tunnel <PI-IP/hostname>`. From here you can start logging with
+
+    lcm-logger
