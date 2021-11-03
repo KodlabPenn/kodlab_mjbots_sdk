@@ -1,5 +1,5 @@
-add_executable(moteus_control_example moteus_control_example.cpp)
+add_executable(moteus_control_example_with_logging moteus_control_example_with_logging.cpp)
 add_executable(lcm_time_test lcm_time_test.cpp)
 
-target_link_libraries(moteus_control_example PRIVATE kodlab_mjbots_sdk)
+target_link_libraries(moteus_control_example_with_logging PRIVATE kodlab_mjbots_sdk)
 target_link_libraries(lcm_time_test PRIVATE kodlab_mjbots_sdk)

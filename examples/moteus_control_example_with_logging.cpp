@@ -240,6 +240,7 @@ template <typename Controller>
   moteus_options.servo_bus_map = controller->servo_bus_map();
   MoteusInterface moteus_interface{moteus_options};
 
+  const int idArray[2] = {args.primary_id,args.secondary_id};
   // Create and initialize parts of the command
   std::vector<MoteusInterface::ServoCommand> commands;
   for (const auto& pair : moteus_options.servo_bus_map) {
@@ -285,9 +286,10 @@ template <typename Controller>
         // simply to not require any external dependencies, like 'fmt'.
 
         for(int motor =0; motor< 2; motor ++){
-          my_data.positions[motor]=saved_replies[motor].result.position;
-          my_data.velocities[motor]=saved_replies[motor].result.velocity;
-          my_data.modes[motor]=static_cast<int>(saved_replies[motor].result.mode);
+          const auto motor_reply = controller->Get(saved_replies, idArray[motor]);
+          my_data.positions[motor]=motor_reply.position;
+          my_data.velocities[motor]=motor_reply.velocity;
+          my_data.modes[motor]=static_cast<int>(motor_reply.mode);
           my_data.torques[motor] = commands[motor].position.feedforward_torque;
         }
         my_data.mean_margin = total_margin / margin_cycles * 1000;
