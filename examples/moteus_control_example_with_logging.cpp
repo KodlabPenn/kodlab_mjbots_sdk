@@ -267,8 +267,7 @@ template <typename Controller>
   const auto status_period = std::chrono::milliseconds(1);
   auto next_status = next_cycle + status_period;
   uint64_t cycle_count = 0;
-  double total_margin = 0.0;
-  uint64_t margin_cycles = 0;
+  double sleep_time = 0.0;
 
   lcm::LCM lcm;
   motor_log my_data{};
@@ -277,30 +276,24 @@ template <typename Controller>
   // We will run at a fixed cycle time.
   while (true) {
     cycle_count++;
-    margin_cycles++;
     {
       const auto now = std::chrono::steady_clock::now();
       // Every 100 miliseconds print out status
-      if (now > next_status) {
         // NOTE: iomanip is not a recommended pattern.  We use it here
         // simply to not require any external dependencies, like 'fmt'.
 
-        for(int motor =0; motor< 2; motor ++){
-          const auto motor_reply = controller->Get(saved_replies, idArray[motor]);
-          my_data.positions[motor]=motor_reply.position;
-          my_data.velocities[motor]=motor_reply.velocity;
-          my_data.modes[motor]=static_cast<int>(motor_reply.mode);
-          my_data.torques[motor] = commands[motor].position.feedforward_torque;
-        }
-        my_data.mean_margin = total_margin / margin_cycles * 1000;
-        std::chrono::duration<double, std::milli> elapsed = now-start;
-        my_data.timestamp = elapsed.count();
-        lcm.publish("EXAMPLE", &my_data);
-
-        next_status += status_period;
-        total_margin = 0;
-        margin_cycles = 0;
+      for(int motor =0; motor< 2; motor ++){
+        const auto motor_reply = controller->Get(saved_replies, idArray[motor]);
+        my_data.positions[motor]=motor_reply.position;
+        my_data.velocities[motor]=motor_reply.velocity;
+        my_data.modes[motor]=static_cast<int>(motor_reply.mode);
+        my_data.torques[motor] = commands[motor].position.feedforward_torque;
       }
+      my_data.mean_margin = sleep_time * 1000;
+      std::chrono::duration<double, std::milli> elapsed = now-start;
+      my_data.timestamp = elapsed.count();
+      lcm.publish("EXAMPLE", &my_data);
+
 
       int skip_count = 0;
       while (now > next_cycle) {
@@ -317,7 +310,7 @@ template <typename Controller>
       std::this_thread::sleep_until(next_cycle);
       const auto post_sleep = std::chrono::steady_clock::now();
       std::chrono::duration<double> elapsed = post_sleep - pre_sleep;
-      total_margin += elapsed.count();
+      sleep_time = elapsed.count();
     }
     next_cycle += period;
 
