@@ -54,7 +54,8 @@ Add the following lines to your `~/.bashrc`
     
     sudo python3 setup.py install
 * Add `export PYTHONPATH="${PYTHONPATH}:$HOME/mjbots/kodlab_mjbots_sdk"` to your `~/.bashrc`
-* Instructions to build LCM messages
+* run `./scripts/make_lcm.sh` to generate lcm files. You will need to rerun this command each time you change an lcm definition.
+
 ## Building
 Current command to build clean is
 
