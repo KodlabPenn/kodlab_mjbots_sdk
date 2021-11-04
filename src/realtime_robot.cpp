@@ -5,6 +5,8 @@
 #include "kodlab_mjbots_sdk/realtime_robot.h"
 
 #include <utility>
+#include "iostream"
+
 void Realtime_Robot::initialize_command() {
   for (const auto& pair : m_servo_bus_map) {
     m_commands.push_back({});
@@ -50,8 +52,8 @@ Realtime_Robot::Realtime_Robot(int num_servos,
                                int can_cpu){
 
   m_num_servos = num_servos;
-  m_servo_id_list = std::move(servo_id_list);
-  m_servo_bus_list = std::move(servo_bus_list);
+  m_servo_id_list = servo_id_list;
+  m_servo_bus_list = servo_bus_list;
 
   for (size_t i = 0; i < m_num_servos; ++i)
     m_servo_bus_map[m_servo_id_list[i]] = m_servo_bus_list[i];
@@ -68,9 +70,6 @@ Realtime_Robot::Realtime_Robot(int num_servos,
   m_moteus_data.replies = { m_replies.data(), m_replies.size() };
 
   send_command();
-  process_reply();
-
-  prepare_torque_command();
 
   for(int servo = 0; servo< m_num_servos; servo++){
     m_positions.push_back(0);
@@ -79,15 +78,22 @@ Realtime_Robot::Realtime_Robot(int num_servos,
     m_modes.push_back(mjbots::moteus::Mode::kStopped);
   }
 
+  process_reply();
+
+  prepare_torque_command();
+
+
 }
 void Realtime_Robot::process_reply() {
 
   // Make sure the m_can_result is valid before waiting otherwise undefined behavior
-  if (m_can_result.valid())
+  if (m_can_result.valid()){
     m_can_result.wait();
+  }
 
   for(int servo =0; servo< m_num_servos; servo ++){
     const auto servo_reply = Get(m_replies, m_servo_id_list[servo]);
+
     m_positions[servo]=servo_reply.position;
     m_velocities[servo]=servo_reply.velocity;
     m_modes[servo]=servo_reply.mode;

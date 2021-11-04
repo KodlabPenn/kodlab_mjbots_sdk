@@ -126,12 +126,14 @@ class SampleController {
     if (arguments_.primary_id == arguments_.secondary_id) {
       throw std::runtime_error("The servos must have unique IDs");
     }
+    std::cout<<"Preparing to create robot object"<<std::endl;
     robot = std::make_unique<Realtime_Robot>(Realtime_Robot(2, {arguments.primary_id, arguments.secondary_id},
-        {arguments.primary_bus, arguments.secondary_bus}, arguments.can_cpu));
+                                                            {arguments.primary_bus, arguments.secondary_bus}, arguments.can_cpu));
+    std::cout<<"Created robot object"<<std::endl;
   }
 
   void Run() {
-    robot->set_torques({0.1, 0.01});
+    robot->set_torques({0.02, 0.2});
   }
 
   void process_reply(){
@@ -151,6 +153,9 @@ class SampleController {
     }
   }
 
+  void shutdown(){
+    robot.reset();
+  }
  private:
   const Arguments arguments_;
   std::unique_ptr<Realtime_Robot> robot;
@@ -219,6 +224,7 @@ void Run(const Arguments& args, Controller* controller) {
       lcm.publish("EXAMPLE", &my_data);
     }
   }
+  controller->shutdown();
 }
 }
 
@@ -227,9 +233,10 @@ int main(int argc, char** argv) {
 
   // Lock memory for the whole process.
   LockMemory();
-  enable_ctrl_c();
-
+  //enable_ctrl_c();
+  std::cout<<"Finished basic setup"<<std::endl;
   SampleController sample_controller{args};
+  std::cout<<"Finished creating controller"<<std::endl;
   Run(args, &sample_controller);
 
   return 0;

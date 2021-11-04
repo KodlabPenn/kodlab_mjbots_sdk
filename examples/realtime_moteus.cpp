@@ -130,7 +130,7 @@ class SampleController {
   }
 
   void calc_torques() {
-    robot->set_torques({0.1, 0.01});
+    robot->set_torques({0.02, 0.2});
   }
 
   void process_reply() {
@@ -229,7 +229,7 @@ static void* Run(void* controller_void_ptr){
 int main(int argc, char **argv) {
   Arguments args({argv + 1, argv + argc});
 
-  enable_ctrl_c();
+  //enable_ctrl_c();
 
   SampleController sample_controller{args};
 

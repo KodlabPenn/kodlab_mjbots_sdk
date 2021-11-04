@@ -14,7 +14,7 @@
 * scp lcm zip onto pi
 * install lcm https://lcm-proj.github.io/build_instructions.html
 * Open `/etc/ld.so.conf` and add to end`/usr/local/lib`
-* {TODO} figure out commands to make sure LCM works with out extra commands each boot
+* Install realtime library onto the pi
 * install boost onto pi `sudo apt-get install libboost-all-dev`
 * Reboot pi
 * Add pi to `etc/hosts` to make ssh easier
