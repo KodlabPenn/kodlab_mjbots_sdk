@@ -225,7 +225,7 @@ class SampleController {
 };
 
 template <typename Controller>
-[[noreturn]] void Run(const Arguments& args, Controller* controller) {
+[[noreturn]] [[noreturn]] void Run(const Arguments& args, Controller* controller) {
   if (args.help) {
     DisplayUsage();
     return;
