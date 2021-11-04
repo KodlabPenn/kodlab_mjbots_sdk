@@ -2,8 +2,7 @@
 // Created by shane on 11/3/21.
 //
 
-#ifndef KODLAB_MJBOTS_SDK_SRC_REALTIME_ROBOT_H_
-#define KODLAB_MJBOTS_SDK_SRC_REALTIME_ROBOT_H_
+#pragma once
 
 #include <vector>
 #include <map>
@@ -57,4 +56,3 @@ class Realtime_Robot {
 
 };
 
-#endif //KODLAB_MJBOTS_SDK_SRC_REALTIME_ROBOT_H_

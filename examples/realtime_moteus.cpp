@@ -36,12 +36,9 @@
 #include "real_time_tools/spinner.hpp"
 #include "real_time_tools/thread.hpp"
 #include "real_time_tools/timer.hpp"
-#include "kodlab_mjbots_sdk/moteus_protocol.h"
-#include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include <lcm/lcm-cpp.hpp>
 #include "motor_log.hpp"
 #include "kodlab_mjbots_sdk/realtime_robot.h"
-#include "kodlab_mjbots_sdk/common_header.h"
 using namespace mjbots;
 
 using MoteusInterface = moteus::Pi3HatMoteusInterface;
