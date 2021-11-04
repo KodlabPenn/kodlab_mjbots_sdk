@@ -37,6 +37,7 @@
 #include "real_time_tools/thread.hpp"
 #include "real_time_tools/timer.hpp"
 #include <lcm/lcm-cpp.hpp>
+#include <real_time_tools/realtime_check.hpp>
 #include "motor_log.hpp"
 #include "kodlab_mjbots_sdk/realtime_robot.h"
 using namespace mjbots;
@@ -151,50 +152,18 @@ class SampleController {
   }
 
   void *Run() {
-    if (arguments_.help) {
-      DisplayUsage();
-      return nullptr;
-    }
-
-    //Setup realtime for behavior thread
-    moteus::ConfigureRealtime(arguments_.main_cpu);
-
-    double sleep_time = 0.0;
-
     lcm::LCM lcm;
     motor_log my_data{};
 
-    const auto period =
-        std::chrono::microseconds(static_cast<int64_t>(arguments_.period_s * 1e6));
-    const auto start = std::chrono::steady_clock::now();
-
-    auto next_cycle = start + period;
-
+    real_time_tools::Spinner spinner;
+    spinner.set_frequency(1000);
+    real_time_tools::Timer dt_timer;
+    dt_timer.tic();
     // We will run at a fixed cycle time.
     while (!CTRL_C_DETECTED) {
       {
-        // Sleep the correct amount
-        {
-          const auto pre_sleep = std::chrono::steady_clock::now();
-          std::this_thread::sleep_until(next_cycle);
-          const auto post_sleep = std::chrono::steady_clock::now();
-          std::chrono::duration<double> elapsed = post_sleep - pre_sleep;
-          sleep_time = elapsed.count();
-        }
-        next_cycle += period;
-
-        const auto now = std::chrono::steady_clock::now();
-
-        // Make sure we have not slept too long
-        int skip_count = 0;
-        while (now > next_cycle) {
-          skip_count++;
-          next_cycle += period;
-        }
-        if (skip_count) {
-          std::cout << "\nSkipped " << skip_count << " cycles\n";
-        }
-
+        double sleep_duration = spinner.predict_sleeping_time();
+        spinner.spin();
 
         //  ensure results are updated before running loop
 
@@ -205,9 +174,8 @@ class SampleController {
 
         send_command();
 
-        my_data.mean_margin = sleep_time * 1000;
-        std::chrono::duration<double, std::milli> elapsed = now - start;
-        my_data.timestamp = elapsed.count();
+        my_data.mean_margin = sleep_duration * 1000;
+        my_data.timestamp = dt_timer.tac() * 1000;
         lcm.publish("EXAMPLE", &my_data);
       }
     }
@@ -230,10 +198,11 @@ int main(int argc, char **argv) {
   Arguments args({argv + 1, argv + argc});
 
   //enable_ctrl_c();
-
   SampleController sample_controller{args};
 
   real_time_tools::RealTimeThread thread;
+  std::cout<<thread.parameters_.cpu_dma_latency_<<std::endl;
+  thread.parameters_.cpu_dma_latency_ = -1;
   thread.create_realtime_thread(Run, &sample_controller);
   thread.join();
 

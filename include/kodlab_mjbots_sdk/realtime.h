@@ -33,7 +33,7 @@ inline void ConfigureRealtime(int cpu) {
 
   {
     struct sched_param params = {};
-    params.sched_priority = 10;
+    params.sched_priority = 99;
     const int r = ::sched_setscheduler(0, SCHED_RR, &params);
     if (r < 0) {
       throw std::runtime_error(
