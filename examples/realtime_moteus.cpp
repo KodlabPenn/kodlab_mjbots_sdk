@@ -34,10 +34,13 @@
 #include <vector>
 
 #include "real_time_tools/spinner.hpp"
+#include "real_time_tools/hard_spinner.hpp"
+
 #include "real_time_tools/thread.hpp"
 #include "real_time_tools/timer.hpp"
 #include <lcm/lcm-cpp.hpp>
 #include <real_time_tools/realtime_check.hpp>
+#include <real_time_tools/process_manager.hpp>
 #include "motor_log.hpp"
 #include "kodlab_mjbots_sdk/realtime_robot.h"
 using namespace mjbots;
@@ -152,6 +155,10 @@ class SampleController {
   }
 
   void *Run() {
+    int cycle_count = 0;
+    std::vector<int> cpu = {arguments_.main_cpu};
+    real_time_tools::fix_current_process_to_cpu(cpu, 0);
+
     lcm::LCM lcm;
     motor_log my_data{};
 
@@ -159,13 +166,23 @@ class SampleController {
     spinner.set_frequency(1000);
     real_time_tools::Timer dt_timer;
     dt_timer.tic();
+
+    const auto period = 1/1000.0;
+    const auto start = real_time_tools::Timer::get_current_time_sec();
+
+    auto next_cycle = start + period;
+
     // We will run at a fixed cycle time.
     while (!CTRL_C_DETECTED) {
       {
-        double sleep_duration = spinner.predict_sleeping_time();
-        spinner.spin();
+        cycle_count ++;
 
-        //  ensure results are updated before running loop
+        const auto pre_sleep = real_time_tools::Timer::get_current_time_sec();
+        real_time_tools::Timer::sleep_until_sec(next_cycle);
+        const auto post_sleep = real_time_tools::Timer::get_current_time_sec();
+        double sleep_duration = (post_sleep - pre_sleep);
+
+        next_cycle += period;
 
         process_reply();
         calc_torques();
@@ -201,7 +218,6 @@ int main(int argc, char **argv) {
   SampleController sample_controller{args};
 
   real_time_tools::RealTimeThread thread;
-  std::cout<<thread.parameters_.cpu_dma_latency_<<std::endl;
   thread.parameters_.cpu_dma_latency_ = -1;
   thread.create_realtime_thread(Run, &sample_controller);
   thread.join();
