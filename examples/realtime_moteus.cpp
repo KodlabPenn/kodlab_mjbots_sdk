@@ -74,8 +74,8 @@ struct Arguments {
   }
 
   bool help = false;
-  int main_cpu = 1;
-  int can_cpu = 2;
+  int main_cpu = 2;
+  int can_cpu = 3;
   double period_s = 0.001;
   int primary_id = 1;
   int primary_bus = 1;
@@ -162,7 +162,7 @@ class SampleController {
     lcm::LCM lcm;
     motor_log my_data{};
 
-    real_time_tools::Spinner spinner;
+    real_time_tools::HardSpinner spinner;
     spinner.set_frequency(1000);
     real_time_tools::Timer dt_timer;
     dt_timer.tic();
@@ -177,13 +177,14 @@ class SampleController {
       {
         cycle_count ++;
 
-        const auto pre_sleep = real_time_tools::Timer::get_current_time_sec();
-        real_time_tools::Timer::sleep_until_sec(next_cycle);
-        const auto post_sleep = real_time_tools::Timer::get_current_time_sec();
-        double sleep_duration = (post_sleep - pre_sleep);
-
-        next_cycle += period;
-
+//        const auto pre_sleep = real_time_tools::Timer::get_current_time_sec();
+//        real_time_tools::Timer::sleep_until_sec(next_cycle);
+//        const auto post_sleep = real_time_tools::Timer::get_current_time_sec();
+//        double sleep_duration = (post_sleep - pre_sleep);
+//
+//        next_cycle += period;
+        double sleep_duration = spinner.predict_sleeping_time();
+        spinner.spin();
         process_reply();
         calc_torques();
 
@@ -219,6 +220,7 @@ int main(int argc, char **argv) {
 
   real_time_tools::RealTimeThread thread;
   thread.parameters_.cpu_dma_latency_ = -1;
+  thread.parameters_.priority_ = 98;
   thread.create_realtime_thread(Run, &sample_controller);
   thread.join();
 

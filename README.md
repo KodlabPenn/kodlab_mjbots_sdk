@@ -11,11 +11,10 @@
 
         sudo apt-get install libraspberrypi-dev raspberrypi-kernel-headers
 * Install cmake, libglib2.0-dev, 
-* scp lcm zip onto pi
 * install lcm https://lcm-proj.github.io/build_instructions.html
-* Open `/etc/ld.so.conf` and add to end`/usr/local/lib`
-* Install realtime library onto the pi
 * install boost onto pi `sudo apt-get install libboost-all-dev`
+* Install  kodlab fork of realtime library onto the pi
+* Open `/etc/ld.so.conf` and add to end`/usr/local/lib` (might be missing step here)
 * Reboot pi
 * Add pi to `etc/hosts` to make ssh easier
 * Add ssh key
