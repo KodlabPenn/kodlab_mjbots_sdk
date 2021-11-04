@@ -1,3 +1,6 @@
+
+
+
 add_executable(moteus_control_example_with_logging moteus_control_example_with_logging.cpp)
 add_executable(lcm_time_test lcm_time_test.cpp)
 add_executable(robot_moteus_example robot_moteus_example.cpp)
@@ -8,3 +11,4 @@ target_link_libraries(moteus_control_example_with_logging PRIVATE kodlab_mjbots_
 target_link_libraries(lcm_time_test PRIVATE kodlab_mjbots_sdk)
 target_link_libraries(robot_moteus_example PRIVATE kodlab_mjbots_sdk)
 target_link_libraries(realtime_moteus PRIVATE kodlab_mjbots_sdk)
+target_link_libraries(realtime_moteus PRIVATE real_time_tools)

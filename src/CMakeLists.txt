@@ -15,12 +15,13 @@ target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty ../
         $ENV{RASPBIAN_ROOTFS}/opt/vc/include
         $ENV{RASPBIAN_ROOTFS}/usr/local/include
         ../thirdparty/real_time_tools/include)
+
 target_link_libraries(kodlab_mjbots_sdk PUBLIC $ENV{RASPBIAN_ROOTFS}/opt/vc/lib/libbcm_host.so)
 
 target_link_libraries(kodlab_mjbots_sdk PRIVATE ${LCM_NAMESPACE}lcm)
 
 # All users of this library will need at least C++11
-target_compile_features(kodlab_mjbots_sdk PUBLIC cxx_std_11)
+target_compile_features(kodlab_mjbots_sdk PUBLIC cxx_std_14)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
