@@ -5,7 +5,8 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/moteus_protocol.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/realtime.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/realtime_robot.h")
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/realtime_robot.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/common_header.h")
 
 # Make an automatic library - will be static or dynamic based on user setting
 add_library(kodlab_mjbots_sdk pi3hat.cpp realtime_robot.cpp ${HEADER_LIST})

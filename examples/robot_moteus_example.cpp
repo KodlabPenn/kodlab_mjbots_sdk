@@ -157,7 +157,7 @@ class SampleController {
 };
 
 template <typename Controller>
-[[noreturn]] [[noreturn]] void Run(const Arguments& args, Controller* controller) {
+void Run(const Arguments& args, Controller* controller) {
   if (args.help) {
     DisplayUsage();
     return;
@@ -178,7 +178,7 @@ template <typename Controller>
   auto next_cycle = start + period;
 
   // We will run at a fixed cycle time.
-  while (true) {
+  while (!CTRL_C_DETECTED) {
     {
       // Sleep the correct amount
       {
@@ -227,6 +227,7 @@ int main(int argc, char** argv) {
 
   // Lock memory for the whole process.
   LockMemory();
+  enable_ctrl_c();
 
   SampleController sample_controller{args};
   Run(args, &sample_controller);

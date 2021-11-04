@@ -41,6 +41,7 @@
 #include <lcm/lcm-cpp.hpp>
 #include "motor_log.hpp"
 #include "kodlab_mjbots_sdk/realtime_robot.h"
+#include "kodlab_mjbots_sdk/common_header.h"
 using namespace mjbots;
 
 using MoteusInterface = moteus::Pi3HatMoteusInterface;
@@ -152,7 +153,7 @@ class SampleController {
     }
   }
 
-  [[noreturn]] void *Run() {
+  void *Run() {
     if (arguments_.help) {
       DisplayUsage();
       return nullptr;
@@ -173,7 +174,7 @@ class SampleController {
     auto next_cycle = start + period;
 
     // We will run at a fixed cycle time.
-    while (true) {
+    while (!CTRL_C_DETECTED) {
       {
         // Sleep the correct amount
         {
@@ -213,7 +214,9 @@ class SampleController {
         lcm.publish("EXAMPLE", &my_data);
       }
     }
+    return nullptr;
   }
+
  private:
   const Arguments arguments_;
   std::unique_ptr<Realtime_Robot> robot;
@@ -228,6 +231,8 @@ static void* Run(void* controller_void_ptr){
 
 int main(int argc, char **argv) {
   Arguments args({argv + 1, argv + argc});
+
+  enable_ctrl_c();
 
   SampleController sample_controller{args};
 

@@ -25,7 +25,7 @@
 #include "kodlab_mjbots_sdk/pi3hat.h"
 
 #include "kodlab_mjbots_sdk/realtime.h"
-
+#include "kodlab_mjbots_sdk/common_header.h"
 namespace mjbots {
 namespace moteus {
 
@@ -113,7 +113,7 @@ class Pi3HatMoteusInterface {
 
     pi3hat_.reset(new pi3hat::Pi3Hat({}));
 
-    while (true) {
+    while (!CTRL_C_DETECTED) {
       {
         std::unique_lock<std::mutex> lock(mutex_);
         if (!active_) {
