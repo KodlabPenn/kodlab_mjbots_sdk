@@ -55,16 +55,7 @@ Add the following lines to your `~/.bashrc`
 * Add `export PYTHONPATH="${PYTHONPATH}:$HOME/mjbots/kodlab_mjbots_sdk"` to your `~/.bashrc`
 * run `./scripts/make_lcm.sh` to generate lcm files. You will need to rerun this command each time you change an lcm definition.
 
-## Building
-Current command to build clean is
-
-    cd .. && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake && make
-
-Normal build is 
-
-    cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake
-    
-## Remote lcm
+### Remote lcm
 To get LCM to work remotely you need to install libbot2 on both computers
 * I've found its helpful to remove `bot2-vis` and `bot2-lcmgl` from `tobuild.txt` since they have lots of dependencies and we won't be using them
 
@@ -79,3 +70,13 @@ This scripts runs as boot as sudo and will configure multicast and launch the lc
 On the host computer to setup the connection run `bot-lcm-tunnel <PI-IP/hostname>`. From here you can start logging with
 
     lcm-logger
+
+## Building
+Current command to build clean is
+
+    cd .. && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake && make
+
+Normal build is 
+
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake
+    
