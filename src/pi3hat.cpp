@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 #include <stdarg.h>
-
+#include <iostream>
 #include <bcm_host.h>
 
 char g_data_block[4096] = {};
@@ -167,12 +167,12 @@ class SystemMmap {
   SystemMmap(int fd, size_t size, uint64_t offset) {
     ptr_ = ::mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, offset);
     size_ = size;
-    ThrowIfErrno(ptr_ == MAP_FAILED);
+    ThrowIfErrno(ptr_ == MAP_FAILED,"System map error");
   }
 
   ~SystemMmap() {
     if (ptr_ != MAP_FAILED) {
-      ThrowIfErrno(::munmap(ptr_, size_) < 0);
+      ThrowIfErrno(::munmap(ptr_, size_) < 0,"System map deconstructor failed");
     }
   }
 
@@ -878,7 +878,6 @@ class Pi3Hat::Impl {
           options.speed_hz = configuration.spi_speed_hz;
           return options;
         }()} {
-
     // First, look to see if we have a pi3hat attached by looking for
     // the eeprom data.  This will prevent us from stomping on the SPI
     // registers if it isn't ours.
@@ -1505,6 +1504,7 @@ class Pi3Hat::Impl {
   }
 
   Output Cycle(const Input& input) {
+    std::cout<<"Inside cycle"<<std::endl;
     // Send off all our CAN data to all buses.
     auto expected_replies = SendCan(input);
 

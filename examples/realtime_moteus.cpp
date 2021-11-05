@@ -185,12 +185,14 @@ class SampleController {
 //        next_cycle += period;
         double sleep_duration = spinner.predict_sleeping_time();
         spinner.spin();
+
         process_reply();
         calc_torques();
 
-        prepare_log(my_data);
 
         send_command();
+
+        prepare_log(my_data);
 
         my_data.mean_margin = sleep_duration * 1000;
         my_data.timestamp = dt_timer.tac() * 1000;
@@ -220,7 +222,7 @@ int main(int argc, char **argv) {
 
   real_time_tools::RealTimeThread thread;
   thread.parameters_.cpu_dma_latency_ = -1;
-  thread.parameters_.priority_ = 98;
+  thread.parameters_.priority_ = 97;
   thread.create_realtime_thread(Run, &sample_controller);
   thread.join();
 

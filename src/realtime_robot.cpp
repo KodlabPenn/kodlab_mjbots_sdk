@@ -64,12 +64,15 @@ Realtime_Robot::Realtime_Robot(int num_servos,
 
   m_moteus_interface = std::make_unique<mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
 
+  m_moteus_interface->start();
   initialize_command();
   m_replies = std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply>{m_commands.size()};
   m_moteus_data.commands = { m_commands.data(), m_commands.size() };
   m_moteus_data.replies = { m_replies.data(), m_replies.size() };
 
+  std::cout<<"Trying to send command" << std::endl;
   send_command();
+  std::cout<<"command sent" << std::endl;
 
   for(int servo = 0; servo< m_num_servos; servo++){
     m_positions.push_back(0);
