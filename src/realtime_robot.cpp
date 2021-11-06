@@ -92,8 +92,8 @@ void Realtime_Robot::process_reply() {
   for(int servo =0; servo< m_num_servos; servo ++){
     const auto servo_reply = Get(m_replies, m_servo_id_list[servo]);
 
-    m_positions[servo]=servo_reply.position;
-    m_velocities[servo]=servo_reply.velocity;
+    m_positions[servo]=servo_reply.position * M_2_PI;
+    m_velocities[servo]=servo_reply.velocity * M_2_PI;
     m_modes[servo]=servo_reply.mode;
   }
 }
