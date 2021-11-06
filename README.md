@@ -15,7 +15,7 @@
 * install boost onto pi `sudo apt-get install libboost-all-dev`
 * Install  kodlab fork of realtime library onto the pi
 * Open `/etc/ld.so.conf` and add to end`/usr/local/lib` (might be missing step here)
-* If you want to use LCM over wifi see steps in remote LCM
+* If you want to use LCM over wifi see steps in remote LCM 
 * Reboot pi
 * Add pi to `etc/hosts` to make ssh easier
 * Add ssh key
