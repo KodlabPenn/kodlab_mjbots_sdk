@@ -45,13 +45,6 @@ class Pi3HatMoteusInterface {
 
   Pi3HatMoteusInterface(const Options& options)
       : options_(options){
-    std::cout<<"reset hat"<<std::endl;
-    if(pi3hat_)
-      std::cout<<"rarxd"<<std::endl;
-
-    pi3hat_.reset(new pi3hat::Pi3Hat({}));
-
-    std::cout<<"REset success"<<std::endl;
     start();
   }
 
@@ -116,17 +109,16 @@ class Pi3HatMoteusInterface {
   static void* static_run(void* void_interface_ptr){
     Pi3HatMoteusInterface* interface =
         (static_cast<Pi3HatMoteusInterface*>(void_interface_ptr));
-    std::cout<<"Static cast success"<<std::endl;
+    pi3hat::Pi3Hat hat({});
+    interface->pi3hat_ = &hat;
     interface->CHILD_Run();
     return nullptr;
   }
 
   void start(){
-    std::cout<<"foo"<<std::endl;
     thread_.parameters_.cpu_dma_latency_ = -1;
     thread_.parameters_.priority_ = 98;
     thread_.create_realtime_thread(static_run, this);
-    std::cout<<"foo"<<std::endl;
   }
 
  private:
@@ -200,12 +192,7 @@ class Pi3HatMoteusInterface {
     input.rx_can = { rx_can_.data(), rx_can_.size() };
 
     Output result;
-    std::cout <<tx_can_.data()<<std::endl;
-    std::cout<<input.tx_can[0].data<<std::endl;
-
-    std::cout <<"pi3hat cycle"<<std::endl;
     const auto output = pi3hat_->Cycle(input);
-    std::cout <<"pi3hat cycle finished"<<std::endl;
     for (size_t i = 0; i < output.rx_can_size && i < data_.replies.size(); i++) {
       const auto& can = rx_can_[i];
 
@@ -233,7 +220,7 @@ class Pi3HatMoteusInterface {
 
   /// All further variables are only used from within the child thread.
 
-  std::unique_ptr<pi3hat::Pi3Hat> pi3hat_ = nullptr;
+  pi3hat::Pi3Hat* pi3hat_ = nullptr;
 
   // These are kept persistently so that no memory allocation is
   // required in steady state.

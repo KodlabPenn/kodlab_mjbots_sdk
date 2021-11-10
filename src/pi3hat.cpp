@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 #include <stdarg.h>
-#include <iostream>
+
 #include <bcm_host.h>
 
 char g_data_block[4096] = {};
@@ -238,9 +238,7 @@ class Rpi3Gpio {
       const uint32_t reg_offset = gpio / 32 + 7;
       gpio_[reg_offset] = 1 << (gpio % 32);
     } else {
-      std::cout<<"Calculating reg offset"<<std::endl;
       const uint32_t reg_offset = gpio / 32 + 10;
-      std::cout<<reg_offset<<std::endl;
       gpio_[reg_offset] = 1 << (gpio % 32);
     }
   }
@@ -251,7 +249,6 @@ class Rpi3Gpio {
   class ActiveLow {
    public:
     ActiveLow(Rpi3Gpio* parent, uint32_t gpio) : parent_(parent), gpio_(gpio) {
-      std::cout<<"active low call"<<std::endl;
       parent_->SetGpioOutput(gpio_, false);
     }
 
@@ -489,7 +486,6 @@ class AuxSpi {
     spi_ = reinterpret_cast<volatile Bcm2835AuxSpi*>(
         static_cast<char*>(spi_mmap_.ptr()) + 0x80);
 
-    std::cout<<"reset aux gpio"<<std::endl;
     gpio_.reset(new Rpi3Gpio(fd_));
 
     gpio_->SetGpioOutput(kSpi1CS0, true);
@@ -550,15 +546,9 @@ class AuxSpi {
   AuxSpi& operator=(const AuxSpi&) = delete;
 
   void Write(int cs, int address, const char* data, size_t size) {
-    std::cout<<"Starting write"<<std::endl;
     BusyWaitUs(options_.cs_hold_us);
-    std::cout<<"busywait 1"<<std::endl;
-
     Rpi3Gpio::ActiveLow cs_holder(gpio_.get(), kSpi1CS[cs]);
-    std::cout<<"cs low"<<std::endl;
-
     BusyWaitUs(options_.cs_hold_us);
-    std::cout<<"set cs"<<std::endl;
 
     const uint32_t value =
         0
@@ -579,7 +569,6 @@ class AuxSpi {
 
     // Wait our address hold time.
     BusyWaitUs(options_.address_hold_us);
-    std::cout<<"foo2"<<std::endl;
 
     size_t offset = 0;
     while (offset < size) {
@@ -623,7 +612,6 @@ class AuxSpi {
 
     // Wait until we are no longer busy.
     while (spi_->stat & AUXSPI_STAT_BUSY);
-    std::cout<<"Write finished"<<std::endl;
   }
 
   void Read(int cs, int address, char* data, size_t size) {
@@ -1212,7 +1200,6 @@ class Pi3Hat::Impl {
     int spi_size = 0;
 
     buf[0] = ((cpu_bus == 1) ? 0x80 : 0x00) | (size & 0x7f);
-    std::cout<<"Sending can spi frame"<<std::endl;
     if (can_frame.id <= 0xffff) {
       // We'll use the 2 byte ID formulation, cmd 5
       spi_address = 5;
@@ -1237,7 +1224,6 @@ class Pi3Hat::Impl {
       }
       spi_size = 5 + size;
     }
-    std::cout<<"writing spi"<<std::endl;
 
     spi.Write(cs, spi_address, buf, spi_size);
   }
@@ -1289,9 +1275,6 @@ class Pi3Hat::Impl {
         result.count[bus]++;
       }
     }
-    std::cout<<input.tx_can[0].data<<std::endl;
-
-    std::cout<<"sending packets"<<std::endl;
 
     int bus_offset[5] = {};
     while (true) {
@@ -1305,21 +1288,18 @@ class Pi3Hat::Impl {
         }
         const auto& can_packet = input.tx_can[can_packets_[bus][offset]];
         offset++;
-        std::cout<<can_packet.data<<std::endl;
-        std::cout<<bus<<std::endl;
-        SendCanPacket(can_packet);
-        std::cout<<"packet sent"<<std::endl;
 
+        SendCanPacket(can_packet);
         any_sent = true;
       }
 
       if (!any_sent) { break; }
     }
+
     // Now send out all the low speed packets.
     for (const auto index : can_packets_[5]) {
       SendCanPacket(input.tx_can[index]);
     }
-    std::cout<<"packets sent"<<std::endl;
 
     return result;
   }
@@ -1523,10 +1503,8 @@ class Pi3Hat::Impl {
   }
 
   Output Cycle(const Input& input) {
-    std::cout<<"Inside cycle"<<std::endl;
     // Send off all our CAN data to all buses.
     auto expected_replies = SendCan(input);
-    std::cout<<"Can sent"<<std::endl;
 
     Output result;
 
@@ -1544,16 +1522,13 @@ class Pi3Hat::Impl {
           GetAttitude(input.attitude, input.wait_for_attitude,
                       input.request_attitude_detail);
     }
-    std::cout<<"Ready to read can"<<std::endl;
 
     ReadCan(input, expected_replies, &result);
-    std::cout<<"read can"<<std::endl;
 
     primary_spi_.gpio()->SetGpioMode(13, Rpi3Gpio::OUTPUT);
     static bool debug_toggle = false;
     primary_spi_.gpio()->SetGpioOutput(13, debug_toggle);
     debug_toggle = !debug_toggle;
-    std::cout<<"Finished cycle"<<std::endl;
     return result;
   }
 
