@@ -64,7 +64,7 @@ Realtime_Robot::Realtime_Robot(int num_servos,
 
   m_moteus_interface = std::make_unique<mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
 
-  m_moteus_interface->start();
+  //m_moteus_interface->start();
   initialize_command();
   m_replies = std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply>{m_commands.size()};
   m_moteus_data.commands = { m_commands.data(), m_commands.size() };

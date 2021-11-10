@@ -127,10 +127,10 @@ class SampleController {
     if (arguments_.primary_id == arguments_.secondary_id) {
       throw std::runtime_error("The servos must have unique IDs");
     }
-    robot = std::make_unique<Realtime_Robot>(Realtime_Robot(2,
-                                                            {arguments_.primary_id, arguments_.secondary_id},
-                                                            {arguments_.primary_bus, arguments_.secondary_bus},
-                                                            arguments_.can_cpu));
+    robot.reset(new Realtime_Robot(2,
+                                   {arguments_.primary_id, arguments_.secondary_id},
+                                   {arguments_.primary_bus, arguments_.secondary_bus},
+                                   arguments_.can_cpu));
   }
 
   void calc_torques() {

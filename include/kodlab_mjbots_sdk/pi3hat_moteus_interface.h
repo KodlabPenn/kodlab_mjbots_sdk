@@ -45,9 +45,6 @@ class Pi3HatMoteusInterface {
 
   Pi3HatMoteusInterface(const Options& options)
       : options_(options){
-    thread_.parameters_.cpu_dma_latency_ = -1;
-    thread_.parameters_.priority_ = 98;
-
     std::cout<<"reset hat"<<std::endl;
     if(pi3hat_)
       std::cout<<"rarxd"<<std::endl;
@@ -55,6 +52,7 @@ class Pi3HatMoteusInterface {
     pi3hat_.reset(new pi3hat::Pi3Hat({}));
 
     std::cout<<"REset success"<<std::endl;
+    start();
   }
 
   ~Pi3HatMoteusInterface() {
@@ -113,7 +111,6 @@ class Pi3HatMoteusInterface {
     callback_ = std::move(callback);
     active_ = true;
     data_ = data;
-
     condition_.notify_all();
   }
   static void* static_run(void* void_interface_ptr){
@@ -121,10 +118,15 @@ class Pi3HatMoteusInterface {
         (static_cast<Pi3HatMoteusInterface*>(void_interface_ptr));
     std::cout<<"Static cast success"<<std::endl;
     interface->CHILD_Run();
+    return nullptr;
   }
 
   void start(){
+    std::cout<<"foo"<<std::endl;
+    thread_.parameters_.cpu_dma_latency_ = -1;
+    thread_.parameters_.priority_ = 98;
     thread_.create_realtime_thread(static_run, this);
+    std::cout<<"foo"<<std::endl;
   }
 
  private:
@@ -173,7 +175,6 @@ class Pi3HatMoteusInterface {
         }
         return it->second;
       }();
-
       moteus::WriteCanFrame write_frame(can.data, &can.size);
       switch (cmd.mode) {
         case Mode::kStopped: {
@@ -199,6 +200,8 @@ class Pi3HatMoteusInterface {
     input.rx_can = { rx_can_.data(), rx_can_.size() };
 
     Output result;
+    std::cout <<tx_can_.data()<<std::endl;
+    std::cout<<input.tx_can[0].data<<std::endl;
 
     std::cout <<"pi3hat cycle"<<std::endl;
     const auto output = pi3hat_->Cycle(input);
