@@ -9,7 +9,7 @@
 #include <future>
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
-
+#include "kodlab_mjbots_sdk/soft_start.h"
 class Realtime_Robot {
  private:
   int m_num_servos;
@@ -21,12 +21,14 @@ class Realtime_Robot {
   std::vector<float> m_torque_cmd;
   std::vector<float> m_torque_measured;
   std::vector<mjbots::moteus::Mode> m_modes;
+  long int m_cycle_count = 0;
 
   std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> m_commands;
   std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply> m_replies;
   std::unique_ptr<mjbots::moteus::Pi3HatMoteusInterface> m_moteus_interface;
   mjbots::moteus::Pi3HatMoteusInterface::Data m_moteus_data;
   std::future<mjbots::moteus::Pi3HatMoteusInterface::Output> m_can_result;
+  Soft_Start m_soft_start;
 
   void initialize_command();
 
@@ -39,7 +41,9 @@ class Realtime_Robot {
   Realtime_Robot(int num_servos,
                  std::vector<int> servo_id_list,
                  std::vector<int> servo_bus_list,
-                 int can_cpu);
+                 int can_cpu,
+                 float max_torque = 20,
+                 int soft_start_duration = 1);
 
   void process_reply();
 

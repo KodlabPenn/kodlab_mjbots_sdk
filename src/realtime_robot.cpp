@@ -48,7 +48,9 @@ mjbots::moteus::QueryResult Realtime_Robot::Get(const std::vector<mjbots::moteus
 Realtime_Robot::Realtime_Robot(int num_servos,
                                std::vector<int> servo_id_list,
                                std::vector<int> servo_bus_list,
-                               int can_cpu){
+                               int can_cpu,
+                               float max_torque,
+                               int soft_start_duration): m_soft_start(max_torque, soft_start_duration){
 
   m_num_servos = num_servos;
   m_servo_id_list = servo_id_list;
@@ -101,6 +103,7 @@ void Realtime_Robot::process_reply() {
 }
 
 void Realtime_Robot::send_command() {
+  m_cycle_count ++;
   auto promise = std::make_shared<std::promise<mjbots::moteus::Pi3HatMoteusInterface::Output>>();
   m_moteus_interface->Cycle(
       m_moteus_data,
@@ -113,6 +116,7 @@ void Realtime_Robot::send_command() {
 }
 
 void Realtime_Robot::set_torques(std::vector<float> torques) {
+  m_soft_start.constrainTorques(torques, m_cycle_count);
   for(int servo =0; servo< m_num_servos; servo ++){
     m_commands[servo].position.feedforward_torque = torques[servo];
   }

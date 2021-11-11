@@ -86,12 +86,6 @@ struct Arguments {
 };
 
 
-void constrain(std::vector<float> values, float min_val, float max_val){
-  for(auto& value : values){
-    value = fmin(fmax(value, min_val), max_val);
-  }
-}
-
 /// This holds the user-defined control logic.
 class SampleController {
  public:
@@ -102,7 +96,9 @@ class SampleController {
     robot = std::make_unique<Realtime_Robot>(Realtime_Robot(2,
                                                             {arguments_.primary_id, arguments_.secondary_id},
                                                             {arguments_.primary_bus, arguments_.secondary_bus},
-                                                            arguments_.can_cpu));
+                                                            arguments_.can_cpu,
+                                                            0.15,
+                                                            1000));
   }
 
   void calc_torques() {
@@ -115,7 +111,6 @@ class SampleController {
     f_theta = - kp * theta - kd * d_theta;
 
     auto torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
-    constrain(torques, -0.01, 0.01);
     robot->set_torques(torques);
   }
 
