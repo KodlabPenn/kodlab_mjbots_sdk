@@ -225,7 +225,7 @@ class SampleController {
 };
 
 template <typename Controller>
-[[noreturn]] void Run(const Arguments& args, Controller* controller) {
+[[noreturn]] [[noreturn]] void Run(const Arguments& args, Controller* controller) {
   if (args.help) {
     DisplayUsage();
     return;
@@ -260,48 +260,49 @@ template <typename Controller>
 
   std::future<MoteusInterface::Output> can_result;
 
-  const auto period =
-      std::chrono::microseconds(static_cast<int64_t>(args.period_s * 1e6));
-  auto next_cycle = std::chrono::steady_clock::now() + period;
 
-  const auto status_period = std::chrono::milliseconds(1);
-  auto next_status = next_cycle + status_period;
-  uint64_t cycle_count = 0;
-  double total_margin = 0.0;
-  uint64_t margin_cycles = 0;
+  double sleep_time = 0.0;
 
   lcm::LCM lcm;
   motor_log my_data{};
 
+  // Prepolute stopped command
+  for (auto& cmd : commands) {
+    // We start everything with a stopped command to clear faults.
+    cmd.mode = moteus::Mode::kStopped;
+  }
+  auto promise_out = std::make_shared<std::promise<MoteusInterface::Output>>();
+  moteus_interface.Cycle(
+      moteus_data,
+      [promise_out](const MoteusInterface::Output& output) {
+        // This is called from an arbitrary thread, so we just set
+        // the promise value here.
+        promise_out->set_value(output);
+      });
+  can_result = promise_out->get_future();
+
+  const auto period =
+      std::chrono::microseconds(static_cast<int64_t>(args.period_s * 1e6));
   const auto start = std::chrono::steady_clock::now();
+
+  auto next_cycle = start + period;
+
   // We will run at a fixed cycle time.
-  while (true) {
-    cycle_count++;
-    margin_cycles++;
+  while (!CTRL_C_DETECTED) {
     {
-      const auto now = std::chrono::steady_clock::now();
-      // Every 100 miliseconds print out status
-      if (now > next_status) {
-        // NOTE: iomanip is not a recommended pattern.  We use it here
-        // simply to not require any external dependencies, like 'fmt'.
-
-        for(int motor =0; motor< 2; motor ++){
-          const auto motor_reply = controller->Get(saved_replies, idArray[motor]);
-          my_data.positions[motor]=motor_reply.position;
-          my_data.velocities[motor]=motor_reply.velocity;
-          my_data.modes[motor]=static_cast<int>(motor_reply.mode);
-          my_data.torques[motor] = commands[motor].position.feedforward_torque;
-        }
-        my_data.mean_margin = total_margin / margin_cycles * 1000;
-        std::chrono::duration<double, std::milli> elapsed = now-start;
-        my_data.timestamp = elapsed.count();
-        lcm.publish("EXAMPLE", &my_data);
-
-        next_status += status_period;
-        total_margin = 0;
-        margin_cycles = 0;
+      // Sleep the correct amount
+      {
+        const auto pre_sleep = std::chrono::steady_clock::now();
+        std::this_thread::sleep_until(next_cycle);
+        const auto post_sleep = std::chrono::steady_clock::now();
+        std::chrono::duration<double> elapsed = post_sleep - pre_sleep;
+        sleep_time = elapsed.count();
       }
+      next_cycle += period;
 
+      const auto now = std::chrono::steady_clock::now();
+
+      // Make sure we have not slept too long
       int skip_count = 0;
       while (now > next_cycle) {
         skip_count++;
@@ -310,46 +311,45 @@ template <typename Controller>
       if (skip_count) {
         std::cout << "\nSkipped " << skip_count << " cycles\n";
       }
+
+
+      //  ensure results are updated before running loop
+      can_result.wait();
+      controller->Run(replies, &commands);
+
+      // Copy reply for logging
+      {
+        const auto current_values = can_result.get();
+        // We copy out the results we just got out.
+        const auto rx_count = current_values.query_result_size;
+        saved_replies.resize(rx_count);
+        std::copy(replies.begin(), replies.begin() + rx_count,
+                  saved_replies.begin());
+      }
+
+      auto promise = std::make_shared<std::promise<MoteusInterface::Output>>();
+      // Then we can immediately ask them to be used again.
+      moteus_interface.Cycle(
+          moteus_data,
+          [promise](const MoteusInterface::Output& output) {
+            // This is called from an arbitrary thread, so we just set
+            // the promise value here.
+            promise->set_value(output);
+          });
+      can_result = promise->get_future();
+
+      for(int motor =0; motor< 2; motor ++){
+        const auto motor_reply = controller->Get(saved_replies, idArray[motor]);
+        my_data.positions[motor]=motor_reply.position;
+        my_data.velocities[motor]=motor_reply.velocity;
+        my_data.modes[motor]=static_cast<int>(motor_reply.mode);
+        my_data.torques[motor] = commands[motor].position.feedforward_torque;
+      }
+      my_data.mean_margin = sleep_time * 1000;
+      std::chrono::duration<double, std::milli> elapsed = now-start;
+      my_data.timestamp = elapsed.count();
+      lcm.publish("EXAMPLE", &my_data);
     }
-    // Wait for the next control cycle to come up.
-    {
-      const auto pre_sleep = std::chrono::steady_clock::now();
-      std::this_thread::sleep_until(next_cycle);
-      const auto post_sleep = std::chrono::steady_clock::now();
-      std::chrono::duration<double> elapsed = post_sleep - pre_sleep;
-      total_margin += elapsed.count();
-    }
-    next_cycle += period;
-
-    // Loop is sleep, run controller off of saved replies, copy previous replies to saved replies, send command to pi3hat
-    controller->Run(saved_replies, &commands);
-
-    //{TODO} Why is saved_replies updated for previous command after the controller runs??
-    //{TODO} What is the reason for replies vs. saved replies (maybe memory management)
-    //{SUGGESTION} Send command sleep wait for replies to be ready run controller with replies
-    if (can_result.valid()) { // will be false the first time we run it, thus controller probably should not run which
-                              // why the controller doesn't command anything the first few dt
-      // Now we get the result of our last query and send off our new
-      // one.
-      const auto current_values = can_result.get();
-
-      // We copy out the results we just got out.
-      const auto rx_count = current_values.query_result_size;
-      saved_replies.resize(rx_count);
-      std::copy(replies.begin(), replies.begin() + rx_count,
-                saved_replies.begin());
-    }
-
-    // Then we can immediately ask them to be used again.
-    auto promise = std::make_shared<std::promise<MoteusInterface::Output>>();
-    moteus_interface.Cycle(
-        moteus_data,
-        [promise](const MoteusInterface::Output& output) {
-          // This is called from an arbitrary thread, so we just set
-          // the promise value here.
-          promise->set_value(output);
-        });
-    can_result = promise->get_future();
   }
 }
 }
@@ -359,7 +359,7 @@ int main(int argc, char** argv) {
 
   // Lock memory for the whole process.
   LockMemory();
-
+  enable_ctrl_c();
   SampleController sample_controller{args};
   Run(args, &sample_controller);
 

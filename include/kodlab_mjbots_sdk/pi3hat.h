@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef kodlab_mjbots_sdk_INCLUDE_PI3HAT_H_
-#define kodlab_mjbots_sdk_INCLUDE_PI3HAT_H_
-
+#pragma once
 /// @file
 ///
 /// This header file (and associated C++ file), are intended to be
@@ -291,4 +289,3 @@ class Pi3Hat {
 }
 }
 
-#endif //kodlab_mjbots_sdk_INCLUDE_PI3HAT_H_

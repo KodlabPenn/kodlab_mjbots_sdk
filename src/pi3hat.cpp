@@ -167,12 +167,12 @@ class SystemMmap {
   SystemMmap(int fd, size_t size, uint64_t offset) {
     ptr_ = ::mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, offset);
     size_ = size;
-    ThrowIfErrno(ptr_ == MAP_FAILED);
+    ThrowIfErrno(ptr_ == MAP_FAILED,"System map error");
   }
 
   ~SystemMmap() {
     if (ptr_ != MAP_FAILED) {
-      ThrowIfErrno(::munmap(ptr_, size_) < 0);
+      ThrowIfErrno(::munmap(ptr_, size_) < 0,"System map deconstructor failed");
     }
   }
 
@@ -878,7 +878,6 @@ class Pi3Hat::Impl {
           options.speed_hz = configuration.spi_speed_hz;
           return options;
         }()} {
-
     // First, look to see if we have a pi3hat attached by looking for
     // the eeprom data.  This will prevent us from stomping on the SPI
     // registers if it isn't ours.
@@ -1201,7 +1200,6 @@ class Pi3Hat::Impl {
     int spi_size = 0;
 
     buf[0] = ((cpu_bus == 1) ? 0x80 : 0x00) | (size & 0x7f);
-
     if (can_frame.id <= 0xffff) {
       // We'll use the 2 byte ID formulation, cmd 5
       spi_address = 5;
@@ -1531,7 +1529,6 @@ class Pi3Hat::Impl {
     static bool debug_toggle = false;
     primary_spi_.gpio()->SetGpioOutput(13, debug_toggle);
     debug_toggle = !debug_toggle;
-
     return result;
   }
 

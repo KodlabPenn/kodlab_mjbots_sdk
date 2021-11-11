@@ -21,11 +21,14 @@
 #include <stdexcept>
 #include <thread>
 #include <vector>
-
+#include <iostream>
+#include "real_time_tools/thread.hpp"
+#include <real_time_tools/process_manager.hpp>
 #include "kodlab_mjbots_sdk/pi3hat.h"
-
+#include <sys/types.h>
+#include <unistd.h>
 #include "kodlab_mjbots_sdk/realtime.h"
-
+#include "kodlab_mjbots_sdk/common_header.h"
 namespace mjbots {
 namespace moteus {
 
@@ -43,8 +46,8 @@ class Pi3HatMoteusInterface {
   };
 
   Pi3HatMoteusInterface(const Options& options)
-      : options_(options),
-        thread_(std::bind(&Pi3HatMoteusInterface::CHILD_Run, this)) {
+      : options_(options){
+    start();
   }
 
   ~Pi3HatMoteusInterface() {
@@ -103,22 +106,34 @@ class Pi3HatMoteusInterface {
     callback_ = std::move(callback);
     active_ = true;
     data_ = data;
-
     condition_.notify_all();
+  }
+  static void* static_run(void* void_interface_ptr){
+    Pi3HatMoteusInterface* interface =
+        (static_cast<Pi3HatMoteusInterface*>(void_interface_ptr));
+    pi3hat::Pi3Hat hat({});
+    interface->pi3hat_ = &hat;
+    interface->CHILD_Run();
+    return nullptr;
+  }
+
+  void start(){
+    thread_.parameters_.cpu_dma_latency_ = -1;
+    thread_.parameters_.priority_ = 98;
+    thread_.create_realtime_thread(static_run, this);
   }
 
  private:
-  void CHILD_Run() {
-    ConfigureRealtime(options_.cpu);
 
-    pi3hat_.reset(new pi3hat::Pi3Hat({}));
-
-    while (true) {
+  void * CHILD_Run( ) {
+    std::vector<int> cpu = {options_.cpu};
+    real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
+    while (!CTRL_C_DETECTED) {
       {
         std::unique_lock<std::mutex> lock(mutex_);
         if (!active_) {
           condition_.wait(lock);
-          if (done_) { return; }
+          if (done_) { return nullptr; }
 
           if (!active_) { continue; }
         }
@@ -133,6 +148,7 @@ class Pi3HatMoteusInterface {
       }
       callback_copy(output);
     }
+    return nullptr;
   }
 
   Output CHILD_Cycle() {
@@ -154,7 +170,6 @@ class Pi3HatMoteusInterface {
         }
         return it->second;
       }();
-
       moteus::WriteCanFrame write_frame(can.data, &can.size);
       switch (cmd.mode) {
         case Mode::kStopped: {
@@ -180,7 +195,6 @@ class Pi3HatMoteusInterface {
     input.rx_can = { rx_can_.data(), rx_can_.size() };
 
     Output result;
-
     const auto output = pi3hat_->Cycle(input);
     for (size_t i = 0; i < output.rx_can_size && i < data_.replies.size(); i++) {
       const auto& can = rx_can_[i];
@@ -204,12 +218,12 @@ class Pi3HatMoteusInterface {
   CallbackFunction callback_;
   Data data_;
 
-  std::thread thread_;
+  real_time_tools::RealTimeThread thread_;
 
 
   /// All further variables are only used from within the child thread.
 
-  std::unique_ptr<pi3hat::Pi3Hat> pi3hat_;
+  pi3hat::Pi3Hat* pi3hat_ = nullptr;
 
   // These are kept persistently so that no memory allocation is
   // required in steady state.

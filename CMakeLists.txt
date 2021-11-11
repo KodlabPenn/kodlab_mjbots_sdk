@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(kodlab_mjbots_sdk)
 
-set(CMAKE_CXX_STANDARD 11)
-
+set(CMAKE_CXX_STANDARD 17)
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -21,4 +20,4 @@ add_subdirectory(src)
 
 # The executable code is here
 add_subdirectory(examples)
-#add_subdirectory(thirdparty/real_time_tools)
+add_subdirectory(thirdparty/real_time_tools)
