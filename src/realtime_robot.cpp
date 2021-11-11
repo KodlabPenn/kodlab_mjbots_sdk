@@ -73,7 +73,8 @@ Realtime_Robot::Realtime_Robot(int num_servos,
   for(int servo = 0; servo< m_num_servos; servo++){
     m_positions.push_back(0);
     m_velocities.push_back(0);
-    m_torques.push_back(0);
+    m_torque_cmd.push_back(0);
+    m_torque_measured.push_back(0);
     m_modes.push_back(mjbots::moteus::Mode::kStopped);
   }
 
@@ -94,6 +95,7 @@ void Realtime_Robot::process_reply() {
 
     m_positions[servo]=servo_reply.position * M_2_PI;
     m_velocities[servo]=servo_reply.velocity * M_2_PI;
+    m_torque_cmd[servo]=servo_reply.torque;
     m_modes[servo]=servo_reply.mode;
   }
 }
@@ -128,8 +130,11 @@ std::vector<mjbots::moteus::Mode> Realtime_Robot::get_joint_modes() {
   return  m_modes;
 }
 
-std::vector<float> Realtime_Robot::get_joint_torques() {
-  return m_torques;
+std::vector<float> Realtime_Robot::get_joint_torque_cmd() {
+  return m_torque_cmd;
+}
+std::vector<float> Realtime_Robot::get_joint_torque_measured() {
+  return m_torque_measured;
 }
 void Realtime_Robot::set_mode_stop() {
   for (auto& cmd : m_commands) {

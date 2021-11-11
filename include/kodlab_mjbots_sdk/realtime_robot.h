@@ -18,7 +18,8 @@ class Realtime_Robot {
   std::map<int, int> m_servo_bus_map;
   std::vector<float> m_positions;
   std::vector<float> m_velocities;
-  std::vector<float> m_torques;
+  std::vector<float> m_torque_cmd;
+  std::vector<float> m_torque_measured;
   std::vector<mjbots::moteus::Mode> m_modes;
 
   std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> m_commands;
@@ -54,7 +55,9 @@ class Realtime_Robot {
 
   std::vector<float> get_joint_velocities();
 
-  std::vector<float> get_joint_torques();
+  std::vector<float> get_joint_torque_cmd();
+
+  std::vector<float> get_joint_torque_measured();
 
   std::vector<mjbots::moteus::Mode> get_joint_modes();
 

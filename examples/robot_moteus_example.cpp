@@ -149,7 +149,7 @@ class SampleController {
       my_data.positions[servo]=robot->get_joint_positions()[servo];
       my_data.velocities[servo]=robot->get_joint_velocities()[servo];
       my_data.modes[servo]=static_cast<int>(robot->get_joint_modes()[servo]);
-      my_data.torques[servo] = robot->get_joint_torques()[servo];
+      my_data.torques[servo] = robot->get_joint_torque_cmd()[servo];
     }
   }
 

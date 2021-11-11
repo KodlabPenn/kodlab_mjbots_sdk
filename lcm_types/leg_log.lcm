@@ -1,0 +1,13 @@
+struct leg_log
+{
+  float  timestamp;
+  float    positions[2];
+  float    velocities[2];
+  float    torque_measure[2];
+  float    torque_cmd[2];
+  float    polar_position[2];
+  float    polar_vel[2];
+  float    polar_wrench[2];
+  int16_t    modes[2];
+  float mean_margin;
+}

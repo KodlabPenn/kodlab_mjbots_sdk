@@ -41,7 +41,7 @@
 #include <lcm/lcm-cpp.hpp>
 #include <real_time_tools/realtime_check.hpp>
 #include <real_time_tools/process_manager.hpp>
-#include "motor_log.hpp"
+#include "leg_log.hpp"
 #include "kodlab_mjbots_sdk/realtime_robot.h"
 #include "kodlab_mjbots_sdk/polar_leg.h"
 
@@ -107,12 +107,12 @@ class SampleController {
 
   void calc_torques() {
 
-    float r, theta, d_r, d_theta;
+
     m_leg.fk(robot->get_joint_positions(), r, theta);
     m_leg.fk_vel(robot-> get_joint_positions(), robot->get_joint_velocities(), d_r, d_theta);
 
-    float f_r = k * (r0 - r) - b * d_r;
-    float f_theta = - kp * theta - kd * d_theta;
+    f_r = k * (r0 - r) - b * d_r;
+    f_theta = - kp * theta - kd * d_theta;
 
     auto torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
     constrain(torques, -0.01, 0.01);
@@ -127,32 +127,34 @@ class SampleController {
     robot->send_command();
   }
 
-  void prepare_log(motor_log &my_data) {
+  void prepare_log(leg_log &my_data) {
     for (int servo = 0; servo < 2; servo++) {
       my_data.positions[servo] = robot->get_joint_positions()[servo];
       my_data.velocities[servo] = robot->get_joint_velocities()[servo];
       my_data.modes[servo] = static_cast<int>(robot->get_joint_modes()[servo]);
-      my_data.torques[servo] = robot->get_joint_torques()[servo];
+      my_data.torque_cmd[servo] = robot->get_joint_torque_cmd()[servo];
+      my_data.torque_measure[servo]=robot->get_joint_torque_measured()[servo];
     }
+    my_data.polar_position[0] = r;
+    my_data.polar_position[1] = theta;
+    my_data.polar_vel[0] = d_r;
+    my_data.polar_vel[1] = d_theta;
+    my_data.polar_wrench[0] = f_r;
+    my_data.polar_wrench[1] = f_theta;
   }
 
   void *Run() {
     int cycle_count = 0;
     std::vector<int> cpu = {arguments_.main_cpu};
-    real_time_tools::fix_current_process_to_cpu(cpu, 0);
+    real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
 
     lcm::LCM lcm;
-    motor_log my_data{};
+    leg_log my_data{};
 
     real_time_tools::HardSpinner spinner;
     spinner.set_frequency(1000);
     real_time_tools::Timer dt_timer;
     dt_timer.tic();
-
-    const auto period = 1/1000.0;
-    const auto start = real_time_tools::Timer::get_current_time_sec();
-
-    auto next_cycle = start + period;
 
     // We will run at a fixed cycle time.
     while (!CTRL_C_DETECTED) {
@@ -185,6 +187,8 @@ class SampleController {
   float r0 = 0.2;
   float kp = 1;
   float kd = 0.1;
+  float r, theta, d_r, d_theta;
+  float f_r, f_theta;
 };
 
 static void* Run(void* controller_void_ptr){
@@ -192,6 +196,7 @@ static void* Run(void* controller_void_ptr){
       (static_cast<SampleController*>(controller_void_ptr));
 
   controller->Run();
+  return nullptr;
 }
 
 int main(int argc, char **argv) {
@@ -202,7 +207,7 @@ int main(int argc, char **argv) {
 
   real_time_tools::RealTimeThread thread;
   thread.parameters_.cpu_dma_latency_ = -1;
-  thread.parameters_.priority_ = 98;
+  thread.parameters_.priority_ = 97;
   thread.create_realtime_thread(Run, &sample_controller);
   thread.join();
 
