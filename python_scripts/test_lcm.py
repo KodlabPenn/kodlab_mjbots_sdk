@@ -3,7 +3,7 @@ from lcm_types.motor_log import motor_log
 import matplotlib.pyplot as plt
 import numpy as np
 
-log = lcm.EventLog('logs/lcmlog-2021-11-04.39', "r")
+log = lcm.EventLog('logs/lcmlog-2021-11-10.14', "r")
 
 
 timestamps = []

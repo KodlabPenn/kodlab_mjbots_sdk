@@ -133,7 +133,7 @@ class SampleController {
   }
 
   void Run() {
-    robot->set_torques({0.02, 0.2});
+    robot->set_torques({0.15, 0.15});
   }
 
   void process_reply(){

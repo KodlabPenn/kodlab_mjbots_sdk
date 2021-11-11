@@ -32,7 +32,8 @@
 #include <string>
 #include <thread>
 #include <vector>
-
+#include <sys/types.h>
+#include <unistd.h>
 #include "real_time_tools/spinner.hpp"
 #include "real_time_tools/hard_spinner.hpp"
 
@@ -53,12 +54,6 @@ struct Arguments {
       const auto &arg = args[i];
       if (arg == "-h" || arg == "--help") {
         help = true;
-      } else if (arg == "--main-cpu") {
-        main_cpu = std::stoull(args.at(++i));
-      } else if (arg == "--can-cpu") {
-        can_cpu = std::stoull(args.at(++i));
-      } else if (arg == "--period-s") {
-        period_s = std::stod(args.at(++i));
       } else if (arg == "--primary-id") {
         primary_id = std::stoull(args.at(++i));
       } else if (arg == "--primary-bus") {
@@ -75,8 +70,7 @@ struct Arguments {
 
   bool help = false;
   int main_cpu = 2;
-  int can_cpu = 3;
-  double period_s = 0.001;
+  int can_cpu = 1;
   int primary_id = 1;
   int primary_bus = 1;
   int secondary_id = 2;
@@ -89,36 +83,12 @@ void DisplayUsage() {
   std::cout << "  -h, --help           display this usage message\n";
   std::cout << "  --main-cpu CPU       run main thread on a fixed CPU [default: 1]\n";
   std::cout << "  --can-cpu CPU        run CAN thread on a fixed CPU [default: 2]\n";
-  std::cout << "  --period-s S         period to run control\n";
   std::cout << "  --primary-id ID      servo ID of primary, undriven servo\n";
   std::cout << "  --primary-bus BUS    bus of primary servo\n";
   std::cout << "  --secondary-id ID    servo ID of secondary, driven servo\n";
   std::cout << "  --secondary-bus BUS  bus of secondary servo\n";
 }
 
-void LockMemory() {
-  // We lock all memory so that we don't end up having to page in
-  // something later which can take time.
-  {
-    const int r = ::mlockall(MCL_CURRENT | MCL_FUTURE);
-    if (r < 0) {
-      throw std::runtime_error("Error locking memory");
-    }
-  }
-}
-
-std::pair<double, double> MinMaxVoltage(
-    const std::vector<MoteusInterface::ServoReply> &r) {
-  double rmin = std::numeric_limits<double>::infinity();
-  double rmax = -std::numeric_limits<double>::infinity();
-
-  for (const auto &i : r) {
-    if (i.result.voltage > rmax) { rmax = i.result.voltage; }
-    if (i.result.voltage < rmin) { rmin = i.result.voltage; }
-  }
-
-  return std::make_pair(rmin, rmax);
-}
 
 /// This holds the user-defined control logic.
 class SampleController {
@@ -134,7 +104,7 @@ class SampleController {
   }
 
   void calc_torques() {
-    robot->set_torques({0.04, 0.4});
+    robot->set_torques({0.15, 0.15});
   }
 
   void process_reply() {
@@ -157,7 +127,7 @@ class SampleController {
   void *Run() {
     int cycle_count = 0;
     std::vector<int> cpu = {arguments_.main_cpu};
-    real_time_tools::fix_current_process_to_cpu(cpu, 0);
+    real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
 
     lcm::LCM lcm;
     motor_log my_data{};
@@ -177,12 +147,6 @@ class SampleController {
       {
         cycle_count ++;
 
-//        const auto pre_sleep = real_time_tools::Timer::get_current_time_sec();
-//        real_time_tools::Timer::sleep_until_sec(next_cycle);
-//        const auto post_sleep = real_time_tools::Timer::get_current_time_sec();
-//        double sleep_duration = (post_sleep - pre_sleep);
-//
-//        next_cycle += period;
         double sleep_duration = spinner.predict_sleeping_time();
         spinner.spin();
 

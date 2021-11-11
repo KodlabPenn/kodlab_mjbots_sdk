@@ -23,8 +23,10 @@
 #include <vector>
 #include <iostream>
 #include "real_time_tools/thread.hpp"
+#include <real_time_tools/process_manager.hpp>
 #include "kodlab_mjbots_sdk/pi3hat.h"
-
+#include <sys/types.h>
+#include <unistd.h>
 #include "kodlab_mjbots_sdk/realtime.h"
 #include "kodlab_mjbots_sdk/common_header.h"
 namespace mjbots {
@@ -124,7 +126,8 @@ class Pi3HatMoteusInterface {
  private:
 
   void * CHILD_Run( ) {
-
+    std::vector<int> cpu = {options_.cpu};
+    real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
     while (!CTRL_C_DETECTED) {
       {
         std::unique_lock<std::mutex> lock(mutex_);
