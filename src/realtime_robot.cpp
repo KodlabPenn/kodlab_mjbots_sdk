@@ -97,7 +97,7 @@ void Realtime_Robot::process_reply() {
 
     m_positions[servo]=servo_reply.position * M_2_PI;
     m_velocities[servo]=servo_reply.velocity * M_2_PI;
-    m_torque_cmd[servo]=servo_reply.torque;
+    m_torque_measured[servo]=servo_reply.torque;
     m_modes[servo]=servo_reply.mode;
   }
 }
@@ -117,6 +117,7 @@ void Realtime_Robot::send_command() {
 
 void Realtime_Robot::set_torques(std::vector<float> torques) {
   m_soft_start.constrainTorques(torques, m_cycle_count);
+  m_torque_cmd = torques;
   for(int servo =0; servo< m_num_servos; servo ++){
     m_commands[servo].position.feedforward_torque = torques[servo];
   }

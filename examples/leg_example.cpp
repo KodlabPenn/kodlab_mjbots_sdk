@@ -178,10 +178,10 @@ class SampleController {
   std::unique_ptr<Realtime_Robot> robot;
   Polar_Leg m_leg = Polar_Leg(0.15, 0.15);
   float k = 1000;
-  float b = 20;
+  float b = 0;
   float r0 = 0.2;
   float kp = 1;
-  float kd = 0.1;
+  float kd = 0.0;
   float r, theta, d_r, d_theta;
   float f_r, f_theta;
 };
