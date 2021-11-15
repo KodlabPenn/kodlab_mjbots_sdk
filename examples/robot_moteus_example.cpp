@@ -128,7 +128,7 @@ class SampleController {
     }
     std::cout<<"Preparing to create robot object"<<std::endl;
     robot = std::make_unique<Realtime_Robot>(Realtime_Robot(2, {arguments.primary_id, arguments.secondary_id},
-                                                            {arguments.primary_bus, arguments.secondary_bus}, arguments.can_cpu));
+                                                            {arguments.primary_bus, arguments.secondary_bus}, arguments.can_cpu, {0,0}, {1, 1}));
     std::cout<<"Created robot object"<<std::endl;
   }
 

@@ -20,6 +20,9 @@ class Realtime_Robot {
   std::vector<float> m_velocities;
   std::vector<float> m_torque_cmd;
   std::vector<float> m_torque_measured;
+  std::vector<float> m_offsets;
+  std::vector<int> m_directions;
+
   std::vector<mjbots::moteus::Mode> m_modes;
   long int m_cycle_count = 0;
 
@@ -42,6 +45,8 @@ class Realtime_Robot {
                  std::vector<int> servo_id_list,
                  std::vector<int> servo_bus_list,
                  int can_cpu,
+                 std::vector<float> offsets,
+                 std::vector<int> directions,
                  float max_torque = 20,
                  int soft_start_duration = 1);
 

@@ -49,6 +49,8 @@ Realtime_Robot::Realtime_Robot(int num_servos,
                                std::vector<int> servo_id_list,
                                std::vector<int> servo_bus_list,
                                int can_cpu,
+                               std::vector<float> offsets,
+                               std::vector<int> directions,
                                float max_torque,
                                int soft_start_duration): m_soft_start(max_torque, soft_start_duration){
 
@@ -58,6 +60,8 @@ Realtime_Robot::Realtime_Robot(int num_servos,
 
   for (size_t i = 0; i < m_num_servos; ++i)
     m_servo_bus_map[m_servo_id_list[i]] = m_servo_bus_list[i];
+  m_offsets = offsets;
+  m_directions = directions;
 
   mjbots::moteus::Pi3HatMoteusInterface::Options moteus_options;
   moteus_options.cpu = can_cpu;
@@ -95,9 +99,9 @@ void Realtime_Robot::process_reply() {
   for(int servo =0; servo< m_num_servos; servo ++){
     const auto servo_reply = Get(m_replies, m_servo_id_list[servo]);
 
-    m_positions[servo]=servo_reply.position * M_2_PI;
-    m_velocities[servo]=servo_reply.velocity * M_2_PI;
-    m_torque_measured[servo]=servo_reply.torque;
+    m_positions[servo]=m_directions[servo] * (servo_reply.position * 2 * M_PI )+ m_offsets[servo];
+    m_velocities[servo]= m_directions[servo] * ( servo_reply.velocity * 2 * M_PI);
+    m_torque_measured[servo]= m_directions[servo] * (servo_reply.torque);
     m_modes[servo]=servo_reply.mode;
   }
 }
@@ -119,7 +123,7 @@ void Realtime_Robot::set_torques(std::vector<float> torques) {
   m_soft_start.constrainTorques(torques, m_cycle_count);
   m_torque_cmd = torques;
   for(int servo =0; servo< m_num_servos; servo ++){
-    m_commands[servo].position.feedforward_torque = torques[servo];
+    m_commands[servo].position.feedforward_torque = m_directions[servo] * (torques[servo]);
   }
 }
 

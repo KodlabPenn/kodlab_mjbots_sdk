@@ -97,6 +97,8 @@ class SampleController {
                                                             {arguments_.primary_id, arguments_.secondary_id},
                                                             {arguments_.primary_bus, arguments_.secondary_bus},
                                                             arguments_.can_cpu,
+                                                            {0.1949, 0.0389},
+                                                            {1, -1},
                                                             0.15,
                                                             1000));
   }
@@ -111,7 +113,7 @@ class SampleController {
     f_theta = - kp * theta - kd * d_theta;
 
     auto torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
-    robot->set_torques(torques);
+    robot->set_torques({0,0});
   }
 
   void process_reply() {

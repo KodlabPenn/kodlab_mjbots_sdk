@@ -100,7 +100,9 @@ class SampleController {
     robot.reset(new Realtime_Robot(2,
                                    {arguments_.primary_id, arguments_.secondary_id},
                                    {arguments_.primary_bus, arguments_.secondary_bus},
-                                   arguments_.can_cpu));
+                                   arguments_.can_cpu,
+                                   {0,0},
+                                   {1, 1}));
   }
 
   void calc_torques() {

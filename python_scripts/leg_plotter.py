@@ -19,6 +19,10 @@ margins = []
 positions = []
 velocities = []
 torques = []
+r = []
+theta = []
+dr = []
+dtheta = []
 for event in log:
     if event.channel == "EXAMPLE":
         msg = leg_log.decode(event.data)
@@ -27,6 +31,11 @@ for event in log:
         positions.append(msg.positions)
         margins.append(msg.mean_margin)
         torques.append(msg.torque_cmd)
+        r.append(msg.polar_position[0])
+        theta.append(msg.polar_position[1])
+        dr.append(msg.polar_vel[0])
+        dtheta.append(msg.polar_vel[1])
+
 
 timestamps = np.array(timestamps)
 margins = np.array(margins)
@@ -40,6 +49,8 @@ print("stdev dt = ",np.std(np.diff(timestamps)))
 
 print("Mean margin = ", mean_margin)
 print("std margin = ", np.std(margins))
+print(np.mean(positions[:,0]))
+print(np.mean(positions[:,1]))
 
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1)
 ax1.set_title(file_name)
@@ -51,6 +62,18 @@ ax2.set_ylabel('dt(ms)')
 
 ax3.plot(timestamps, torques)
 ax3.set_ylabel('Torque(Nm)')
+
+ax4.plot(timestamps, positions)
+ax4.set_ylabel('Positions(rad)')
+
+fig2, (fig2_ax1, fig2_ax2) = plt.subplots(2, 1)
+fig2_ax1.set_title(file_name)
+fig2_ax1.plot(timestamps, r)
+fig2_ax1.set_ylabel('leg length')
+
+fig2_ax2.plot(timestamps, theta)
+fig2_ax2.set_ylabel('theta(rad)')
+
 
 plt.show()
 
