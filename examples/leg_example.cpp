@@ -99,21 +99,37 @@ class SampleController {
                                                             arguments_.can_cpu,
                                                             {0.1949, 0.0389},
                                                             {1, -1},
-                                                            0.15,
-                                                            1000));
+                                                            0.8,
+                                                            4000));
   }
 
   void calc_torques() {
+    if(start){
+      double q1_goal = -0.0;
+      double q2_goal = 0.0;
+      double q_kp = 6;
+      double q_kd = 0.1;
+
+      std::vector<float> torques;
+      torques.push_back(q_kp * (q1_goal -robot->get_joint_positions()[0]) - q_kd * robot->get_joint_velocities()[0]);
+      torques.push_back(q_kp * (q2_goal -robot->get_joint_positions()[1]) - q_kd * robot->get_joint_velocities()[1]);
+
+      robot->set_torques(torques);
+//      if (std::abs(q1_goal -robot->get_joint_positions()[0]) < 0.05 && std::abs(q2_goal -robot->get_joint_positions()[1])< 0.05)
+//        start = false;
+
+    } else{
+      m_leg.fk(robot->get_joint_positions(), r, theta);
+      m_leg.fk_vel(robot-> get_joint_positions(), robot->get_joint_velocities(), d_r, d_theta);
+
+      f_r = k * (r0 - r) - b * d_r;
+      f_theta = - kp * theta - kd * d_theta;
+
+      auto torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
+      robot->set_torques({0,0});
+    }
 
 
-    m_leg.fk(robot->get_joint_positions(), r, theta);
-    m_leg.fk_vel(robot-> get_joint_positions(), robot->get_joint_velocities(), d_r, d_theta);
-
-    f_r = k * (r0 - r) - b * d_r;
-    f_theta = - kp * theta - kd * d_theta;
-
-    auto torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
-    robot->set_torques({0,0});
   }
 
   void process_reply() {
@@ -186,6 +202,7 @@ class SampleController {
   float kd = 0.0;
   float r, theta, d_r, d_theta;
   float f_r, f_theta;
+  bool start = true;
 };
 
 static void* Run(void* controller_void_ptr){

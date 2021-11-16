@@ -49,8 +49,6 @@ print("stdev dt = ",np.std(np.diff(timestamps)))
 
 print("Mean margin = ", mean_margin)
 print("std margin = ", np.std(margins))
-print(np.mean(positions[:,0]))
-print(np.mean(positions[:,1]))
 
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1)
 ax1.set_title(file_name)
