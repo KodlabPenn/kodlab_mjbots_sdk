@@ -99,15 +99,15 @@ class SampleController {
                                                             arguments_.can_cpu,
                                                             {0.1949, 0.0389},
                                                             {1, -1},
-                                                            0.8,
-                                                            4000));
+                                                            0.5,
+                                                            2000));
   }
 
   void calc_torques() {
     if(start){
-      double q1_goal = -0.0;
-      double q2_goal = 0.0;
-      double q_kp = 6;
+      double q1_goal = -0.4;
+      double q2_goal = 0.4;
+      double q_kp = 20;
       double q_kd = 0.1;
 
       std::vector<float> torques;
@@ -115,8 +115,8 @@ class SampleController {
       torques.push_back(q_kp * (q2_goal -robot->get_joint_positions()[1]) - q_kd * robot->get_joint_velocities()[1]);
 
       robot->set_torques(torques);
-//      if (std::abs(q1_goal -robot->get_joint_positions()[0]) < 0.05 && std::abs(q2_goal -robot->get_joint_positions()[1])< 0.05)
-//        start = false;
+      if (std::abs(q1_goal -robot->get_joint_positions()[0]) < 0.05 && std::abs(q2_goal -robot->get_joint_positions()[1])< 0.05)
+        start = false;
 
     } else{
       m_leg.fk(robot->get_joint_positions(), r, theta);
@@ -126,7 +126,8 @@ class SampleController {
       f_theta = - kp * theta - kd * d_theta;
 
       auto torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
-      robot->set_torques({0,0});
+      //torques[0] = torques[0] + 0.3 * 9.81 * 0.15 * 0.56 * sinf(robot->get_joint_positions()[0]);
+      robot->set_torques(torques);
     }
 
 
@@ -195,11 +196,11 @@ class SampleController {
   const Arguments arguments_;
   std::unique_ptr<Realtime_Robot> robot;
   Polar_Leg m_leg = Polar_Leg(0.15, 0.15);
-  float k = 1000;
-  float b = 0;
-  float r0 = 0.2;
-  float kp = 1;
-  float kd = 0.0;
+  float k = 100;
+  float b = 1;
+  float r0 = 0.28;
+  float kp = 0.3;
+  float kd = 0.00;
   float r, theta, d_r, d_theta;
   float f_r, f_theta;
   bool start = true;

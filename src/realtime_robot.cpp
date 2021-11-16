@@ -120,10 +120,8 @@ void Realtime_Robot::send_command() {
 }
 
 void Realtime_Robot::set_torques(std::vector<float> torques) {
-  auto back_up = torques;
   m_soft_start.constrainTorques(torques, m_cycle_count);
   m_torque_cmd = torques;
-  //std::cout<<torques[0] << back_up[0]<<std::endl;
 
   for(int servo =0; servo< m_num_servos; servo ++){
     m_commands[servo].position.feedforward_torque = m_directions[servo] * (torques[servo]);

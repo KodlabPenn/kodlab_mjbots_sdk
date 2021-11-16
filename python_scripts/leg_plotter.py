@@ -23,6 +23,7 @@ r = []
 theta = []
 dr = []
 dtheta = []
+polar_forces = []
 for event in log:
     if event.channel == "EXAMPLE":
         msg = leg_log.decode(event.data)
@@ -35,6 +36,7 @@ for event in log:
         theta.append(msg.polar_position[1])
         dr.append(msg.polar_vel[0])
         dtheta.append(msg.polar_vel[1])
+        polar_forces.append(msg.polar_wrench)
 
 
 timestamps = np.array(timestamps)
@@ -64,13 +66,18 @@ ax3.set_ylabel('Torque(Nm)')
 ax4.plot(timestamps, positions)
 ax4.set_ylabel('Positions(rad)')
 
-fig2, (fig2_ax1, fig2_ax2) = plt.subplots(2, 1)
+fig2, (fig2_ax1, fig2_ax2, fig2_ax3) = plt.subplots(3, 1)
 fig2_ax1.set_title(file_name)
 fig2_ax1.plot(timestamps, r)
 fig2_ax1.set_ylabel('leg length')
 
 fig2_ax2.plot(timestamps, theta)
 fig2_ax2.set_ylabel('theta(rad)')
+
+fig2_ax3.plot(timestamps, polar_forces)
+fig2_ax3.set_ylabel('Wrench')
+fig2_ax3.legend(['Radial Force', 'Theta Force'])
+
 
 
 plt.show()
