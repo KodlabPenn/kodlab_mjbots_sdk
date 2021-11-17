@@ -99,28 +99,32 @@ class SampleController {
                                                             arguments_.can_cpu,
                                                             {0.1949, 0.0389},
                                                             {1, -1},
-                                                            1.5,
-                                                            2000));
+                                                            3,
+                                                            10000));
   }
 
   void calc_torques() {
     if(start){
-      double q1_goal = -0.6;
-      double q2_goal = 0.6;
-      double q_kp = 20;
-      double q_kd = 0.1;
+      double q1_goal = -0.4;
+      double q2_goal = 0.8;
+      double q_kp = 6;
+      double q_kd = 0.2;
 
-      std::vector<float> torques;
-      torques.push_back(q_kp * (q1_goal -robot->get_joint_positions()[0]) - q_kd * robot->get_joint_velocities()[0]);
-      torques.push_back(q_kp * (q2_goal -robot->get_joint_positions()[1]) - q_kd * robot->get_joint_velocities()[1]);
+      std::vector<float> torques = {0,0};
+      torques[0] = (q_kp * (q1_goal -robot->get_joint_positions()[0]) - q_kd * robot->get_joint_velocities()[0]);
+      torques[1] = (q_kp * (q2_goal -robot->get_joint_positions()[1]) - q_kd * robot->get_joint_velocities()[1]);
+      torques[0] = torques[0] + 1 * 9.81 * 0.15 * 0.56 * sinf(robot->get_joint_positions()[0]);
 
       robot->set_torques(torques);
       if (std::abs(q1_goal -robot->get_joint_positions()[0]) < 0.05 &&
           std::abs(q2_goal -robot->get_joint_positions()[1])< 0.05 &&
-          std::abs(robot->get_joint_velocities()[0]) < 0.1 &&
-          std::abs(robot->get_joint_velocities()[1]) < 0.1)
+          std::abs(robot->get_joint_velocities()[0]) < 0.08 &&
+          std::abs(robot->get_joint_velocities()[1]) < 0.08){
         start = false;
-
+        m_leg.fk(robot->get_joint_positions(), r, theta);
+        r0 = r;
+        std::cout<<"Starting Limb mode"<<std::endl;
+      }
     } else{
       m_leg.fk(robot->get_joint_positions(), r, theta);
       m_leg.fk_vel(robot-> get_joint_positions(), robot->get_joint_velocities(), d_r, d_theta);
@@ -194,6 +198,15 @@ class SampleController {
         lcm.publish("EXAMPLE", &my_data);
       }
     }
+    std::cout<<"\nCTRL C Detected. Sending stop command and then segaulting" << std::endl;
+    std::cout<<"TODO: Don't segfault" << std::endl;
+
+    process_reply();
+    robot->set_mode_stop();
+    send_command();
+    process_reply();
+    robot->shutdown();
+
     return nullptr;
   }
 
@@ -203,9 +216,9 @@ class SampleController {
   Polar_Leg m_leg = Polar_Leg(0.15, 0.15);
   float k = 400;
   float b = 2;
-  float r0 = 0.26;
-  float kp = 2;
-  float kd = 0.01;
+  float r0 = 0;
+  float kp = 10;
+  float kd = 0.1;
   float r, theta, d_r, d_theta;
   float f_r, f_theta;
   bool start = true;
@@ -222,7 +235,7 @@ static void* Run(void* controller_void_ptr){
 int main(int argc, char **argv) {
   Arguments args({argv + 1, argv + argc});
 
-  //enable_ctrl_c();
+  enable_ctrl_c();
   SampleController sample_controller{args};
 
   real_time_tools::RealTimeThread thread;
