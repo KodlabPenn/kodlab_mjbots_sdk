@@ -35,7 +35,6 @@ void Realtime_Robot::prepare_torque_command() {
     cmd.position.kd_scale = 0;
     cmd.position.kp_scale = 0;
   }
-
 }
 
 
@@ -131,4 +130,13 @@ std::vector<mjbots::moteus::Mode> Realtime_Robot::get_joint_modes() {
 
 std::vector<float> Realtime_Robot::get_joint_torques() {
   return m_torques;
+}
+void Realtime_Robot::set_mode_stop() {
+  for (auto& cmd : m_commands) {
+    cmd.mode = mjbots::moteus::Mode::kStopped;
+  }
+}
+
+void Realtime_Robot::shutdown() {
+  m_moteus_interface->shutdown();
 }

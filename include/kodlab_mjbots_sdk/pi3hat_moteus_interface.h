@@ -51,6 +51,16 @@ class Pi3HatMoteusInterface {
   }
 
   ~Pi3HatMoteusInterface() {
+    std::cout<<"Rara"<<std::endl;
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      done_ = true;
+      condition_.notify_one();
+    }
+    thread_.join();
+  }
+
+  void shutdown() {
     {
       std::lock_guard<std::mutex> lock(mutex_);
       done_ = true;
@@ -125,15 +135,15 @@ class Pi3HatMoteusInterface {
 
  private:
 
-  void * CHILD_Run( ) {
+  void CHILD_Run( ) {
     std::vector<int> cpu = {options_.cpu};
     real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
-    while (!CTRL_C_DETECTED) {
+    while (true) {
       {
         std::unique_lock<std::mutex> lock(mutex_);
         if (!active_) {
           condition_.wait(lock);
-          if (done_) { return nullptr; }
+          if (done_) { return;}
 
           if (!active_) { continue; }
         }
@@ -148,7 +158,6 @@ class Pi3HatMoteusInterface {
       }
       callback_copy(output);
     }
-    return nullptr;
   }
 
   Output CHILD_Cycle() {

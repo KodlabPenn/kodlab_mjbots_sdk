@@ -46,6 +46,10 @@ class Realtime_Robot {
 
   void set_torques(std::vector<float> torques);
 
+  void set_mode_stop();
+
+  void shutdown();
+
   std::vector<float> get_joint_positions();
 
   std::vector<float> get_joint_velocities();

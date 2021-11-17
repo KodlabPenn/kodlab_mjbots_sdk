@@ -104,7 +104,7 @@ class SampleController {
   }
 
   void calc_torques() {
-    robot->set_torques({0.15, 0.15});
+    robot->set_torques({0.0, 0.0});
   }
 
   void process_reply() {
@@ -137,11 +137,6 @@ class SampleController {
     real_time_tools::Timer dt_timer;
     dt_timer.tic();
 
-    const auto period = 1/1000.0;
-    const auto start = real_time_tools::Timer::get_current_time_sec();
-
-    auto next_cycle = start + period;
-
     // We will run at a fixed cycle time.
     while (!CTRL_C_DETECTED) {
       {
@@ -163,6 +158,15 @@ class SampleController {
         lcm.publish("EXAMPLE", &my_data);
       }
     }
+    std::cout<<"\nCTRL C Detected. Sending stop command and then segaulting" << std::endl;
+    std::cout<<"TODO: Don't segfault" << std::endl;
+
+    process_reply();
+    robot->set_mode_stop();
+    send_command();
+    process_reply();
+    robot->shutdown();
+
     return nullptr;
   }
 
@@ -176,12 +180,13 @@ static void* Run(void* controller_void_ptr){
       (static_cast<SampleController*>(controller_void_ptr));
 
   controller->Run();
+  return nullptr;
 }
 
 int main(int argc, char **argv) {
   Arguments args({argv + 1, argv + argc});
 
-  //enable_ctrl_c();
+  enable_ctrl_c();
   SampleController sample_controller{args};
 
   real_time_tools::RealTimeThread thread;
