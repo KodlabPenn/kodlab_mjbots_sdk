@@ -25,7 +25,7 @@ dr = []
 dtheta = []
 polar_forces = []
 for event in log:
-    if event.channel == "EXAMPLE":
+    if event.channel == "leg_log":
         msg = leg_log.decode(event.data)
         timestamps.append(msg.timestamp)
         velocities.append(msg.velocities)

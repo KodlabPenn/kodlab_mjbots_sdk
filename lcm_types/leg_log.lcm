@@ -10,4 +10,5 @@ struct leg_log
   float    polar_wrench[2];
   int16_t    modes[2];
   float mean_margin;
+  int8_t hybrid_mode;
 }

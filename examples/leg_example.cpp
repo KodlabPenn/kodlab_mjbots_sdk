@@ -42,8 +42,10 @@
 #include <real_time_tools/realtime_check.hpp>
 #include <real_time_tools/process_manager.hpp>
 #include "leg_log.hpp"
+#include "leg_gain.hpp"
 #include "kodlab_mjbots_sdk/realtime_robot.h"
 #include "kodlab_mjbots_sdk/polar_leg.h"
+#include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
 
 using namespace mjbots;
 
@@ -92,6 +94,25 @@ enum hybrid_mode
   STANCE = 2
 };
 
+class Leg_Gain_Subscriber : public abstract_lcm_subscriber<leg_gain>{
+ public:
+  void handle_msg(const lcm::ReceiveBuffer* rbuf,
+                  const std::string& chan,
+                  const leg_gain* msg){
+    leg_gain_mutex.lock();
+    k = msg->k;
+    b = msg->b;
+    kp = msg->kp;
+    kd = msg->kd;
+    kv = msg->kv;
+    new_msg = true;
+    std::cout<<"msg received"<<std::endl;
+    leg_gain_mutex.unlock();
+  }
+  float kp, kd, k, b, kv;
+  bool new_msg = false;
+  std::mutex leg_gain_mutex;
+};
 
 /// This holds the user-defined control logic.
 class SampleController {
@@ -193,7 +214,24 @@ class SampleController {
     my_data.polar_vel[1] = d_theta;
     my_data.polar_wrench[0] = f_r;
     my_data.polar_wrench[1] = f_theta;
+    my_data.hybrid_mode = m_mode;
   }
+
+  void updateGains() {
+    if(leg_gain_subscriber.leg_gain_mutex.try_lock()){
+      leg_gain_subscriber.leg_gain_mutex.unlock();
+      if (leg_gain_subscriber.new_msg){
+        kp = leg_gain_subscriber.kp;
+        kd = leg_gain_subscriber.kp;
+        k  = leg_gain_subscriber.k;
+        kv = leg_gain_subscriber.kv;
+        b  = leg_gain_subscriber.b;
+        w_v = sqrtf(k/m);
+        leg_gain_subscriber.new_msg = false;
+      }
+    }
+  }
+
 
   void *Run() {
     int cycle_count = 0;
@@ -201,8 +239,10 @@ class SampleController {
     real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
 
     lcm::LCM lcm;
-    leg_log my_data{};
+    lcm.subscribe("leg_gains",&Leg_Gain_Subscriber::handle_msg,&leg_gain_subscriber);
 
+    leg_gain_subscriber.start();
+    leg_log my_data{};
     real_time_tools::HardSpinner spinner;
     spinner.set_frequency(1000);
     real_time_tools::Timer dt_timer;
@@ -224,7 +264,8 @@ class SampleController {
 
         my_data.mean_margin = sleep_duration * 1000;
         my_data.timestamp = dt_timer.tac() * 1000;
-        lcm.publish("EXAMPLE", &my_data);
+        lcm.publish("leg_log", &my_data);
+        updateGains();
       }
     }
     std::cout<<"\nCTRL C Detected. Sending stop command and then segaulting" << std::endl;
@@ -235,7 +276,7 @@ class SampleController {
     send_command();
     process_reply();
     robot->shutdown();
-
+    leg_gain_subscriber.join();
     return nullptr;
   }
 
@@ -254,6 +295,7 @@ class SampleController {
   float f_r, f_theta;
   float w_v = sqrtf(k/m);
   hybrid_mode m_mode = hybrid_mode::SOFT_START;
+  Leg_Gain_Subscriber leg_gain_subscriber;
 };
 
 static void* Run(void* controller_void_ptr){

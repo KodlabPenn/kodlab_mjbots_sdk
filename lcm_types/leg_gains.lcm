@@ -1,0 +1,8 @@
+struct leg_gain
+{
+  float  k;
+  float  b;
+  float  kp;
+  float  kd;
+  float  kv;
+}
