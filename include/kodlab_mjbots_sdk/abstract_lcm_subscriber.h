@@ -18,7 +18,7 @@ class abstract_lcm_subscriber {
  private:
   virtual void handle_msg(const lcm::ReceiveBuffer* rbuf,
                           const std::string& chan,
-                          const msg_type* msg);
+                          const msg_type* msg) = 0;
 
   static void* static_run(void* abstract_lcm_subscriber_void_ptr);
 
@@ -57,12 +57,6 @@ void abstract_lcm_subscriber<msg_type>::start() {
 template<class msg_type>
 void abstract_lcm_subscriber<msg_type>::join() {
   m_thread.join();
-}
-
-template<class msg_type>
-void abstract_lcm_subscriber<msg_type>::handle_msg(const lcm::ReceiveBuffer *rbuf,
-                                                   const std::string &chan,
-                                                   const msg_type *msg) {
 }
 
 template<class msg_type>
