@@ -85,6 +85,13 @@ struct Arguments {
   int secondary_bus = 1;
 };
 
+enum hybrid_mode
+{
+  SOFT_START = 0,
+  FLIGHT = 1,
+  STANCE = 2
+};
+
 
 /// This holds the user-defined control logic.
 class SampleController {
@@ -99,46 +106,68 @@ class SampleController {
                                                             arguments_.can_cpu,
                                                             {0.1949, 0.0389},
                                                             {1, -1},
-                                                            3,
-                                                            10000));
+                                                            6,
+                                                            5000));
   }
 
   void calc_torques() {
-    if(start){
-      double q1_goal = -0.4;
-      double q2_goal = 0.8;
-      double q_kp = 6;
-      double q_kd = 0.2;
+    m_leg.fk(robot->get_joint_positions(), r, theta);
+    m_leg.fk_vel(robot-> get_joint_positions(), robot->get_joint_velocities(), d_r, d_theta);
+    std::vector<float> torques = {0,0};
 
-      std::vector<float> torques = {0,0};
-      torques[0] = (q_kp * (q1_goal -robot->get_joint_positions()[0]) - q_kd * robot->get_joint_velocities()[0]);
-      torques[1] = (q_kp * (q2_goal -robot->get_joint_positions()[1]) - q_kd * robot->get_joint_velocities()[1]);
-      torques[0] = torques[0] + 1 * 9.81 * 0.15 * 0.56 * sinf(robot->get_joint_positions()[0]);
+    switch (m_mode) {
+      case hybrid_mode::SOFT_START:{
 
-      robot->set_torques(torques);
-      if (std::abs(q1_goal -robot->get_joint_positions()[0]) < 0.05 &&
-          std::abs(q2_goal -robot->get_joint_positions()[1])< 0.05 &&
-          std::abs(robot->get_joint_velocities()[0]) < 0.08 &&
-          std::abs(robot->get_joint_velocities()[1]) < 0.08){
-        start = false;
-        m_leg.fk(robot->get_joint_positions(), r, theta);
-        r0 = r;
-        std::cout<<"Starting Limb mode"<<std::endl;
+        double q1_goal = -0.4;
+        double q2_goal = 0.8;
+        double q_kp = 6;
+        double q_kd = 0.2;
+
+        torques[0] = (q_kp * (q1_goal -robot->get_joint_positions()[0]) - q_kd * robot->get_joint_velocities()[0]);
+        torques[1] = (q_kp * (q2_goal -robot->get_joint_positions()[1]) - q_kd * robot->get_joint_velocities()[1]);
+
+        robot->set_torques(torques);
+        if (std::abs(q1_goal -robot->get_joint_positions()[0]) < 0.05 &&
+            std::abs(q2_goal -robot->get_joint_positions()[1])< 0.05 &&
+            std::abs(robot->get_joint_velocities()[0]) < 0.08 &&
+            std::abs(robot->get_joint_velocities()[1]) < 0.08){
+          m_mode = FLIGHT;
+          r0 = r;
+          std::cout<<"Starting Limb mode"<<std::endl;
+        }
+
+        break;
       }
-    } else{
-      m_leg.fk(robot->get_joint_positions(), r, theta);
-      m_leg.fk_vel(robot-> get_joint_positions(), robot->get_joint_velocities(), d_r, d_theta);
+      case hybrid_mode::FLIGHT:{
+        if(r0-r > 0.002  && d_r < 0){
+          m_mode = hybrid_mode::STANCE;
+          std::cout<<"Flight to stance"<<std::endl;
+        }
 
-      f_r = k * (r0 - r) - b * d_r;
-      f_theta = - kp * theta - kd * d_theta;
+        f_r = k * (r0 - r) - b * d_r;
+        f_theta = - kp * theta - kd * d_theta;
 
-      auto torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
+        torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
+        break;
+      }
+      case hybrid_mode::STANCE:{
+        if (r0-r < 0.001 && d_r > 0){
+          std::cout<<"Stance to flight"<<std::endl;
+          m_mode = hybrid_mode::FLIGHT;
+        }
 
-      //ffwd term for gravity comp
-      torques[0] = torques[0] + 1 * 9.81 * 0.15 * 0.56 * sinf(robot->get_joint_positions()[0]);
-      robot->set_torques(torques);
+        float av = sqrtf((r-r0) * (r-r0) * w_v * w_v + d_r * d_r);
+        float F = kv * d_r/av;
+        f_r = k * (r0 - r) - b * d_r + F;
+        f_theta = - kp * theta - kd * d_theta;
+
+        torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
+        break;
+      }
     }
-
+    //ffwd term for gravity comp
+    torques[0] = torques[0] + 1 * 9.81 * 0.15 * 0.56 * sinf(robot->get_joint_positions()[0]);
+    robot->set_torques(torques);
 
   }
 
@@ -214,14 +243,17 @@ class SampleController {
   const Arguments arguments_;
   std::unique_ptr<Realtime_Robot> robot;
   Polar_Leg m_leg = Polar_Leg(0.15, 0.15);
-  float k = 400;
-  float b = 2;
+  float kv = 25;
+  float k = 3000;
+  float m = 1.2;
+  float b = 10;
   float r0 = 0;
-  float kp = 10;
-  float kd = 0.1;
+  float kp = 60;
+  float kd = 0.2;
   float r, theta, d_r, d_theta;
   float f_r, f_theta;
-  bool start = true;
+  float w_v = sqrtf(k/m);
+  hybrid_mode m_mode = hybrid_mode::SOFT_START;
 };
 
 static void* Run(void* controller_void_ptr){
