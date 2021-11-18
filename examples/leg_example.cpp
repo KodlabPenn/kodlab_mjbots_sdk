@@ -102,6 +102,7 @@ class Leg_Gain_Subscriber : public abstract_lcm_subscriber<leg_gain>{
   void handle_msg(const lcm::ReceiveBuffer* rbuf,
                   const std::string& chan,
                   const leg_gain* msg){
+    std::cout<<"Callback"<<std::endl;
     leg_gain_mutex.lock();
     k = msg->k;
     b = msg->b;
@@ -122,7 +123,7 @@ class Leg_Gain_Subscriber : public abstract_lcm_subscriber<leg_gain>{
 class SampleController {
  public:
   SampleController(const Arguments& arguments): arguments_(arguments),
-                                                leg_gain_subscriber(90,4){
+                                                leg_gain_subscriber(90,1){
     if (arguments_.primary_id == arguments_.secondary_id) {
       throw std::runtime_error("The servos must have unique IDs");
     }
@@ -244,9 +245,10 @@ class SampleController {
     real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
 
     lcm::LCM lcm;
-    lcm.subscribe("leg_gains",&Leg_Gain_Subscriber::handle_msg,&leg_gain_subscriber);
 
+    leg_gain_subscriber.m_lcm.subscribe("leg_gains",&Leg_Gain_Subscriber::handle_msg, &leg_gain_subscriber);
     leg_gain_subscriber.start();
+
     leg_log my_data{};
     real_time_tools::HardSpinner spinner;
     spinner.set_frequency(1000);
@@ -255,23 +257,24 @@ class SampleController {
 
     // We will run at a fixed cycle time.
     while (!CTRL_C_DETECTED) {
-      {
-        cycle_count ++;
+      //std::cout<<"Starting loop"<<std::endl;
 
-        double sleep_duration = spinner.predict_sleeping_time();
-        spinner.spin();
-        process_reply();
-        calc_torques();
+      cycle_count ++;
 
-        prepare_log(my_data);
+      double sleep_duration = spinner.predict_sleeping_time();
+      spinner.spin();
+//      process_reply();
+//      calc_torques();
+//
+//      prepare_log(my_data);
+//
+//      send_command();
+//
+//      my_data.mean_margin = sleep_duration * 1000;
+//      my_data.timestamp = dt_timer.tac() * 1000;
+//      lcm.publish("leg_log", &my_data);
+//      updateGains();
 
-        send_command();
-
-        my_data.mean_margin = sleep_duration * 1000;
-        my_data.timestamp = dt_timer.tac() * 1000;
-        lcm.publish("leg_log", &my_data);
-        updateGains();
-      }
     }
     std::cout<<"\nCTRL C Detected. Sending stop command and then segaulting" << std::endl;
     std::cout<<"TODO: Don't segfault" << std::endl;
@@ -289,7 +292,7 @@ class SampleController {
   const Arguments arguments_;
   std::unique_ptr<Realtime_Robot> robot;
   Polar_Leg m_leg = Polar_Leg(0.15, 0.15);
-  float kv = 25;
+  float kv = 0; //25
   float k = 3000;
   float m = 1.2;
   float b = 10;
