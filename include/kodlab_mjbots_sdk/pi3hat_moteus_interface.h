@@ -51,7 +51,6 @@ class Pi3HatMoteusInterface {
   }
 
   ~Pi3HatMoteusInterface() {
-    std::cout<<"Rara"<<std::endl;
     {
       std::lock_guard<std::mutex> lock(mutex_);
       done_ = true;

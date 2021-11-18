@@ -96,6 +96,9 @@ enum hybrid_mode
 
 class Leg_Gain_Subscriber : public abstract_lcm_subscriber<leg_gain>{
  public:
+  using abstract_lcm_subscriber::abstract_lcm_subscriber;
+
+  // This function is called from another thread, so we use mutex around it.
   void handle_msg(const lcm::ReceiveBuffer* rbuf,
                   const std::string& chan,
                   const leg_gain* msg){
@@ -114,10 +117,12 @@ class Leg_Gain_Subscriber : public abstract_lcm_subscriber<leg_gain>{
   std::mutex leg_gain_mutex;
 };
 
+
 /// This holds the user-defined control logic.
 class SampleController {
  public:
-  SampleController(const Arguments& arguments): arguments_(arguments) {
+  SampleController(const Arguments& arguments): arguments_(arguments),
+                                                leg_gain_subscriber(90,4){
     if (arguments_.primary_id == arguments_.secondary_id) {
       throw std::runtime_error("The servos must have unique IDs");
     }
@@ -222,7 +227,7 @@ class SampleController {
       leg_gain_subscriber.leg_gain_mutex.unlock();
       if (leg_gain_subscriber.new_msg){
         kp = leg_gain_subscriber.kp;
-        kd = leg_gain_subscriber.kp;
+        kd = leg_gain_subscriber.kd;
         k  = leg_gain_subscriber.k;
         kv = leg_gain_subscriber.kv;
         b  = leg_gain_subscriber.b;

@@ -9,6 +9,8 @@
 template <class msg_type>
 class abstract_lcm_subscriber {
  public:
+  abstract_lcm_subscriber(int realtime_priority, int cpu);
+
   void start();
 
   void join();
@@ -22,14 +24,19 @@ class abstract_lcm_subscriber {
 
   void run();
 
-  int realtime_priority = 90;
-  int cpu = 4;
+  int m_realtime_priority = 90;
+  int m_cpu = 4;
   real_time_tools::RealTimeThread m_thread;
   lcm::LCM m_lcm;
 };
 
 template<class msg_type>
 void abstract_lcm_subscriber<msg_type>::run() {
+  std::vector<int> cpu = {m_cpu};
+  real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
+  while (!CTRL_C_DETECTED){
+    m_lcm.handleTimeout(1000);
+  }
 }
 
 template<class msg_type>
@@ -43,7 +50,7 @@ void *abstract_lcm_subscriber<msg_type>::static_run(void *abstract_lcm_subscribe
 template<class msg_type>
 void abstract_lcm_subscriber<msg_type>::start() {
   m_thread.parameters_.cpu_dma_latency_ = -1;
-  m_thread.parameters_.priority_ = realtime_priority;
+  m_thread.parameters_.priority_ = m_realtime_priority;
   m_thread.create_realtime_thread(static_run, this);
 
 }
@@ -57,5 +64,10 @@ void abstract_lcm_subscriber<msg_type>::handle_msg(const lcm::ReceiveBuffer *rbu
                                                    const std::string &chan,
                                                    const msg_type *msg) {
 }
+
+template<class msg_type>
+abstract_lcm_subscriber<msg_type>::abstract_lcm_subscriber(int realtime_priority, int cpu):
+                                                                                          m_realtime_priority(realtime_priority),
+                                                                                          m_cpu(cpu){}
 
 
