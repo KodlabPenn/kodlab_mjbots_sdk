@@ -39,7 +39,6 @@ void abstract_lcm_subscriber<msg_type>::run() {
 
   while (!CTRL_C_DETECTED){
     m_lcm.handleTimeout(100000);
-    //std::cout<<"Handle complete"<<std::endl;
   }
 }
 

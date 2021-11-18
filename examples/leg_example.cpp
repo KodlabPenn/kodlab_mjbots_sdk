@@ -257,23 +257,22 @@ class SampleController {
 
     // We will run at a fixed cycle time.
     while (!CTRL_C_DETECTED) {
-      //std::cout<<"Starting loop"<<std::endl;
 
       cycle_count ++;
 
       double sleep_duration = spinner.predict_sleeping_time();
       spinner.spin();
-//      process_reply();
-//      calc_torques();
-//
-//      prepare_log(my_data);
-//
-//      send_command();
-//
-//      my_data.mean_margin = sleep_duration * 1000;
-//      my_data.timestamp = dt_timer.tac() * 1000;
-//      lcm.publish("leg_log", &my_data);
-//      updateGains();
+      process_reply();
+      calc_torques();
+
+      prepare_log(my_data);
+
+      send_command();
+
+      my_data.mean_margin = sleep_duration * 1000;
+      my_data.timestamp = dt_timer.tac() * 1000;
+      lcm.publish("leg_log", &my_data);
+      updateGains();
 
     }
     std::cout<<"\nCTRL C Detected. Sending stop command and then segaulting" << std::endl;

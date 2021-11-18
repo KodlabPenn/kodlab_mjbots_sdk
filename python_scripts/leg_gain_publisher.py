@@ -8,7 +8,7 @@ msg.k = 3000
 msg.b = 10
 msg.kp = 60
 msg.kd = 0.2
-msg.kv = 25
+msg.kv = 0
 
 lc = lcm.LCM()
 lc.publish("leg_gains", msg.encode())
