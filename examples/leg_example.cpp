@@ -145,8 +145,8 @@ class SampleController {
     switch (m_mode) {
       case hybrid_mode::SOFT_START:{
 
-        double q1_goal = -0.4;
-        double q2_goal = 0.8;
+        double q1_goal = -0.6;
+        double q2_goal = 1.2;
         double q_kp = 6;
         double q_kd = 0.2;
 
@@ -168,7 +168,6 @@ class SampleController {
       case hybrid_mode::FLIGHT:{
         if(r0-r > 0.002  && d_r < 0){
           m_mode = hybrid_mode::STANCE;
-          std::cout<<"Flight to stance"<<std::endl;
         }
 
         f_r = k * (r0 - r) - b * d_r;
@@ -179,12 +178,11 @@ class SampleController {
       }
       case hybrid_mode::STANCE:{
         if (r0-r < 0.001 && d_r > 0){
-          std::cout<<"Stance to flight"<<std::endl;
           m_mode = hybrid_mode::FLIGHT;
         }
 
         float av = sqrtf((r-r0) * (r-r0) * w_v * w_v + d_r * d_r);
-        float F = kv * d_r/av;
+        float F = kv * d_r/av + m * 9.81 * 0.0;
         f_r = k * (r0 - r) - b * d_r + F;
         f_theta = - kp * theta - kd * d_theta;
 
@@ -290,11 +288,11 @@ class SampleController {
   std::unique_ptr<Realtime_Robot> robot;
   Polar_Leg m_leg = Polar_Leg(0.15, 0.15);
   float kv = 0; //25
-  float k = 3000;
+  float k = 800;
   float m = 1.2;
   float b = 10;
   float r0 = 0;
-  float kp = 60;
+  float kp = 120;
   float kd = 0.2;
   float r, theta, d_r, d_theta;
   float f_r, f_theta;
