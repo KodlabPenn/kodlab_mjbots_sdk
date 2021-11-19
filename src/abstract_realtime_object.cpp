@@ -8,11 +8,10 @@
 #include <iostream>
 abstract_realtime_object::abstract_realtime_object(int realtime_priority, int cpu):m_realtime_priority(realtime_priority),
                                                                                    m_cpu(cpu){
-  //start();
 }
 
 void abstract_realtime_object::join() {
-  m_thread.join();
+  m_thread->join();
 }
 
 void *abstract_realtime_object::static_run(void *abstract_void_ptr) {
@@ -33,8 +32,15 @@ void abstract_realtime_object::set_up_cpu_run() {
 }
 
 void abstract_realtime_object::start() {
-  m_thread.parameters_.cpu_dma_latency_ = -1;
-  m_thread.parameters_.priority_ = m_realtime_priority;
+  m_thread.reset(new real_time_tools::RealTimeThread());
+  m_thread->parameters_.cpu_dma_latency_ = -1;
+  m_thread->parameters_.priority_ = m_realtime_priority;
   std::cout<<"Startng thread"<<std::endl;
-  m_thread.create_realtime_thread(static_run, this);
+  //static_run(this);
+  m_thread->create_realtime_thread(static_run, this);
+  std::cout<<"huh"<<std::endl;
+
+}
+abstract_realtime_object::abstract_realtime_object() {
+
 }

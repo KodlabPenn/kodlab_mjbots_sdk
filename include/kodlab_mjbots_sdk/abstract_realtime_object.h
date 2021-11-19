@@ -8,6 +8,8 @@
 class abstract_realtime_object {
  public:
 
+  abstract_realtime_object();
+
   abstract_realtime_object(int realtime_priority, int cpu);
 
   /*!
@@ -31,7 +33,7 @@ class abstract_realtime_object {
 
   int m_realtime_priority;
   int m_cpu;
-  real_time_tools::RealTimeThread m_thread;
+  std::unique_ptr<real_time_tools::RealTimeThread> m_thread;
 
 };
 

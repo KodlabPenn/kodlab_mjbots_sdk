@@ -19,7 +19,7 @@ class abstract_lcm_subscriber: public abstract_realtime_object{
   abstract_lcm_subscriber(int realtime_priority, int cpu, std::string channel_name);
 
  protected:
-  void* static_run(void *abstract_void_ptr);
+//  void* static_run(void *abstract_void_ptr);
   virtual void handle_msg(const lcm::ReceiveBuffer* rbuf,
                           const std::string& chan,
                           const msg_type* msg) = 0;
@@ -41,21 +41,27 @@ void abstract_lcm_subscriber<msg_type>::run() {
   }
 }
 
-template<class msg_type>
-void *abstract_lcm_subscriber<msg_type>::static_run(void *abstract_void_ptr) {
-  std::cout<<"foo22"<<std::endl;
-  abstract_lcm_subscriber<msg_type>* ptr =
-      (static_cast<abstract_lcm_subscriber*>(abstract_void_ptr));
-  ptr->set_up_cpu_run();
-  return nullptr;
-}
+//template<class msg_type>
+//void *abstract_lcm_subscriber<msg_type>::static_run(void *abstract_void_ptr) {
+//  std::cout<<"foo22"<<std::endl;
+//  abstract_lcm_subscriber<msg_type>* ptr =
+//      (static_cast<abstract_lcm_subscriber*>(abstract_void_ptr));
+//  ptr->set_up_cpu_run();
+//  return nullptr;
+//}
 
 
 template<class msg_type>
 abstract_lcm_subscriber<msg_type>::abstract_lcm_subscriber(int realtime_priority, int cpu, std::string channel_name):
-m_channel_name(channel_name),
-abstract_realtime_object(realtime_priority,cpu){
-  start();
+m_channel_name(channel_name){
+  m_cpu = cpu;
+  m_realtime_priority = realtime_priority;
+  m_thread.reset(new real_time_tools::RealTimeThread());
+  m_thread->parameters_.cpu_dma_latency_ = -1;
+  m_thread->parameters_.priority_ = m_realtime_priority;
+  std::cout<<"Startng thread"<<std::endl;
+  m_thread->create_realtime_thread(static_run, this);
+  std::cout<<"huh"<<std::endl;
 }
 
 
