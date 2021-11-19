@@ -168,7 +168,6 @@ class SampleController {
       case hybrid_mode::FLIGHT:{
         if(r0-r > 0.002  && d_r < 0){
           m_mode = hybrid_mode::STANCE;
-          std::cout<<"Flight to stance"<<std::endl;
         }
 
         f_r = k * (r0 - r) - b * d_r;
@@ -179,7 +178,6 @@ class SampleController {
       }
       case hybrid_mode::STANCE:{
         if (r0-r < 0.001 && d_r > 0){
-          std::cout<<"Stance to flight"<<std::endl;
           m_mode = hybrid_mode::FLIGHT;
         }
 
@@ -245,7 +243,6 @@ class SampleController {
     real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
 
     lcm::LCM lcm;
-    leg_gain_subscriber.start();
 
     leg_log my_data{};
     real_time_tools::HardSpinner spinner;
