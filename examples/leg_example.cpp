@@ -243,6 +243,7 @@ class SampleController {
     real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
 
     lcm::LCM lcm;
+    leg_gain_subscriber.start();
 
     leg_log my_data{};
     real_time_tools::HardSpinner spinner;

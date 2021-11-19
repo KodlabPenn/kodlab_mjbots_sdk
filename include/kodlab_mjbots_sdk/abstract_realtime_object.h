@@ -15,23 +15,23 @@ class abstract_realtime_object {
    */
   void join();
 
+  void start();
+
  protected:
   static void* static_run(void* abstract_void_ptr);
 
   virtual void run() = 0;
 
-  void set_up_cpu_run();
-
   /*!
    * @brief starts the realtime thread
    */
-  void start();
+
+  void set_up_cpu_run();
 
 
   int m_realtime_priority;
   int m_cpu;
   real_time_tools::RealTimeThread m_thread;
-
 
 };
 

@@ -19,6 +19,7 @@ class abstract_lcm_subscriber: public abstract_realtime_object{
   abstract_lcm_subscriber(int realtime_priority, int cpu, std::string channel_name);
 
  protected:
+  void* static_run(void *abstract_void_ptr);
   virtual void handle_msg(const lcm::ReceiveBuffer* rbuf,
                           const std::string& chan,
                           const msg_type* msg) = 0;
@@ -27,18 +28,26 @@ class abstract_lcm_subscriber: public abstract_realtime_object{
 
   std::string m_channel_name;
   lcm::LCM m_lcm;
-
 };
 
 template<class msg_type>
 void abstract_lcm_subscriber<msg_type>::run() {
-  std::vector<int> cpu = {m_cpu};
-  real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
-  m_lcm.subscribe(m_channel_name,&abstract_lcm_subscriber::handle_msg,this);
+  std::cout<< m_channel_name<<std::endl;
+  m_lcm.subscribe(m_channel_name, &abstract_lcm_subscriber::handle_msg, this);
+  std::cout<<"subscribe successful"<<std::endl;
 
   while (!CTRL_C_DETECTED){
     m_lcm.handleTimeout(100000);
   }
+}
+
+template<class msg_type>
+void *abstract_lcm_subscriber<msg_type>::static_run(void *abstract_void_ptr) {
+  std::cout<<"foo"<<std::endl;
+  abstract_lcm_subscriber<msg_type>* ptr =
+      (static_cast<abstract_lcm_subscriber*>(abstract_void_ptr));
+  ptr->set_up_cpu_run();
+  return nullptr;
 }
 
 
@@ -46,7 +55,6 @@ template<class msg_type>
 abstract_lcm_subscriber<msg_type>::abstract_lcm_subscriber(int realtime_priority, int cpu, std::string channel_name):
 abstract_realtime_object(realtime_priority,cpu){
   m_channel_name = channel_name;
-  start();
 }
 
 
