@@ -123,7 +123,7 @@ class Leg_Gain_Subscriber : public abstract_lcm_subscriber<leg_gain>{
 class SampleController {
  public:
   SampleController(const Arguments& arguments): arguments_(arguments),
-                                                leg_gain_subscriber(90,1){
+                                                leg_gain_subscriber(90,1,"leg_gains"){
     if (arguments_.primary_id == arguments_.secondary_id) {
       throw std::runtime_error("The servos must have unique IDs");
     }
@@ -245,8 +245,6 @@ class SampleController {
     real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
 
     lcm::LCM lcm;
-
-    leg_gain_subscriber.m_lcm.subscribe("leg_gains",&Leg_Gain_Subscriber::handle_msg, &leg_gain_subscriber);
     leg_gain_subscriber.start();
 
     leg_log my_data{};

@@ -9,11 +9,24 @@
 template <class msg_type>
 class abstract_lcm_subscriber {
  public:
-  abstract_lcm_subscriber(int realtime_priority, int cpu);
+  /*!
+   * @brief constructor for abstract lcm subscriber
+   * @param realtime_priority the realtime priority, max is 99
+   * @param cpu the cpu for this process
+   * @param channel_name the string for the channel name
+   */
+  abstract_lcm_subscriber(int realtime_priority, int cpu, std::string channel_name);
 
+  /*!
+   * @brief starts the realtime thread
+   */
   void start();
 
+  /*!
+   * @brief joins the realtime thead
+   */
   void join();
+
 
   lcm::LCM m_lcm;
 
@@ -52,7 +65,7 @@ void *abstract_lcm_subscriber<msg_type>::static_run(void *abstract_lcm_subscribe
 
 template<class msg_type>
 void abstract_lcm_subscriber<msg_type>::start() {
-  //m_lcm.subscribe(m_channel_name,&abstract_lcm_subscriber::handle_msg,this);
+  m_lcm.subscribe(m_channel_name,&abstract_lcm_subscriber::handle_msg,this);
 
   m_thread.parameters_.cpu_dma_latency_ = -1;
   m_thread.parameters_.priority_ = m_realtime_priority;
@@ -64,9 +77,10 @@ void abstract_lcm_subscriber<msg_type>::join() {
 }
 
 template<class msg_type>
-abstract_lcm_subscriber<msg_type>::abstract_lcm_subscriber(int realtime_priority, int cpu):
+abstract_lcm_subscriber<msg_type>::abstract_lcm_subscriber(int realtime_priority, int cpu, std::string channel_name):
                                                                                           m_realtime_priority(realtime_priority),
-                                                                                          m_cpu(cpu){
+                                                                                          m_cpu(cpu),
+                                                                                          m_channel_name(channel_name){
 }
 
 
