@@ -24,7 +24,7 @@ class abstract_lcm_subscriber: public abstract_realtime_object{
                           const std::string& chan,
                           const msg_type* msg) = 0;
 
-  void run();
+  void run() override;
 
   std::string m_channel_name;
   lcm::LCM m_lcm;
@@ -43,7 +43,7 @@ void abstract_lcm_subscriber<msg_type>::run() {
 
 template<class msg_type>
 void *abstract_lcm_subscriber<msg_type>::static_run(void *abstract_void_ptr) {
-  std::cout<<"foo"<<std::endl;
+  std::cout<<"foo22"<<std::endl;
   abstract_lcm_subscriber<msg_type>* ptr =
       (static_cast<abstract_lcm_subscriber*>(abstract_void_ptr));
   ptr->set_up_cpu_run();
@@ -53,8 +53,9 @@ void *abstract_lcm_subscriber<msg_type>::static_run(void *abstract_void_ptr) {
 
 template<class msg_type>
 abstract_lcm_subscriber<msg_type>::abstract_lcm_subscriber(int realtime_priority, int cpu, std::string channel_name):
+m_channel_name(channel_name),
 abstract_realtime_object(realtime_priority,cpu){
-  m_channel_name = channel_name;
+  start();
 }
 
 

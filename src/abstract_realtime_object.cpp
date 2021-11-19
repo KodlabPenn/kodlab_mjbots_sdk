@@ -8,6 +8,7 @@
 #include <iostream>
 abstract_realtime_object::abstract_realtime_object(int realtime_priority, int cpu):m_realtime_priority(realtime_priority),
                                                                                    m_cpu(cpu){
+  //start();
 }
 
 void abstract_realtime_object::join() {
@@ -27,7 +28,7 @@ void abstract_realtime_object::set_up_cpu_run() {
   std::vector<int> cpu = {m_cpu};
   real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
 
-  std::cout<<"run"<<std::endl;
+  std::cout<<this->m_cpu<<std::endl;
   run();
 }
 
