@@ -45,7 +45,7 @@
 #include "leg_log.hpp"
 #include "leg_gain.hpp"
 #include "kodlab_mjbots_sdk/realtime_robot.h"
-#include "kodlab_mjbots_sdk/polar_leg.h"
+#include "kodlab_mjbots_sdk/cartesian_leg.h"
 #include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
 
 using namespace mjbots;
@@ -141,14 +141,14 @@ class SampleController {
   }
 
   void calc_torques() {
-    m_leg.fk(robot->get_joint_positions(), r, theta);
-    m_leg.fk_vel(robot-> get_joint_positions(), robot->get_joint_velocities(), d_r, d_theta);
+    m_leg.fk(robot->get_joint_positions(), z, x);
+    m_leg.fk_vel(robot-> get_joint_positions(), robot->get_joint_velocities(), d_z, d_x);
     std::vector<float> torques = {0,0};
 
     //Check hybrid modes
-    if(m_mode != hybrid_mode::SOFT_START && r0-r > 0.002  && d_r < 0){
+    if(m_mode != hybrid_mode::SOFT_START && z0-z > 0.002  && d_z < 0){
       m_mode = hybrid_mode::STANCE;
-    } else if (m_mode != hybrid_mode::SOFT_START && r0-r < 0.001 && d_r > 0){
+    } else if (m_mode != hybrid_mode::SOFT_START && z0-z < 0.001 && d_z > 0){
       m_mode = hybrid_mode::FLIGHT;
     }
 
@@ -169,26 +169,26 @@ class SampleController {
             std::abs(robot->get_joint_velocities()[0]) < 0.08 &&
             std::abs(robot->get_joint_velocities()[1]) < 0.08){
           m_mode = FLIGHT;
-          r0 = r;
+          z0 = z;
           std::cout<<"Starting Limb mode"<<std::endl;
         }
 
         break;
       }
       case hybrid_mode::FLIGHT:{
-        f_r = k_stiff * (r0 - r) - b_stiff * d_r;
-        f_theta = Soft_Start::constrain(- kp * theta - kd * d_theta, -3, 3);
+        f_z = k_stiff * (z0 - z) - b_stiff * d_z;
+        f_x = Soft_Start::constrain(- kp * x - kd * d_x, -3, 3);
 
-        torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
+        torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_z, f_x);
         break;
       }
       case hybrid_mode::STANCE:{
-        float av = sqrtf((r-r0) * (r-r0) * w_v * w_v + d_r * d_r);
-        float F = kv * d_r/av + m * 9.81 * 1;
-        f_r = fmax(k * (r0 - r) - b * d_r + F,0.0);
-        f_theta = 0;
+        float av = sqrtf((z-z0) * (z-z0) * w_v * w_v + d_z * d_z);
+        float F = kv * d_z/av + m * 9.81 * 1;
+        f_z = fmax(k * (z0 - z) - b * d_z + F, 0.0);
+        f_x = 0;
 
-        torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
+        torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_z, f_x);
         break;
       }
     }
@@ -214,12 +214,12 @@ class SampleController {
       my_data.torque_cmd[servo] = robot->get_joint_torque_cmd()[servo];
       my_data.torque_measure[servo]=robot->get_joint_torque_measured()[servo];
     }
-    my_data.polar_position[0] = r-r0;
-    my_data.polar_position[1] = theta;
-    my_data.polar_vel[0] = d_r;
-    my_data.polar_vel[1] = d_theta;
-    my_data.polar_wrench[0] = f_r;
-    my_data.polar_wrench[1] = f_theta;
+    my_data.limb_position[0] = z-z0;
+    my_data.limb_position[1] = x;
+    my_data.limb_vel[0] = d_z;
+    my_data.limb_vel[1] = d_x;
+    my_data.limb_wrench[0] = f_z;
+    my_data.limb_wrench[1] = f_x;
     my_data.hybrid_mode = m_mode;
   }
 
@@ -290,18 +290,18 @@ class SampleController {
  private:
   const Arguments arguments_;
   std::unique_ptr<Realtime_Robot> robot;
-  Polar_Leg m_leg = Polar_Leg(0.15, 0.15);
+  Cartesian_Leg m_leg = Cartesian_Leg(0.15, 0.15);
   float kv = 0; //25
   float k = 800;
   float k_stiff = 1600;
   float m = 1.2;
   float b = 15;
   float b_stiff =15;
-  float r0 = 0;
+  float z0 = 0;
   float kp = 120;
   float kd = 0.5;
-  float r, theta, d_r, d_theta;
-  float f_r, f_theta;
+  float z, x, d_z, d_x;
+  float f_z, f_x;
   float w_v = sqrtf(k/m);
   hybrid_mode m_mode = hybrid_mode::SOFT_START;
   Leg_Gain_Subscriber leg_gain_subscriber;

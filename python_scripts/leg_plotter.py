@@ -19,11 +19,11 @@ margins = []
 positions = []
 velocities = []
 torques = []
-r = []
-theta = []
-dr = []
-dtheta = []
-polar_forces = []
+z = []
+x = []
+dz = []
+dx = []
+limb_forces = []
 hybrid_mode = []
 for event in log:
     if event.channel == "leg_log":
@@ -33,11 +33,11 @@ for event in log:
         positions.append(msg.positions)
         margins.append(msg.mean_margin)
         torques.append(msg.torque_cmd)
-        r.append(msg.polar_position[0])
-        theta.append(msg.polar_position[1])
-        dr.append(msg.polar_vel[0])
-        dtheta.append(msg.polar_vel[1])
-        polar_forces.append(msg.polar_wrench)
+        z.append(msg.limb_position[0])
+        x.append(msg.limb_position[1])
+        dz.append(msg.limb_vel[0])
+        dx.append(msg.limb_vel[1])
+        limb_forces.append(msg.limb_wrench)
         hybrid_mode.append(msg.hybrid_mode)
 
 
@@ -70,23 +70,23 @@ ax4.set_ylabel('Positions(rad)')
 
 fig2, (fig2_ax1, fig2_ax2, fig2_ax3,fig2_ax4,fig_ax5) = plt.subplots(5, 1, sharex=True)
 fig2_ax1.set_title(file_name)
-fig2_ax1.plot(timestamps, r)
-fig2_ax1.set_ylabel('r - r0')
+fig2_ax1.plot(timestamps, z)
+fig2_ax1.set_ylabel('z - z0')
 fig2_ax1.grid()
 
-fig2_ax2.plot(timestamps, theta)
-fig2_ax2.set_ylabel('theta(rad)')
+fig2_ax2.plot(timestamps, x)
+fig2_ax2.set_ylabel('x(m)')
 fig2_ax2.grid()
 
 
-fig2_ax3.plot(timestamps, polar_forces)
+fig2_ax3.plot(timestamps, limb_forces)
 fig2_ax3.set_ylabel('Wrench')
-fig2_ax3.legend(['Radial Force', 'Theta Force'])
+fig2_ax3.legend(['z Force', 'x Force'])
 fig2_ax3.grid()
 
 
-fig2_ax4.plot(timestamps, dr)
-fig2_ax4.set_ylabel('dr')
+fig2_ax4.plot(timestamps, dz)
+fig2_ax4.set_ylabel('dz')
 fig2_ax4.grid()
 
 fig_ax5.plot(timestamps, hybrid_mode)
