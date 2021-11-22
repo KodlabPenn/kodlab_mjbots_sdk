@@ -133,7 +133,7 @@ class SampleController {
                                                             arguments_.can_cpu,
                                                             {0.1949, 0.0389},
                                                             {1, -1},
-                                                            6,
+                                                            12,
                                                             5000));
   }
 
@@ -182,7 +182,7 @@ class SampleController {
         }
 
         float av = sqrtf((r-r0) * (r-r0) * w_v * w_v + d_r * d_r);
-        float F = kv * d_r/av + m * 9.81 * 0.0;
+        float F = kv * d_r/av + m * 9.81 * 0.5;
         f_r = k * (r0 - r) - b * d_r + F;
         f_theta = - kp * theta - kd * d_theta;
 
@@ -212,7 +212,7 @@ class SampleController {
       my_data.torque_cmd[servo] = robot->get_joint_torque_cmd()[servo];
       my_data.torque_measure[servo]=robot->get_joint_torque_measured()[servo];
     }
-    my_data.polar_position[0] = r;
+    my_data.polar_position[0] = r-r0;
     my_data.polar_position[1] = theta;
     my_data.polar_vel[0] = d_r;
     my_data.polar_vel[1] = d_theta;

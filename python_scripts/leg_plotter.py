@@ -69,18 +69,23 @@ ax4.set_ylabel('Positions(rad)')
 fig2, (fig2_ax1, fig2_ax2, fig2_ax3,fig2_ax4) = plt.subplots(4, 1, sharex=True)
 fig2_ax1.set_title(file_name)
 fig2_ax1.plot(timestamps, r)
-fig2_ax1.set_ylabel('leg length')
+fig2_ax1.set_ylabel('r - r0')
+fig2_ax1.grid()
 
 fig2_ax2.plot(timestamps, theta)
 fig2_ax2.set_ylabel('theta(rad)')
+fig2_ax2.grid()
+
 
 fig2_ax3.plot(timestamps, polar_forces)
 fig2_ax3.set_ylabel('Wrench')
 fig2_ax3.legend(['Radial Force', 'Theta Force'])
+fig2_ax3.grid()
+
 
 fig2_ax4.plot(timestamps, dr)
 fig2_ax4.set_ylabel('dr')
-
+fig2_ax4.grid()
 
 plt.show()
 
