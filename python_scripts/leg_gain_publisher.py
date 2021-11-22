@@ -5,13 +5,14 @@ msg = leg_gain()
 
 # current gains
 msg.k = 400
-msg.k_stiff = 2000
+msg.k_stiff = 1000
 msg.b =5
-msg.b_stiff = 15
-msg.kp = 10
-msg.kd = 0.4
+msg.b_stiff = 20
+msg.kp = 100
+msg.kd = 10
 msg.kv = 0
 
 msg.kv = 0
+
 lc = lcm.LCM()
 lc.publish("leg_gains", msg.encode())

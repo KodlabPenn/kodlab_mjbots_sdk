@@ -103,7 +103,6 @@ class Leg_Gain_Subscriber : public abstract_lcm_subscriber<leg_gain>{
   void handle_msg(const lcm::ReceiveBuffer* rbuf,
                   const std::string& chan,
                   const leg_gain* msg){
-    std::cout<<"Callback"<<std::endl;
     leg_gain_mutex.lock();
     k = msg->k;
     b = msg->b;
@@ -113,7 +112,6 @@ class Leg_Gain_Subscriber : public abstract_lcm_subscriber<leg_gain>{
     k_stiff = msg->k_stiff;
     b_stiff = msg->b_stiff;
     new_msg = true;
-    std::cout<<"msg received"<<std::endl;
     leg_gain_mutex.unlock();
   }
   float kp, kd, k, b, kv,k_stiff, b_stiff;
@@ -177,7 +175,7 @@ class SampleController {
       }
       case hybrid_mode::FLIGHT:{
         f_z = k_stiff * (z0 - z) - b_stiff * d_z;
-        f_x = Soft_Start::constrain(- kp * x - kd * d_x, -3, 3);
+        f_x = Soft_Start::constrain(- kp * x - kd * d_x, -20, 20);
 
         torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_z, f_x);
         break;
@@ -236,6 +234,7 @@ class SampleController {
         b_stiff = leg_gain_subscriber.b_stiff;
         w_v = sqrtf(k/m);
         leg_gain_subscriber.new_msg = false;
+        std::cout<<"Gains Updated"<<std::endl;
       }
     }
   }
@@ -298,8 +297,8 @@ class SampleController {
   float b = 15;
   float b_stiff =15;
   float z0 = 0;
-  float kp = 120;
-  float kd = 0.5;
+  float kp = 800;
+  float kd = 10;
   float z, x, d_z, d_x;
   float f_z, f_x;
   float w_v = sqrtf(k/m);
