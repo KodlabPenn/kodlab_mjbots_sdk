@@ -123,7 +123,7 @@ class Leg_Gain_Subscriber : public abstract_lcm_subscriber<leg_gain>{
 class SampleController {
  public:
   SampleController(const Arguments& arguments): arguments_(arguments),
-                                                leg_gain_subscriber(90,1,"leg_gains"){
+                                                leg_gain_subscriber(90,-99,"leg_gains"){
     if (arguments_.primary_id == arguments_.secondary_id) {
       throw std::runtime_error("The servos must have unique IDs");
     }
