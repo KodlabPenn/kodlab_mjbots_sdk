@@ -24,6 +24,7 @@
 
 #include <sys/mman.h>
 
+#include <algorithm>
 #include <iostream>
 #include <future>
 #include <limits>
@@ -109,11 +110,13 @@ class Leg_Gain_Subscriber : public abstract_lcm_subscriber<leg_gain>{
     kp = msg->kp;
     kd = msg->kd;
     kv = msg->kv;
+    k_stiff = msg->k_stiff;
+    b_stiff = msg->b_stiff;
     new_msg = true;
     std::cout<<"msg received"<<std::endl;
     leg_gain_mutex.unlock();
   }
-  float kp, kd, k, b, kv;
+  float kp, kd, k, b, kv,k_stiff, b_stiff;
   bool new_msg = false;
   std::mutex leg_gain_mutex;
 };
@@ -142,6 +145,13 @@ class SampleController {
     m_leg.fk_vel(robot-> get_joint_positions(), robot->get_joint_velocities(), d_r, d_theta);
     std::vector<float> torques = {0,0};
 
+    //Check hybrid modes
+    if(m_mode != hybrid_mode::SOFT_START && r0-r > 0.002  && d_r < 0){
+      m_mode = hybrid_mode::STANCE;
+    } else if (m_mode != hybrid_mode::SOFT_START && r0-r < 0.001 && d_r > 0){
+      m_mode = hybrid_mode::FLIGHT;
+    }
+
     switch (m_mode) {
       case hybrid_mode::SOFT_START:{
 
@@ -166,25 +176,17 @@ class SampleController {
         break;
       }
       case hybrid_mode::FLIGHT:{
-        if(r0-r > 0.002  && d_r < 0){
-          m_mode = hybrid_mode::STANCE;
-        }
-
-        f_r = k * (r0 - r) - b * d_r;
-        f_theta = - kp * theta - kd * d_theta;
+        f_r = k_stiff * (r0 - r) - b_stiff * d_r;
+        f_theta = Soft_Start::constrain(- kp * theta - kd * d_theta, -3, 3);
 
         torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
         break;
       }
       case hybrid_mode::STANCE:{
-        if (r0-r < 0.001 && d_r > 0){
-          m_mode = hybrid_mode::FLIGHT;
-        }
-
         float av = sqrtf((r-r0) * (r-r0) * w_v * w_v + d_r * d_r);
-        float F = kv * d_r/av + m * 9.81 * 0.5;
-        f_r = k * (r0 - r) - b * d_r + F;
-        f_theta = - kp * theta - kd * d_theta;
+        float F = kv * d_r/av + m * 9.81 * 1;
+        f_r = fmax(k * (r0 - r) - b * d_r + F,0.0);
+        f_theta = 0;
 
         torques = m_leg.inverse_dynamics(robot->get_joint_positions(), f_r, f_theta);
         break;
@@ -228,8 +230,10 @@ class SampleController {
         kp = leg_gain_subscriber.kp;
         kd = leg_gain_subscriber.kd;
         k  = leg_gain_subscriber.k;
+        k_stiff  = leg_gain_subscriber.k_stiff;
         kv = leg_gain_subscriber.kv;
         b  = leg_gain_subscriber.b;
+        b_stiff = leg_gain_subscriber.b_stiff;
         w_v = sqrtf(k/m);
         leg_gain_subscriber.new_msg = false;
       }
@@ -289,11 +293,13 @@ class SampleController {
   Polar_Leg m_leg = Polar_Leg(0.15, 0.15);
   float kv = 0; //25
   float k = 800;
+  float k_stiff = 1600;
   float m = 1.2;
-  float b = 10;
+  float b = 15;
+  float b_stiff =15;
   float r0 = 0;
   float kp = 120;
-  float kd = 0.2;
+  float kd = 0.5;
   float r, theta, d_r, d_theta;
   float f_r, f_theta;
   float w_v = sqrtf(k/m);

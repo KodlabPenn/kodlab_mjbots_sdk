@@ -12,9 +12,12 @@ class Soft_Start {
   float m_max_torque = 100;
   int m_duration = 0;
 
-  void constrain(std::vector<float>& values, float min_val, float max_val);
  public:
   void constrainTorques(std::vector<float>& torques, int count);
+
+  static void constrain(std::vector<float>& values, float min_val, float max_val);
+
+  static float constrain(float values, float min_val, float max_val);
 
   Soft_Start(float max_torque, int duration);
 };

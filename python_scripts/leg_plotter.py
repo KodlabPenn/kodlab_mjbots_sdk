@@ -24,6 +24,7 @@ theta = []
 dr = []
 dtheta = []
 polar_forces = []
+hybrid_mode = []
 for event in log:
     if event.channel == "leg_log":
         msg = leg_log.decode(event.data)
@@ -37,6 +38,7 @@ for event in log:
         dr.append(msg.polar_vel[0])
         dtheta.append(msg.polar_vel[1])
         polar_forces.append(msg.polar_wrench)
+        hybrid_mode.append(msg.hybrid_mode)
 
 
 timestamps = np.array(timestamps)
@@ -66,7 +68,7 @@ ax3.set_ylabel('Torque(Nm)')
 ax4.plot(timestamps, positions)
 ax4.set_ylabel('Positions(rad)')
 
-fig2, (fig2_ax1, fig2_ax2, fig2_ax3,fig2_ax4) = plt.subplots(4, 1, sharex=True)
+fig2, (fig2_ax1, fig2_ax2, fig2_ax3,fig2_ax4,fig_ax5) = plt.subplots(5, 1, sharex=True)
 fig2_ax1.set_title(file_name)
 fig2_ax1.plot(timestamps, r)
 fig2_ax1.set_ylabel('r - r0')
@@ -86,6 +88,10 @@ fig2_ax3.grid()
 fig2_ax4.plot(timestamps, dr)
 fig2_ax4.set_ylabel('dr')
 fig2_ax4.grid()
+
+fig_ax5.plot(timestamps, hybrid_mode)
+fig_ax5.set_ylabel('hybrid mode')
+fig_ax5.grid()
 
 plt.show()
 

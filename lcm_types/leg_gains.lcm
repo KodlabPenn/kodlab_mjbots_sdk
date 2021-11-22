@@ -2,6 +2,8 @@ struct leg_gain
 {
   float  k;
   float  b;
+  float k_stiff;
+  float b_stiff;
   float  kp;
   float  kd;
   float  kv;
