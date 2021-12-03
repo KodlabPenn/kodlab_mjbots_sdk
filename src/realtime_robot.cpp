@@ -105,6 +105,9 @@ void Realtime_Robot::process_reply() {
     m_modes[servo]=servo_reply.mode;
   }
   m_timeout = m_moteus_data.timeout;
+  if(m_timeout){
+    std::cout<<"Error, pi3 hat timeout"<<std::endl;
+  }
 }
 
 void Realtime_Robot::send_command() {
