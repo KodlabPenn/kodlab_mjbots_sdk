@@ -131,6 +131,9 @@ class SampleController {
     robot->set_mode_stop();
     send_command();
     process_reply();
+    robot->set_mode_stop();
+    send_command();
+    process_reply();
     robot->shutdown();
     return nullptr;
   }
