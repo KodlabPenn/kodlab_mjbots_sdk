@@ -55,18 +55,18 @@ using MoteusInterface = moteus::Pi3HatMoteusInterface;
 class SampleController {
  public:
   SampleController() {
-    robot = std::make_unique<Realtime_Robot>(Realtime_Robot(3,
+    robot = std::make_unique<Realtime_Robot>(Realtime_Robot(servo_id_list.size(),
                                                             servo_id_list,
                                                             bus_map,
                                                             3,
-                                                            {0.0, 0.0, 0.0},
-                                                            {1, 1, 1},
+                                                            {0.0, 0.0, 0.0, 0, 0, 0, },
+                                                            {1, 1, 1, 1, 1, 1},
                                                             12,
                                                             5000));
   }
 
   void calc_torques() {
-    std::vector<float> torques = {0, 0, 0};
+    std::vector<float> torques = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
 
     robot->set_torques(torques);
   }
@@ -80,7 +80,7 @@ class SampleController {
   }
 
   void prepare_log(many_motor_log &my_data) {
-    for (int servo = 0; servo < num_servos; servo++) {
+    for (int servo = 0; servo < servo_id_list.size(); servo++) {
       my_data.positions[servo] = robot->get_joint_positions()[servo];
       my_data.velocities[servo] = robot->get_joint_velocities()[servo];
       my_data.modes[servo] = static_cast<int>(robot->get_joint_modes()[servo]);
@@ -138,9 +138,8 @@ class SampleController {
 
  private:
   std::unique_ptr<Realtime_Robot> robot;
-  static const int num_servos = 3;
-  const std::vector<int> servo_id_list = {10,11,12};
-  const std::vector<int> bus_map = {1,1,1};
+  const std::vector<int> servo_id_list = {10,11,12, 16, 17, 18};
+  const std::vector<int> bus_map = {1,1,1, 3, 3, 3};
 
 };
 
