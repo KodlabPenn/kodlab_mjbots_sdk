@@ -91,6 +91,8 @@ class Pi3HatMoteusInterface {
     pi3hat::Span<ServoCommand> commands;
 
     pi3hat::Span<ServoReply> replies;
+
+    bool timeout = false;
   };
 
   struct Output {
@@ -211,6 +213,7 @@ class Pi3HatMoteusInterface {
       data_.replies[i].result = moteus::ParseQueryResult(can.data, can.size);
       result.query_result_size = i + 1;
     }
+    data_.timeout = output.timeout;
 
     return result;
   }

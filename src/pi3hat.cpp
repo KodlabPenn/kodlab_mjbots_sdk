@@ -1471,6 +1471,7 @@ class Pi3Hat::Impl {
       if (output->rx_can_size >= input.rx_can.size()) {
         // Our buffer is full, so no more frames could have been
         // returned.
+        output->timeout = false;
         return;
       }
 
@@ -1485,6 +1486,7 @@ class Pi3Hat::Impl {
           since_last_ns > input.rx_extra_wait_ns) {
         // We've read all the replies we are expecting and have polled
         // everything at least once if requested.
+        output->timeout = true;
         return;
       }
 

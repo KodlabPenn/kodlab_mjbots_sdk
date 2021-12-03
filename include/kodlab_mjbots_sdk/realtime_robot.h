@@ -22,7 +22,7 @@ class Realtime_Robot {
   std::vector<float> m_torque_measured;
   std::vector<float> m_offsets;
   std::vector<int> m_directions;
-
+  bool m_timeout;
   std::vector<mjbots::moteus::Mode> m_modes;
   long int m_cycle_count = 0;
 

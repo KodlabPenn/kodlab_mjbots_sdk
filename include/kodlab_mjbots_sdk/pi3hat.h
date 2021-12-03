@@ -235,6 +235,7 @@ class Pi3Hat {
   struct Output {
     int error = 0;
     bool attitude_present = false;
+    bool timeout = false;
     size_t rx_can_size = 0;
     size_t rx_rf_size = 0;
 

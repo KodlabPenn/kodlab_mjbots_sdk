@@ -104,6 +104,7 @@ void Realtime_Robot::process_reply() {
     m_torque_measured[servo]= m_directions[servo] * (servo_reply.torque);
     m_modes[servo]=servo_reply.mode;
   }
+  m_timeout = m_moteus_data.timeout;
 }
 
 void Realtime_Robot::send_command() {
