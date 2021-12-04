@@ -59,14 +59,14 @@ class SampleController {
                                                             servo_id_list,
                                                             bus_map,
                                                             3,
-                                                            {0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0},
-                                                            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                                                            std::vector<float>(servo_id_list.size(),0),
+                                                            std::vector<int>(servo_id_list.size(),1),
                                                             12,
                                                             5000));
   }
 
   void calc_torques() {
-    std::vector<float> torques = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    std::vector<float> torques(servo_id_list.size(),0);
 
     robot->set_torques(torques);
   }
@@ -141,8 +141,8 @@ class SampleController {
 
  private:
   std::unique_ptr<Realtime_Robot> robot;
-  const std::vector<int> servo_id_list = {10,11,12, 16, 17, 18, 19, 20, 21, 22};
-  const std::vector<int> bus_map = {1,1,1, 3, 3, 3, 4, 4, 4, 4};
+  const std::vector<int> servo_id_list = {10, 11, 12, 16, 17, 18, 19, 20, 21, 22};
+  const std::vector<int> bus_map =       {3,   3,  3,  4,  4,  4,  2,  2,  2,  2};
 
 };
 

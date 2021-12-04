@@ -14,17 +14,16 @@ void Realtime_Robot::initialize_command() {
   }
 
   mjbots::moteus::PositionResolution res; // This is just for the command
-  res.position = mjbots::moteus::Resolution::kInt16;
-  res.velocity = mjbots::moteus::Resolution::kInt16;
+  res.position = mjbots::moteus::Resolution::kInt16; //Can be 0
+  res.velocity = mjbots::moteus::Resolution::kInt16; //Can be 0
   res.feedforward_torque = mjbots::moteus::Resolution::kInt16;
-  res.kp_scale = mjbots::moteus::Resolution::kInt8;
-  res.kd_scale = mjbots::moteus::Resolution::kInt8;
+  res.kp_scale = mjbots::moteus::Resolution::kInt8; //Can be 0 iff kp is set to 0 on motors
+  res.kd_scale = mjbots::moteus::Resolution::kInt8; //Can be 0 iff kd is set to 0 on motors during config
   res.maximum_torque = mjbots::moteus::Resolution::kIgnore;
   res.stop_position = mjbots::moteus::Resolution::kIgnore;
-  res.watchdog_timeout = mjbots::moteus::Resolution::kInt8;
+  res.watchdog_timeout = mjbots::moteus::Resolution::kIgnore;
   for (auto& cmd : m_commands) {
     cmd.resolution = res;
-    cmd.position.watchdog_timeout = 0.1;
     cmd.mode = mjbots::moteus::Mode::kStopped;
   }
 }
