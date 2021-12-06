@@ -142,8 +142,8 @@ class SampleController {
 
  private:
   std::unique_ptr<Realtime_Robot> robot;
-  const std::vector<int> servo_id_list = {10, 11, 12, 16, 17, 18};
-  const std::vector<int> bus_map =       {3,   3,  3,  4,  4,  4};
+  const std::vector<int> servo_id_list = {10, 11, 12, 13, 14, 15, 16, 17, 18};
+  const std::vector<int> bus_map =       { 3,  3,  3,  1,  1,  1,  4,  4,  4};
 
 };
 

@@ -8,9 +8,9 @@
 #include "iostream"
 
 void Realtime_Robot::initialize_command() {
-  for (const auto& pair : m_servo_bus_map) {
+  for (const auto& id : m_servo_id_list) {
     m_commands.push_back({});
-    m_commands.back().id = pair.first; //id
+    m_commands.back().id = id; //id
   }
 
   mjbots::moteus::PositionResolution res; // This is just for the command
@@ -25,6 +25,7 @@ void Realtime_Robot::initialize_command() {
   for (auto& cmd : m_commands) {
     cmd.resolution = res;
     cmd.mode = mjbots::moteus::Mode::kStopped;
+    std::cout<<cmd.id<<std::endl;
   }
 }
 
@@ -59,6 +60,7 @@ Realtime_Robot::Realtime_Robot(int num_servos,
 
   for (size_t i = 0; i < m_num_servos; ++i)
     m_servo_bus_map[m_servo_id_list[i]] = m_servo_bus_list[i];
+
   m_offsets = offsets;
   m_directions = directions;
 

@@ -45,7 +45,7 @@ print("std margin = ", np.std(margins))
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1)
 ax1.set_title(file_name)
 ax1.plot(timestamps, margins)
-ax1.set_ylabel('margins')
+ax1.set_ylabel('Communication duration')
 
 ax2.plot(timestamps[:-1], np.diff(timestamps))
 ax2.set_ylabel('dt(ms)')
