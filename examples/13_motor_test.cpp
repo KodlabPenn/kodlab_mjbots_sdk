@@ -124,6 +124,7 @@ class SampleController {
       lcm.publish("motor_data", &my_data);
 
     }
+    // Might be related to use of new
     std::cout<<"\nCTRL C Detected. Sending stop command and then segaulting" << std::endl;
     std::cout<<"TODO: Don't segfault" << std::endl;
 
@@ -141,8 +142,8 @@ class SampleController {
 
  private:
   std::unique_ptr<Realtime_Robot> robot;
-  const std::vector<int> servo_id_list = {10, 11, 12, 16, 17, 18, 19, 20, 21, 22};
-  const std::vector<int> bus_map =       {3,   3,  3,  4,  4,  4,  2,  2,  2,  2};
+  const std::vector<int> servo_id_list = {10, 11, 12, 16, 17, 18};
+  const std::vector<int> bus_map =       {3,   3,  3,  4,  4,  4};
 
 };
 
