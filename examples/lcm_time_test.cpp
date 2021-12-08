@@ -3,7 +3,6 @@
 #include <chrono>
 #include "bulk_data.hpp"
 #include "kodlab_mjbots_sdk/realtime.h"
-#include "real_time_tools/thread.hpp"
 using namespace std;
 
 int main()

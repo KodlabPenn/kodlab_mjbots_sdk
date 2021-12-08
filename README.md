@@ -5,22 +5,11 @@
 * Configure ubuntu local network to share wifi and connect pi over ethernet
 * Use nmap to find pi ipaddress `sudo nmap -sn IP/24`
 * ssh onto pi `ssh pi@IP`, password is raspberry
+* Change the pi password to something that you will remember
 * scp setup script onto pi `scp <path to kodlab_mjbots_sdk>/utils/setup-system.py pi@IP:~/`
 * scp performance governer onto pi `scp <path to kodlab_mjbots_sdk>/utils/performance_governor.sh pi@IP:~/`
 * run setup script (change password and ssid in setup script) `sudo python3 setup-system.py`
-* Install pi3hat library
 * run performance governor script
-* install lcm https://lcm-proj.github.io/build_instructions.html
-* Install libbot2 from `https://github.com/libbot2/libbot2`
-    * I've found its helpful to remove `bot2-vis`, `bot2-lcmgl`, and `bot2-frames` from `tobuild.txt` since they have lots of dependencies and we won't be using them
-    * create build directory and then run: `sudo make BUILD_PREFIX=/usr/local`
-* On the pi, add the following to you `/etc/rc.local`
-    
-
-    ifconfig wlan0 multicast
-    sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev wlan0
-    bot-lcm-tunnel
-* Open `/etc/ld.so.conf` and add to end`/usr/local/lib` (might be missing step here)
 * Reboot pi
 * Add pi to `etc/hosts` to make ssh easier
 * Add ssh key
@@ -60,7 +49,7 @@ Add the following lines to your `~/.bashrc`
     sudo python3 setup.py install
 * Add `export PYTHONPATH="${PYTHONPATH}:$HOME/mjbots/kodlab_mjbots_sdk"` to your `~/.bashrc`
 * run `./scripts/make_lcm.sh` to generate lcm files. You will need to rerun this command each time you change an lcm definition.
-* Install libbot2 from `https://github.com/libbot2/libbot2`
+* Install libbot2 from `https://github.com/KodlabPenn/libbot2`
 
 * On the host computer to setup the connection run `bot-lcm-tunnel <PI-IP/hostname>`. From here you can start logging with
 

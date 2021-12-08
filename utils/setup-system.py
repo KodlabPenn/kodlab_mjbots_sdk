@@ -153,6 +153,10 @@ def main():
 
     # Things necessary install other dependencies
     run('apt-get install --yes cmake libglib2.0-dev libboost-all-dev git python3-pip')
+    run('pip3 install moteus_pi3hat')
+
+    run('git clone https://github.com/lcm-proj/lcm  /home/pi/lcm&& cd ~/lcm && mkdir /home/pi/lcm/build && cd /home/pi/lcm/build && cmake .. && make && sudo make install')
+    run('git clone https://github.com/KodlabPenn/libbot2  /home/pi/libbot2 && cd /home/pi/libbot2 && sudo make BUILD_PREFIX=/usr/local')
 
 
     # P1 Camera - Yes
@@ -275,6 +279,12 @@ dhcp-range=192.168.16.100,192.168.16.150,255.255.255.0,24h
 
 
     subprocess.check_call("systemctl daemon-reload", shell=True)
+
+    ensure_present('/etc/rc.local', 'ifconfig wlan0 multicast')
+    ensure_present('/etc/rc.local', 'sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev wlan0')
+    ensure_present('/etc/rc.local', 'bot-lcm-tunnel')
+    ensure_present('/etc/ld.so.conf', '/usr/local/lib')
+    run('ldconfig')
 
 
 if __name__ == '__main__':
