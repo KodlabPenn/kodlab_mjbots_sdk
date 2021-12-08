@@ -150,12 +150,13 @@ def main():
     run('apt-get install --yes libraspberrypi-dev raspberrypi-kernel-headers')
 
     run('apt-get update')
+    run('apt-get update')
 
     # Things necessary install other dependencies
     run('apt-get install --yes cmake libglib2.0-dev libboost-all-dev git python3-pip')
     run('pip3 install moteus_pi3hat')
 
-    run('git clone https://github.com/lcm-proj/lcm  /home/pi/lcm&& cd ~/lcm && mkdir /home/pi/lcm/build && cd /home/pi/lcm/build && cmake .. && make && sudo make install')
+    run('git clone https://github.com/lcm-proj/lcm  /home/pi/lcm&& cd /home/pi/lcm && mkdir /home/pi/lcm/build && cd /home/pi/lcm/build && cmake .. && make && sudo make install')
     run('git clone https://github.com/KodlabPenn/libbot2  /home/pi/libbot2 && cd /home/pi/libbot2 && sudo make BUILD_PREFIX=/usr/local')
 
 
