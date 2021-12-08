@@ -16,7 +16,7 @@
 * run rsync command to get libraries onto computer (see below)
 
 
-## Toolchain - Run on your computer
+## Laptop Toolchain 
 Taken from https://stackoverflow.com/questions/19162072/how-to-install-the-raspberry-pi-cross-compiler-on-my-linux-host-machine/58559140#58559140
 
 Download the toolchain
@@ -38,7 +38,7 @@ Add the following lines to your `~/.bashrc`
     export RASPBERRY_VERSION=1
 
 
-## LCM - Run on your computer
+## Laptop LCM
 * Download lcm from git
 * Try to make lcm - java issue can be fixed here: https://github.com/lcm-proj/lcm/issues/241 
 * Install python with
@@ -57,7 +57,7 @@ Add the following lines to your `~/.bashrc`
       lcm-logger
 
 
-## Building
+# Building
 Current command to build clean is
 
     cd .. && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake && make
