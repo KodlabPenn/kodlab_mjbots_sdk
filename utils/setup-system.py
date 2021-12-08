@@ -144,6 +144,17 @@ def main():
     # Things necessary to be an AP
     run('apt install --yes hostapd dnsmasq')
 
+    run('apt-get update')
+
+    # Things necessary install bcm
+    run('apt-get install --yes libraspberrypi-dev raspberrypi-kernel-headers')
+
+    run('apt-get update')
+
+    # Things necessary install other dependencies
+    run('apt-get install --yes cmake libglib2.0-dev libboost-all-dev git python3-pip')
+
+
     # P1 Camera - Yes
     run('raspi-config nonint do_camera 0')
 
@@ -242,7 +253,7 @@ rsn_pairwise=CCMP
     ensure_contents('/etc/systemd/system/hostapd.service.d/10-select-ssid.conf',
                     '''
 [Service]
-ExecStartPre=bash -c "SSID=kodlab-jerboa; perl -pi -e \"s/ssid=.*/ssid=$SSID/\" /etc/hostapd/hostapd.conf"
+ExecStartPre=bash -c "SSID=kodlab-robot; perl -pi -e \"s/ssid=.*/ssid=$SSID/\" /etc/hostapd/hostapd.conf"
 ''')
 
     ensure_present('/etc/default/hostapd',

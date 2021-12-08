@@ -1,28 +1,33 @@
 # Setup
 
-## Pi
-* Use realtime pi `https://github.com/guysoft/RealtimePi`
+## Setting up your Pi
+* Use a realtime pi kernel and flash sd card `https://github.com/guysoft/RealtimePi`
 * Configure ubuntu local network to share wifi and connect pi over ethernet
 * Use nmap to find pi ipaddress `sudo nmap -sn IP/24`
-* ssh onto pi `ssh pi@IP`
+* ssh onto pi `ssh pi@IP`, password is raspberry
 * scp setup script onto pi `scp <path to kodlab_mjbots_sdk>/utils/setup-system.py pi@IP:~/`
-* run setup script (change password and ssid) `sudo python3 setup-system.py`
-* install bcm_host
-
-        sudo apt-get install libraspberrypi-dev raspberrypi-kernel-headers
-* Install cmake, libglib2.0-dev, 
+* scp performance governer onto pi `scp <path to kodlab_mjbots_sdk>/utils/performance_governor.sh pi@IP:~/`
+* run setup script (change password and ssid in setup script) `sudo python3 setup-system.py`
+* Install pi3hat library
+* run performance governor script
 * install lcm https://lcm-proj.github.io/build_instructions.html
-* install boost onto pi `sudo apt-get install libboost-all-dev`
-* Install  kodlab fork of realtime library onto the pi
+* Install libbot2 from `https://github.com/libbot2/libbot2`
+    * I've found its helpful to remove `bot2-vis`, `bot2-lcmgl`, and `bot2-frames` from `tobuild.txt` since they have lots of dependencies and we won't be using them
+    * create build directory and then run: `sudo make BUILD_PREFIX=/usr/local`
+* On the pi, add the following to you `/etc/rc.local`
+    
+
+    ifconfig wlan0 multicast
+    sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev wlan0
+    bot-lcm-tunnel
 * Open `/etc/ld.so.conf` and add to end`/usr/local/lib` (might be missing step here)
-* If you want to use LCM over wifi see steps in remote LCM 
 * Reboot pi
 * Add pi to `etc/hosts` to make ssh easier
 * Add ssh key
 * run rsync command to get libraries onto computer (see below)
 
 
-## Toolchain
+## Toolchain - Run on your computer
 Taken from https://stackoverflow.com/questions/19162072/how-to-install-the-raspberry-pi-cross-compiler-on-my-linux-host-machine/58559140#58559140
 
 Download the toolchain
@@ -44,7 +49,7 @@ Add the following lines to your `~/.bashrc`
     export RASPBERRY_VERSION=1
 
 
-## LCM
+## LCM - Run on your computer
 * Download lcm from git
 * Try to make lcm - java issue can be fixed here: https://github.com/lcm-proj/lcm/issues/241 
 * Install python with
@@ -55,22 +60,13 @@ Add the following lines to your `~/.bashrc`
     sudo python3 setup.py install
 * Add `export PYTHONPATH="${PYTHONPATH}:$HOME/mjbots/kodlab_mjbots_sdk"` to your `~/.bashrc`
 * run `./scripts/make_lcm.sh` to generate lcm files. You will need to rerun this command each time you change an lcm definition.
+* Install libbot2 from `https://github.com/libbot2/libbot2`
 
-### Remote lcm
-To get LCM to work remotely you need to install libbot2 on both computers
-* I've found its helpful to remove `bot2-vis` and `bot2-lcmgl` from `tobuild.txt` since they have lots of dependencies and we won't be using them
+* On the host computer to setup the connection run `bot-lcm-tunnel <PI-IP/hostname>`. From here you can start logging with
 
-On the pi, add the following to you `/etc/rc.local`
 
-    ifconfig wlan0 multicast
-    sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev wlan0
-    bot-lcm-tunnel
+      lcm-logger
 
-This scripts runs as boot as sudo and will configure multicast and launch the lcm bot tunnel
-
-On the host computer to setup the connection run `bot-lcm-tunnel <PI-IP/hostname>`. From here you can start logging with
-
-    lcm-logger
 
 ## Building
 Current command to build clean is

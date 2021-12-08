@@ -18,7 +18,7 @@ add_library(kodlab_mjbots_sdk pi3hat.cpp realtime_robot.cpp polar_leg.cpp soft_s
         cartesian_leg.cpp ${HEADER_LIST})
 
 # We need this directory, and users of our library will need it too
-target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty ../lcm_types
+target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty/Eigen ../lcm_types
         $ENV{RASPBIAN_ROOTFS}/opt/vc/include
         $ENV{RASPBIAN_ROOTFS}/usr/local/include
         ../thirdparty/real_time_tools/include)
