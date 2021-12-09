@@ -43,6 +43,7 @@ class abstract_lcm_subscriber: public abstract_realtime_object{
   lcm::LCM m_lcm;
 };
 
+/************************************Implementation********************************************************************/
 template<class msg_type>
 void abstract_lcm_subscriber<msg_type>::run() {
   m_lcm.subscribe(m_channel_name, &abstract_lcm_subscriber::handle_msg, this);

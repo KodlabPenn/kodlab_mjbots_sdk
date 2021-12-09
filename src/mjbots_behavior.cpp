@@ -5,7 +5,8 @@
 #include "real_time_tools/hard_spinner.hpp"
 #include "real_time_tools/timer.hpp"
 
-mjbots_behavior::mjbots_behavior(const Behavior_Options& options) {
+mjbots_behavior::mjbots_behavior(const Behavior_Options &options) :
+                                abstract_realtime_object(options.realtime_params_.main_rtp, options.realtime_params_.can_cpu) {
   m_options = options;
   m_cpu = options.realtime_params_.can_cpu;
   m_realtime_priority = options.realtime_params_.main_rtp;

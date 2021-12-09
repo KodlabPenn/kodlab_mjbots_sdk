@@ -5,11 +5,12 @@
 #pragma once
 #include "real_time_tools/thread.hpp"
 #include "kodlab_mjbots_sdk/common_header.h"
+
+/*!
+ * @brief template class for using a realtime thread with an object
+ */
 class abstract_realtime_object {
  public:
-
-  abstract_realtime_object();
-
   abstract_realtime_object(int realtime_priority, int cpu);
 
   /*!
@@ -17,23 +18,26 @@ class abstract_realtime_object {
    */
   void join();
 
+  /*!
+   * @brief starts the realtime thread by calling static_run
+   */
   void start();
 
  protected:
+  /*!
+   * @brief a static function which runs the run function of the passed in void ptr
+   * @param abstract_void_ptr ptr to an abstract_realtime_object child class
+   * @return nulptr
+   */
   static void* static_run(void* abstract_void_ptr);
 
+  /*!
+   * @brief pure virtual function which contains the thread behavior. Must be implemented by child class
+   */
   virtual void run() = 0;
 
-  /*!
-   * @brief starts the realtime thread
-   */
-
-  void set_up_cpu_run();
-
-
-  int m_realtime_priority;
-  int m_cpu;
-  std::unique_ptr<real_time_tools::RealTimeThread> m_thread;
-
+  int m_realtime_priority;                  /// Thread realtime priority
+  int m_cpu;                                /// CPU thread should run on, less than 0 is any thread
+  real_time_tools::RealTimeThread m_thread; /// realtime thread object
 };
 

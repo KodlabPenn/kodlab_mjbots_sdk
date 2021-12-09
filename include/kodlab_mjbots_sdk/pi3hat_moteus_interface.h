@@ -27,7 +27,6 @@
 #include "kodlab_mjbots_sdk/pi3hat.h"
 #include <sys/types.h>
 #include <unistd.h>
-#include "kodlab_mjbots_sdk/realtime.h"
 #include "kodlab_mjbots_sdk/common_header.h"
 namespace mjbots {
 namespace moteus {

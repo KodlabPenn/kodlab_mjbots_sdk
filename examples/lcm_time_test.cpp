@@ -2,12 +2,10 @@
 #include <lcm/lcm-cpp.hpp>
 #include <chrono>
 #include "bulk_data.hpp"
-#include "kodlab_mjbots_sdk/realtime.h"
 using namespace std;
 
 int main()
 {
-  mjbots::moteus::ConfigureRealtime(1);
   lcm::LCM lcm("udpm://239.255.76.67:7667?ttl=1");
   if(!lcm.good())
     return 1;

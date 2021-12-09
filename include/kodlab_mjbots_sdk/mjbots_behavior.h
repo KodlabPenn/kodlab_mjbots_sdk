@@ -18,7 +18,7 @@ struct Behavior_Options{
 
 class mjbots_behavior: public abstract_realtime_object{
  public:
-  mjbots_behavior(const Behavior_Options& options);
+  mjbots_behavior(const Behavior_Options &options);
 
  protected:
 
