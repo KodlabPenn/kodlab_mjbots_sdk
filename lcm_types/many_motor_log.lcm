@@ -5,6 +5,6 @@ struct many_motor_log
   float    velocities[13];
   float    torques[13];
   int16_t    modes[13];
-  float mean_margin;
+  float margin;
   float message_duration;
 }
