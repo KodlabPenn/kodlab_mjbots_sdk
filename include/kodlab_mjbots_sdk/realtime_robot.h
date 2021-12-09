@@ -10,6 +10,25 @@
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
+
+struct Motor{
+  Motor(int id_, int can_bus_): can_bus(can_bus_), id(id_){}
+  Motor(int id_, int can_bus_, int direction_, float offset_):
+        can_bus(can_bus_), id(id_), direction(direction_), offset(offset_){}
+  int can_bus;
+  int id;
+  int direction = 1;
+  float offset  = 0;
+};
+
+struct Realtime_Params{
+  int can_cpu = 3;
+  int main_cpu = 2;
+  int main_rtp = 97;
+  int can_rtp = 98;
+};
+
+
 class Realtime_Robot {
  private:
   int m_num_servos;
@@ -37,16 +56,12 @@ class Realtime_Robot {
 
   void prepare_torque_command();
 
-  mjbots::moteus::QueryResult Get(const std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply>& replies, int id);
+  static mjbots::moteus::QueryResult Get(const std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply>& replies, int id);
 
 
  public:
-  Realtime_Robot(int num_servos,
-                 std::vector<int> servo_id_list,
-                 std::vector<int> servo_bus_list,
-                 int can_cpu,
-                 std::vector<float> offsets,
-                 std::vector<int> directions,
+  Realtime_Robot(const std::vector<Motor>& motor_list,
+                 const Realtime_Params& realtime_params,
                  float max_torque = 20,
                  int soft_start_duration = 1);
 

@@ -156,9 +156,10 @@ static void* Run(void* controller_void_ptr){
 
 int main(int argc, char **argv) {
 
+  Realtime_Params realtime_params;
   real_time_tools::RealTimeThread thread;
   thread.parameters_.cpu_dma_latency_ = -1;
-  thread.parameters_.priority_ = 97;
+  thread.parameters_.priority_ = realtime_params.main_rtp;
 
   enable_ctrl_c();
   SampleController sample_controller;

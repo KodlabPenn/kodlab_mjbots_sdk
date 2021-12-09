@@ -40,6 +40,7 @@ class Pi3HatMoteusInterface {
  public:
   struct Options {
     int cpu = -1;
+    int realtime_priority = -1;
 
     // If a servo is not present, it is assumed to be on bus 1.
     std::map<int, int> servo_bus_map;
@@ -130,7 +131,7 @@ class Pi3HatMoteusInterface {
 
   void start(){
     thread_.parameters_.cpu_dma_latency_ = -1;
-    thread_.parameters_.priority_ = 98;
+    thread_.parameters_.priority_ = options_.realtime_priority;
     thread_.create_realtime_thread(static_run, this);
   }
 

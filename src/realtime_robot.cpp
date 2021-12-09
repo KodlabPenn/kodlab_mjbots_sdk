@@ -45,38 +45,36 @@ mjbots::moteus::QueryResult Realtime_Robot::Get(const std::vector<mjbots::moteus
   }
   return {};
 }
-Realtime_Robot::Realtime_Robot(int num_servos,
-                               std::vector<int> servo_id_list,
-                               std::vector<int> servo_bus_list,
-                               int can_cpu,
-                               std::vector<float> offsets,
-                               std::vector<int> directions,
-                               float max_torque,
-                               int soft_start_duration): m_soft_start(max_torque, soft_start_duration){
 
-  m_num_servos = num_servos;
-  m_servo_id_list = servo_id_list;
-  m_servo_bus_list = servo_bus_list;
-
+Realtime_Robot::Realtime_Robot(const std::vector<Motor>& motor_list, const Realtime_Params& realtime_params, float max_torque,
+                               int soft_start_duration):
+                               m_soft_start(max_torque, soft_start_duration) {
+  // Process motor list
+  m_num_servos = motor_list.size();
+  for (const auto & motor_elem : motor_list){
+    m_servo_id_list.push_back(motor_elem.id);
+    m_servo_bus_list.push_back(motor_elem.can_bus);
+    m_offsets.push_back(motor_elem.offset);
+    m_directions.push_back(motor_elem.direction);
+  }
   for (size_t i = 0; i < m_num_servos; ++i)
     m_servo_bus_map[m_servo_id_list[i]] = m_servo_bus_list[i];
 
-  m_offsets = offsets;
-  m_directions = directions;
-
+  // Create moteus interface
   mjbots::moteus::Pi3HatMoteusInterface::Options moteus_options;
-  moteus_options.cpu = can_cpu;
+  moteus_options.cpu = realtime_params.can_cpu;
+  moteus_options.realtime_priority = realtime_params.can_rtp;
   moteus_options.servo_bus_map = m_servo_bus_map;
-
   m_moteus_interface = std::make_unique<mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
 
+  // Initialize and send basic command
   initialize_command();
   m_replies = std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply>{m_commands.size()};
   m_moteus_data.commands = { m_commands.data(), m_commands.size() };
   m_moteus_data.replies = { m_replies.data(), m_replies.size() };
-
   send_command();
 
+  // Prepare variables for saving response and process reply
   for(int servo = 0; servo< m_num_servos; servo++){
     m_positions.push_back(0);
     m_velocities.push_back(0);
@@ -84,12 +82,12 @@ Realtime_Robot::Realtime_Robot(int num_servos,
     m_torque_measured.push_back(0);
     m_modes.push_back(mjbots::moteus::Mode::kStopped);
   }
-
   process_reply();
 
+  // Setup message for basic torque commands
   prepare_torque_command();
-
 }
+
 void Realtime_Robot::process_reply() {
 
   // Make sure the m_can_result is valid before waiting otherwise undefined behavior
