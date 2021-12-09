@@ -7,6 +7,11 @@
 #include "real_time_tools/thread.hpp"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 
+/*!
+ * @brief An abstract template class for an lcm subscriber. Subscribes to just one msg of type msg_type. To use create
+ * child class and implement handle_msg to take process the incoming msg
+ * @tparam msg_type the lcm msg type
+ */
 template <class msg_type>
 class abstract_lcm_subscriber: public abstract_realtime_object{
  public:
@@ -19,10 +24,19 @@ class abstract_lcm_subscriber: public abstract_realtime_object{
   abstract_lcm_subscriber(int realtime_priority, int cpu, std::string channel_name);
 
  protected:
+  /*!
+   * @brief callback function when msg is received. To be overriden by child class
+   * @param rbuf unknown, but not used
+   * @param chan channel name
+   * @param msg ptr to the incoming message data
+   */
   virtual void handle_msg(const lcm::ReceiveBuffer* rbuf,
                           const std::string& chan,
                           const msg_type* msg) = 0;
 
+  /*!
+   * @brief subscribes to the lcm channel using handle message and handles ctrl c detection
+   */
   void run() override;
 
   std::string m_channel_name;

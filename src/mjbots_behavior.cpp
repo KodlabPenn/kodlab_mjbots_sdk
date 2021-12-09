@@ -14,7 +14,6 @@ mjbots_behavior::mjbots_behavior(const Behavior_Options& options) {
   m_robot = std::make_unique<Realtime_Robot>(Realtime_Robot(options.motor_list_, options.realtime_params_,
                                                           options.max_torque, options.soft_start_duration));
 
-  start();
 }
 
 

@@ -24,5 +24,6 @@ int main(int argc, char **argv) {
   options.motor_list_.push_back(Motor(2,1));
   Spin_Motor behavior(options, "motor_data");
   behavior.start();
+  behavior.join();
   return 0;
 }
