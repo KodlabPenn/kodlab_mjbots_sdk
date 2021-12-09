@@ -3,7 +3,6 @@
 # Optionally glob, but only for CMake 3.12 or later:
 set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/moteus_protocol.h"
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/realtime.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/realtime_robot.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/common_header.h"
@@ -16,7 +15,7 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
 
 # Make an automatic library - will be static or dynamic based on user setting
 add_library(kodlab_mjbots_sdk pi3hat.cpp realtime_robot.cpp polar_leg.cpp soft_start.cpp abstract_realtime_object.cpp
-        cartesian_leg.cpp mjbots_behavior.cpp ${HEADER_LIST})
+        cartesian_leg.cpp ${HEADER_LIST})
 
 # We need this directory, and users of our library will need it too
 target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty/Eigen ../lcm_types

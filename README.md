@@ -51,7 +51,7 @@ Add the following lines to your `~/.bashrc`
 * run `./scripts/make_lcm.sh` to generate lcm files. You will need to rerun this command each time you change an lcm definition.
 * Install libbot2 from `https://github.com/KodlabPenn/libbot2`
 
-* On the host computer to setup the connection run `bot-lcm-tunnel <PI-IP/hostname>`. From here you can start logging with
+* On the host computer to setup the connection run `bot-lcm-tunnel <PI-IP/hostname>`. From here you can start m_logging with
 
 
       lcm-logger
