@@ -68,7 +68,8 @@ class Mjbots_Behavior: public Abstract_Realtime_Object{
    */
   void publish_log();
 
-  std::shared_ptr<Mjbots_Robot> m_robot; /// ptr to the robot object
+  std::shared_ptr<Mjbots_Robot> m_robot;   /// ptr to the robot object, if unique causes many issues, also should be
+                                           /// initialized inside thread
   int m_frequency;                         /// frequency of the controller in Hz
   int m_num_motors;                        /// Number of motors
   Behavior_Options m_options;              /// Options struct

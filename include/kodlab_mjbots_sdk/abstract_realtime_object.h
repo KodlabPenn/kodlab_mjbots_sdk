@@ -7,7 +7,10 @@
 #include "kodlab_mjbots_sdk/common_header.h"
 
 /*!
- * @brief template class for using a realtime thread with an object
+ * @brief template class for using a realtime thread with an object.
+ * WARNING: unique ptr do not play nicely with the abstract realtime object due to the way the abstract realtime object
+ * is setup. Instead consider using a shared_ptr and initialize the shared ptr from within the thread.
+ * WARNING: Don't call start from a constructor since inheritance is shaky during a constructor.
  */
 class Abstract_Realtime_Object {
  public:
