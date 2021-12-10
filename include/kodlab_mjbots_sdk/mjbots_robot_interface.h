@@ -45,7 +45,7 @@ struct Realtime_Params{
 };
 
 
-class Mjbots_Robot {
+class Mjbots_Robot_Interface {
  private:
   int m_num_servos;
   std::vector<int> m_servo_id_list;
@@ -76,10 +76,10 @@ class Mjbots_Robot {
 
 
  public:
-  Mjbots_Robot(const std::vector<Motor>& motor_list,
-               const Realtime_Params& realtime_params,
-               float max_torque = 20,
-               int soft_start_duration = 1);
+  Mjbots_Robot_Interface(const std::vector<Motor>& motor_list,
+                         const Realtime_Params& realtime_params,
+                         float max_torque = 20,
+                         int soft_start_duration = 1);
 
   void process_reply();
 

@@ -4,7 +4,7 @@
 
 #pragma once
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
-#include "kodlab_mjbots_sdk/mjbots_robot.h"
+#include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/timer.hpp"
 #include "real_time_tools/hard_spinner.hpp"
@@ -13,7 +13,7 @@
 /*!
  * @brief options struct for creating a mjbots behavior
  */
-struct Behavior_Options{
+struct Control_Loop_Options{
   std::vector<Motor> motor_list_;    /// List of motors in robot
   Realtime_Params realtime_params_;  /// Set of parameters for robot's realtimeness
 
@@ -30,13 +30,13 @@ struct Behavior_Options{
  * @tparam log_type[optional] data type for logging
  */
 template<class log_type = void>
-class Mjbots_Behavior: public Abstract_Realtime_Object{
+class Mjbots_Control_Loop: public Abstract_Realtime_Object{
  public:
   /*!
    * @brief constructs and mjbots behavior based on the options struct. Does not start the controller.
    * @param options contains options defining the behavior
    */
-  Mjbots_Behavior(const Behavior_Options &options);
+  Mjbots_Control_Loop(const Control_Loop_Options &options);
 
  protected:
 
@@ -68,11 +68,11 @@ class Mjbots_Behavior: public Abstract_Realtime_Object{
    */
   void publish_log();
 
-  std::shared_ptr<Mjbots_Robot> m_robot;   /// ptr to the robot object, if unique causes many issues, also should be
-                                           /// initialized inside thread
+  std::shared_ptr<Mjbots_Robot_Interface> m_robot;   /// ptr to the robot object, if unique causes many issues, also should be
+                                                     /// initialized inside thread
   int m_frequency;                         /// frequency of the controller in Hz
   int m_num_motors;                        /// Number of motors
-  Behavior_Options m_options;              /// Options struct
+  Control_Loop_Options m_options;              /// Options struct
   bool m_logging = false;                  /// Boolean to determine if logging is in use
   std::string m_channel_name;              /// Channel name to publish logs to, leave empty if not publishing
   lcm::LCM m_lcm;                          /// LCM object
@@ -83,7 +83,7 @@ class Mjbots_Behavior: public Abstract_Realtime_Object{
 /******************************************Implementation**************************************************************/
 
 template<class log_type>
-Mjbots_Behavior<log_type>::Mjbots_Behavior(const Behavior_Options &options) :
+Mjbots_Control_Loop<log_type>::Mjbots_Control_Loop(const Control_Loop_Options &options) :
     Abstract_Realtime_Object(options.realtime_params_.main_rtp, options.realtime_params_.can_cpu) {
   // Extract useful values from options
   m_options = options;
@@ -101,7 +101,7 @@ Mjbots_Behavior<log_type>::Mjbots_Behavior(const Behavior_Options &options) :
 
 
 template<class log_type>
-void Mjbots_Behavior<log_type>::add_timing_log(float t, float margin, float message_duration) {
+void Mjbots_Control_Loop<log_type>::add_timing_log(float t, float margin, float message_duration) {
   if(m_logging){
     m_log_data.timestamp = t;
     m_log_data.margin = margin;
@@ -110,17 +110,17 @@ void Mjbots_Behavior<log_type>::add_timing_log(float t, float margin, float mess
 }
 
 template<class log_type>
-void Mjbots_Behavior<log_type>::publish_log() {
+void Mjbots_Control_Loop<log_type>::publish_log() {
   if(m_logging)
     m_lcm.publish(m_channel_name, &m_log_data);
 }
 
 template<class log_type>
-void Mjbots_Behavior<log_type>::run() {
+void Mjbots_Control_Loop<log_type>::run() {
 
   // Create robot object
-  m_robot = std::make_shared<Mjbots_Robot>(Mjbots_Robot(m_options.motor_list_, m_options.realtime_params_,
-                                                        m_options.max_torque, m_options.soft_start_duration));
+  m_robot = std::make_shared<Mjbots_Robot_Interface>(Mjbots_Robot_Interface(m_options.motor_list_, m_options.realtime_params_,
+                                                                            m_options.max_torque, m_options.soft_start_duration));
 
   float prev_msg_duration = 0;
 
@@ -163,7 +163,6 @@ void Mjbots_Behavior<log_type>::run() {
   m_robot->set_mode_stop();
   m_robot->send_command();
   m_robot->process_reply();
-  m_robot->set_mode_stop();
   m_robot->send_command();
   m_robot->process_reply();
 

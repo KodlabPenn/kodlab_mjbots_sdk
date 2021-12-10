@@ -1,9 +1,9 @@
-#include "kodlab_mjbots_sdk/mjbots_behavior.h"
+#include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 #include "many_motor_log.hpp"
 #include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
 
-class Spin_Motor : public Mjbots_Behavior<many_motor_log>{
-  using Mjbots_Behavior<many_motor_log>::Mjbots_Behavior;
+class Spin_Motor : public Mjbots_Control_Loop<many_motor_log>{
+  using Mjbots_Control_Loop<many_motor_log>::Mjbots_Control_Loop;
   void calc_torques() override{
     std::vector<float> torques(m_num_motors, 0);
     m_robot->set_torques(torques);
@@ -20,12 +20,13 @@ class Spin_Motor : public Mjbots_Behavior<many_motor_log>{
 };
 
 int main(int argc, char **argv) {
-  Behavior_Options options;
+  enable_ctrl_c();
+  Control_Loop_Options options;
   options.motor_list_.push_back(Motor(1,1));
   options.motor_list_.push_back(Motor(2,1));
   options.channel_name = "motor_data";
-  Spin_Motor behavior(options);
-  behavior.start();
-  behavior.join();
+  Spin_Motor control_loop(options);
+  control_loop.start();
+  control_loop.join();
   return 0;
 }

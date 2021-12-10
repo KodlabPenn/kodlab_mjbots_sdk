@@ -2,12 +2,12 @@
 // Created by shane on 11/3/21.
 //
 
-#include "kodlab_mjbots_sdk/mjbots_robot.h"
+#include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
 
 #include <utility>
 #include "iostream"
 
-void Mjbots_Robot::initialize_command() {
+void Mjbots_Robot_Interface::initialize_command() {
   for (const auto& id : m_servo_id_list) {
     m_commands.push_back({});
     m_commands.back().id = id; //id
@@ -28,7 +28,7 @@ void Mjbots_Robot::initialize_command() {
   }
 }
 
-void Mjbots_Robot::prepare_torque_command() {
+void Mjbots_Robot_Interface::prepare_torque_command() {
   for (auto& cmd : m_commands) {
     cmd.mode = mjbots::moteus::Mode::kPosition;
     cmd.position.kd_scale = 0;
@@ -37,16 +37,16 @@ void Mjbots_Robot::prepare_torque_command() {
 }
 
 
-mjbots::moteus::QueryResult Mjbots_Robot::Get(const std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply> &replies,
-                                              int id) {
+mjbots::moteus::QueryResult Mjbots_Robot_Interface::Get(const std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply> &replies,
+                                                        int id) {
   for (const auto& item : replies) {
     if (item.id == id) { return item.result; }
   }
   return {};
 }
 
-Mjbots_Robot::Mjbots_Robot(const std::vector<Motor>& motor_list, const Realtime_Params& realtime_params, float max_torque,
-                           int soft_start_duration):
+Mjbots_Robot_Interface::Mjbots_Robot_Interface(const std::vector<Motor>& motor_list, const Realtime_Params& realtime_params, float max_torque,
+                                               int soft_start_duration):
                                m_soft_start(max_torque, soft_start_duration) {
   // Process motor list
   m_num_servos = motor_list.size();
@@ -87,7 +87,7 @@ Mjbots_Robot::Mjbots_Robot(const std::vector<Motor>& motor_list, const Realtime_
   prepare_torque_command();
 }
 
-void Mjbots_Robot::process_reply() {
+void Mjbots_Robot_Interface::process_reply() {
 
   // Make sure the m_can_result is valid before waiting otherwise undefined behavior
   if (m_can_result.valid()){
@@ -109,7 +109,7 @@ void Mjbots_Robot::process_reply() {
   }
 }
 
-void Mjbots_Robot::send_command() {
+void Mjbots_Robot_Interface::send_command() {
   m_cycle_count ++;
   auto promise = std::make_shared<std::promise<mjbots::moteus::Pi3HatMoteusInterface::Output>>();
   m_moteus_interface->Cycle(
@@ -122,7 +122,7 @@ void Mjbots_Robot::send_command() {
   m_can_result = promise->get_future();
 }
 
-void Mjbots_Robot::set_torques(std::vector<float> torques) {
+void Mjbots_Robot_Interface::set_torques(std::vector<float> torques) {
   m_soft_start.constrainTorques(torques, m_cycle_count);
   m_torque_cmd = torques;
 
@@ -131,30 +131,30 @@ void Mjbots_Robot::set_torques(std::vector<float> torques) {
   }
 }
 
-std::vector<float> Mjbots_Robot::get_joint_positions() {
+std::vector<float> Mjbots_Robot_Interface::get_joint_positions() {
   return m_positions;
 }
 
-std::vector<float> Mjbots_Robot::get_joint_velocities() {
+std::vector<float> Mjbots_Robot_Interface::get_joint_velocities() {
   return m_velocities;
 }
 
-std::vector<mjbots::moteus::Mode> Mjbots_Robot::get_joint_modes() {
+std::vector<mjbots::moteus::Mode> Mjbots_Robot_Interface::get_joint_modes() {
   return  m_modes;
 }
 
-std::vector<float> Mjbots_Robot::get_joint_torque_cmd() {
+std::vector<float> Mjbots_Robot_Interface::get_joint_torque_cmd() {
   return m_torque_cmd;
 }
-std::vector<float> Mjbots_Robot::get_joint_torque_measured() {
+std::vector<float> Mjbots_Robot_Interface::get_joint_torque_measured() {
   return m_torque_measured;
 }
-void Mjbots_Robot::set_mode_stop() {
+void Mjbots_Robot_Interface::set_mode_stop() {
   for (auto& cmd : m_commands) {
     cmd.mode = mjbots::moteus::Mode::kStopped;
   }
 }
 
-void Mjbots_Robot::shutdown() {
+void Mjbots_Robot_Interface::shutdown() {
   m_moteus_interface->shutdown();
 }

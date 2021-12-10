@@ -43,7 +43,7 @@
 #include <real_time_tools/realtime_check.hpp>
 #include <real_time_tools/process_manager.hpp>
 #include "many_motor_log.hpp"
-#include "kodlab_mjbots_sdk/mjbots_robot.h"
+#include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
 #include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
 

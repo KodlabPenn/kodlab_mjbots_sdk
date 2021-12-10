@@ -44,7 +44,7 @@
 #include <real_time_tools/process_manager.hpp>
 #include "leg_log.hpp"
 #include "leg_gain.hpp"
-#include "kodlab_mjbots_sdk/mjbots_robot.h"
+#include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
 #include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
 
