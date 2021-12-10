@@ -10,8 +10,6 @@ class Spin_Motor : public Mjbots_Behavior<many_motor_log>{
   }
 
   void prepare_log()  override{
-    std::cout<<"\n Trying to setup log"<<std::endl;
-    std::cout<<m_robot->get_joint_positions().size()<<std::endl;
     for (int servo = 0; servo < m_num_motors; servo++) {
       m_log_data.positions[servo] = m_robot->get_joint_positions()[servo];
       m_log_data.velocities[servo] = m_robot->get_joint_velocities()[servo];

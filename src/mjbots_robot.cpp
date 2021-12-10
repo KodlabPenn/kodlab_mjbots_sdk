@@ -25,7 +25,6 @@ void Mjbots_Robot::initialize_command() {
   for (auto& cmd : m_commands) {
     cmd.resolution = res;
     cmd.mode = mjbots::moteus::Mode::kStopped;
-    std::cout<<cmd.id<<std::endl;
   }
 }
 

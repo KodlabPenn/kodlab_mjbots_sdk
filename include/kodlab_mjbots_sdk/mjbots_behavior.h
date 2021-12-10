@@ -87,17 +87,12 @@ Mjbots_Behavior<log_type>::Mjbots_Behavior(const Behavior_Options &options) :
   m_realtime_priority = options.realtime_params_.main_rtp;
   m_frequency = options.frequency;
   m_num_motors = options.motor_list_.size();
-  // Create robot object
-  m_robot = std::make_unique<Mjbots_Robot>(Mjbots_Robot(options.motor_list_, options.realtime_params_,
-                                                        options.max_torque, options.soft_start_duration));
   // Setup logging info and confirm template is provided if logging
   m_channel_name = options.channel_name;
   m_logging = !m_channel_name.empty();
   if(m_logging && std::is_same<log_type, void>()){
     std::cout<<"Warning, log_type is void, but logging is enabled"<<std::endl;
   }
-
-  std::cout<<"robot joint pos size = "<<m_robot->get_joint_positions().size()<<std::endl;
 }
 
 
@@ -118,6 +113,12 @@ void Mjbots_Behavior<log_type>::publish_log() {
 
 template<class log_type>
 void Mjbots_Behavior<log_type>::run() {
+
+  // Create robot object
+  m_robot.release();
+  m_robot = std::make_unique<Mjbots_Robot>(Mjbots_Robot(m_options.motor_list_, m_options.realtime_params_,
+                                                        m_options.max_torque, m_options.soft_start_duration));
+
   float prev_msg_duration = 0;
 
   // Create spinner to time loop
