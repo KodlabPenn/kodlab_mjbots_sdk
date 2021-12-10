@@ -2,8 +2,8 @@
 #include "many_motor_log.hpp"
 #include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
 
-class Spin_Motor : public mjbots_behavior<many_motor_log>{
-  using mjbots_behavior<many_motor_log>::mjbots_behavior;
+class Spin_Motor : public Mjbots_Behavior<many_motor_log>{
+  using Mjbots_Behavior<many_motor_log>::Mjbots_Behavior;
   void calc_torques() override{
     std::vector<float> torques(m_num_motors, 0);
     m_robot->set_torques(torques);

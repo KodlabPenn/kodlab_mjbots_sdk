@@ -9,9 +9,9 @@
 /*!
  * @brief template class for using a realtime thread with an object
  */
-class abstract_realtime_object {
+class Abstract_Realtime_Object {
  public:
-  abstract_realtime_object(int realtime_priority, int cpu);
+  Abstract_Realtime_Object(int realtime_priority, int cpu);
 
   /*!
    * @brief joins the realtime thread

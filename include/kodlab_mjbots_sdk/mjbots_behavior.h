@@ -4,7 +4,7 @@
 
 #pragma once
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
-#include "kodlab_mjbots_sdk/realtime_robot.h"
+#include "kodlab_mjbots_sdk/mjbots_robot.h"
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/timer.hpp"
 #include "real_time_tools/hard_spinner.hpp"
@@ -30,13 +30,13 @@ struct Behavior_Options{
  * @tparam log_type[optional] data type for logging
  */
 template<class log_type = void>
-class mjbots_behavior: public abstract_realtime_object{
+class Mjbots_Behavior: public Abstract_Realtime_Object{
  public:
   /*!
    * @brief constructs and mjbots behavior based on the options struct. Does not start the controller.
    * @param options contains options defining the behavior
    */
-  mjbots_behavior(const Behavior_Options &options);
+  Mjbots_Behavior(const Behavior_Options &options);
 
  protected:
 
@@ -68,7 +68,7 @@ class mjbots_behavior: public abstract_realtime_object{
    */
   void publish_log();
 
-  std::unique_ptr<Realtime_Robot> m_robot; /// ptr to the robot object
+  std::unique_ptr<Mjbots_Robot> m_robot; /// ptr to the robot object
   int m_frequency;                         /// frequency of the controller in Hz
   int m_num_motors;                        /// Number of motors
   Behavior_Options m_options;              /// Options struct
@@ -79,8 +79,8 @@ class mjbots_behavior: public abstract_realtime_object{
 };
 
 template<class log_type>
-mjbots_behavior<log_type>::mjbots_behavior(const Behavior_Options &options) :
-    abstract_realtime_object(options.realtime_params_.main_rtp, options.realtime_params_.can_cpu) {
+Mjbots_Behavior<log_type>::Mjbots_Behavior(const Behavior_Options &options) :
+    Abstract_Realtime_Object(options.realtime_params_.main_rtp, options.realtime_params_.can_cpu) {
   // Extract useful values from options
   m_options = options;
   m_cpu = options.realtime_params_.can_cpu;
@@ -88,8 +88,8 @@ mjbots_behavior<log_type>::mjbots_behavior(const Behavior_Options &options) :
   m_frequency = options.frequency;
   m_num_motors = options.motor_list_.size();
   // Create robot object
-  m_robot = std::make_unique<Realtime_Robot>(Realtime_Robot(options.motor_list_, options.realtime_params_,
-                                                            options.max_torque, options.soft_start_duration));
+  m_robot = std::make_unique<Mjbots_Robot>(Mjbots_Robot(options.motor_list_, options.realtime_params_,
+                                                        options.max_torque, options.soft_start_duration));
   // Setup logging info and confirm template is provided if logging
   m_channel_name = options.channel_name;
   m_logging = !m_channel_name.empty();
@@ -102,7 +102,7 @@ mjbots_behavior<log_type>::mjbots_behavior(const Behavior_Options &options) :
 
 
 template<class log_type>
-void mjbots_behavior<log_type>::add_timing_log(float t, float margin, float message_duration) {
+void Mjbots_Behavior<log_type>::add_timing_log(float t, float margin, float message_duration) {
   if(m_logging){
     m_log_data.timestamp = t;
     m_log_data.margin = margin;
@@ -111,13 +111,13 @@ void mjbots_behavior<log_type>::add_timing_log(float t, float margin, float mess
 }
 
 template<class log_type>
-void mjbots_behavior<log_type>::publish_log() {
+void Mjbots_Behavior<log_type>::publish_log() {
   if(m_logging)
     m_lcm.publish(m_channel_name, &m_log_data);
 }
 
 template<class log_type>
-void mjbots_behavior<log_type>::run() {
+void Mjbots_Behavior<log_type>::run() {
   float prev_msg_duration = 0;
 
   // Create spinner to time loop

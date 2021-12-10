@@ -4,7 +4,7 @@
 set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/moteus_protocol.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/realtime_robot.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_robot.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/common_header.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/polar_leg.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/cartesian_leg.h"
@@ -14,7 +14,7 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_behavior.h")
 
 # Make an automatic library - will be static or dynamic based on user setting
-add_library(kodlab_mjbots_sdk pi3hat.cpp realtime_robot.cpp polar_leg.cpp soft_start.cpp abstract_realtime_object.cpp
+add_library(kodlab_mjbots_sdk pi3hat.cpp mjbots_robot.cpp polar_leg.cpp soft_start.cpp abstract_realtime_object.cpp
         cartesian_leg.cpp ${HEADER_LIST})
 
 # We need this directory, and users of our library will need it too
