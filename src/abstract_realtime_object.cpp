@@ -22,6 +22,7 @@ void *Abstract_Realtime_Object::static_run(void *abstract_void_ptr) {
 }
 
 void Abstract_Realtime_Object::start() {
+  // Setup realtime thread and then start
   m_thread.parameters_.cpu_dma_latency_ = -1;
   m_thread.parameters_.priority_ = m_realtime_priority;
   if (m_cpu>=0){

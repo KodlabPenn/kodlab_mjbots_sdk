@@ -95,6 +95,7 @@ void Mjbots_Robot::process_reply() {
     m_can_result.wait();
   }
 
+  // Copy results to object so controller can use
   for(int servo =0; servo< m_num_servos; servo ++){
     const auto servo_reply = Get(m_replies, m_servo_id_list[servo]);
 

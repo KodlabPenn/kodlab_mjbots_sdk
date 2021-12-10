@@ -11,14 +11,30 @@
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
 
+/*!
+ * @brief Motor struct used for defining a motor in the robot
+ */
 struct Motor{
+  /*!
+   * @brief constructor to set id and can_bus
+   * @param id_ the can_id of the motor, must be unique
+   * @param can_bus_ the can bus the motor is on
+   */
   Motor(int id_, int can_bus_): can_bus(can_bus_), id(id_){}
+
+  /*!
+   * @brief constructor to set id, can_bus, offset, and direction
+   * @param id_ the can_id of the motor, must be unique
+   * @param can_bus_ the can bus the motor is on
+   * @param direction_ the direction of the motor, should be 1 or -1
+   * @param offset_ the offset of the motor in radians
+   */
   Motor(int id_, int can_bus_, int direction_, float offset_):
         can_bus(can_bus_), id(id_), direction(direction_), offset(offset_){}
-  int can_bus;
-  int id;
-  int direction = 1;
-  float offset  = 0;
+  int can_bus;       /// The can bus the motor is on
+  int id;            /// Motor can id, must be unique
+  int direction = 1; /// direction of the motor, should be 1 or -1
+  float offset  = 0; /// Offset of the motor in radians
 };
 
 struct Realtime_Params{
