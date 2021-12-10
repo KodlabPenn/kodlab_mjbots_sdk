@@ -122,23 +122,23 @@ class Pi3HatMoteusInterface {
   static void* static_run(void* void_interface_ptr){
     Pi3HatMoteusInterface* interface =
         (static_cast<Pi3HatMoteusInterface*>(void_interface_ptr));
-    pi3hat::Pi3Hat hat({});
-    interface->pi3hat_ = &hat;
-    interface->CHILD_Run();
+    interface->run();
     return nullptr;
   }
 
   void start(){
     thread_.parameters_.cpu_dma_latency_ = -1;
     thread_.parameters_.priority_ = options_.realtime_priority;
+    thread_.parameters_.block_memory_ = true;
+    thread_.parameters_.cpu_id_ = {options_.cpu};
     thread_.create_realtime_thread(static_run, this);
   }
 
  private:
 
-  void CHILD_Run( ) {
-    std::vector<int> cpu = {options_.cpu};
-    real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
+  void run( ) {
+    pi3hat::Pi3Hat::Configuration config;
+    pi3hat_ = std::make_shared<pi3hat::Pi3Hat>(config);
     while (true) {
       {
         std::unique_lock<std::mutex> lock(mutex_);
@@ -234,7 +234,7 @@ class Pi3HatMoteusInterface {
 
   /// All further variables are only used from within the child thread.
 
-  pi3hat::Pi3Hat* pi3hat_ = nullptr;
+  std::shared_ptr<pi3hat::Pi3Hat> pi3hat_ = nullptr;
 
   // These are kept persistently so that no memory allocation is
   // required in steady state.

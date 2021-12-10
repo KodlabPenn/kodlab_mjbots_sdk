@@ -87,7 +87,7 @@ Mjbots_Control_Loop<log_type>::Mjbots_Control_Loop(const Control_Loop_Options &o
     Abstract_Realtime_Object(options.realtime_params_.main_rtp, options.realtime_params_.can_cpu) {
   // Extract useful values from options
   m_options = options;
-  m_cpu = options.realtime_params_.can_cpu;
+  m_cpu = options.realtime_params_.main_cpu;
   m_realtime_priority = options.realtime_params_.main_rtp;
   m_frequency = options.frequency;
   m_num_motors = options.motor_list_.size();

@@ -15,6 +15,7 @@ void Abstract_Realtime_Object::join() {
 void *Abstract_Realtime_Object::static_run(void *abstract_void_ptr) {
   Abstract_Realtime_Object* ptr =
       (static_cast<Abstract_Realtime_Object*>(abstract_void_ptr));
+  real_time_tools::Timer::sleep_ms(1000);
   ptr->run();
   return nullptr;
 }
