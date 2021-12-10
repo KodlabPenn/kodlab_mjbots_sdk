@@ -29,5 +29,6 @@ void Abstract_Realtime_Object::start() {
   if (m_cpu>=0){
     m_thread.parameters_.cpu_id_ = {m_cpu};
   }
+  m_thread.parameters_.block_memory_=true;
   m_thread.create_realtime_thread(static_run, this);
 }
