@@ -2,10 +2,8 @@
 // Created by shane on 11/18/21.
 //
 
-#include <unistd.h>
-#include <real_time_tools/process_manager.hpp>
+#include "real_time_tools/timer.hpp"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
-#include <iostream>
 Abstract_Realtime_Object::Abstract_Realtime_Object(int realtime_priority, int cpu): m_realtime_priority(realtime_priority),
                                                                                     m_cpu(cpu){
 }
@@ -17,7 +15,7 @@ void Abstract_Realtime_Object::join() {
 void *Abstract_Realtime_Object::static_run(void *abstract_void_ptr) {
   Abstract_Realtime_Object* ptr =
       (static_cast<Abstract_Realtime_Object*>(abstract_void_ptr));
-  sleep(1);
+  real_time_tools::Timer::sleep_ms(1);
   ptr->run();
   return nullptr;
 }

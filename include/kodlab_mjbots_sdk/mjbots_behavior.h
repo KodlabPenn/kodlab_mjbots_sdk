@@ -68,7 +68,7 @@ class Mjbots_Behavior: public Abstract_Realtime_Object{
    */
   void publish_log();
 
-  std::unique_ptr<Mjbots_Robot> m_robot; /// ptr to the robot object
+  std::shared_ptr<Mjbots_Robot> m_robot; /// ptr to the robot object
   int m_frequency;                         /// frequency of the controller in Hz
   int m_num_motors;                        /// Number of motors
   Behavior_Options m_options;              /// Options struct
@@ -77,6 +77,9 @@ class Mjbots_Behavior: public Abstract_Realtime_Object{
   lcm::LCM m_lcm;                          /// LCM object
   log_type m_log_data;                     /// object containing log data
 };
+
+
+/******************************************Implementation**************************************************************/
 
 template<class log_type>
 Mjbots_Behavior<log_type>::Mjbots_Behavior(const Behavior_Options &options) :
@@ -115,8 +118,7 @@ template<class log_type>
 void Mjbots_Behavior<log_type>::run() {
 
   // Create robot object
-  m_robot.release();
-  m_robot = std::make_unique<Mjbots_Robot>(Mjbots_Robot(m_options.motor_list_, m_options.realtime_params_,
+  m_robot = std::make_shared<Mjbots_Robot>(Mjbots_Robot(m_options.motor_list_, m_options.realtime_params_,
                                                         m_options.max_torque, m_options.soft_start_duration));
 
   float prev_msg_duration = 0;
