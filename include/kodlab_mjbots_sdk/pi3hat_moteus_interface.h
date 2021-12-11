@@ -130,7 +130,9 @@ class Pi3HatMoteusInterface {
     thread_.parameters_.cpu_dma_latency_ = -1;
     thread_.parameters_.priority_ = options_.realtime_priority;
     thread_.parameters_.block_memory_ = true;
-    thread_.parameters_.cpu_id_ = {options_.cpu};
+    if (options_.cpu>=0){
+      thread_.parameters_.cpu_id_ = {options_.cpu};
+    }
     thread_.create_realtime_thread(static_run, this);
   }
 
