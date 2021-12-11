@@ -1,3 +1,8 @@
+
+/* Basic example script demonstrating how to use the mjbots_control_loop to 2 motors. The functions to implement are
+ * calc_torques and prepare_log. In this example we send a torque cmd of all zeros and log the motor information.
+ */
+
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 #include "many_motor_log.hpp"
 #include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
@@ -20,12 +25,16 @@ class Spin_Motor : public Mjbots_Control_Loop<many_motor_log>{
 };
 
 int main(int argc, char **argv) {
-  enable_ctrl_c();
+  enable_ctrl_c(); // make sure system fails gracefully
   Control_Loop_Options options;
-  options.motor_list_.push_back(Motor(1,1));
-  options.motor_list_.push_back(Motor(2,1));
-  options.channel_name = "motor_data";
+  // Define the motors in the robot
+  options.m_motor_list.emplace_back(1, 1);
+  options.m_motor_list.emplace_back(2, 1);
+  options.m_channel_name = "motor_data";
+
+  // Create control loop
   Spin_Motor control_loop(options);
+  // Starts the loop, and then join it
   control_loop.start();
   control_loop.join();
   return 0;

@@ -7,8 +7,5 @@ macro(add_example demo_name)
 endmacro(add_example target_name)
 
 
-#add_example(moteus_control_example_with_logging)
-#add_example(lcm_time_test)
-#add_example(leg_example)
-#add_example(13_motor_test)
+add_example(leg_example)
 add_example(spin_motor_example)

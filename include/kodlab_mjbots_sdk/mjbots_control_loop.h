@@ -14,17 +14,17 @@
  * @brief options struct for creating a mjbots behavior
  */
 struct Control_Loop_Options{
-  std::vector<Motor> motor_list_;    /// List of motors in robot
-  Realtime_Params realtime_params_;  /// Set of parameters for robot's realtimeness
+  std::vector<Motor> m_motor_list;    /// List of motors in robot
+  Realtime_Params m_realtime_params;  /// Set of parameters for robot's realtimeness
 
-  float max_torque = 20;             /// Maximum torque in Nm
-  int soft_start_duration = 1000;    /// Duration of the soft start in cycles
-  int frequency = 1000;              /// Frequency of the control loop in Hz
-  std::string channel_name;          /// LCM channel name for logging data. Leave empty to not log
+  float m_max_torque = 20;             /// Maximum torque in Nm
+  int m_soft_start_duration = 1000;    /// Duration of the soft start in cycles
+  int m_frequency = 1000;              /// Frequency of the control loop in Hz
+  std::string m_channel_name;          /// LCM channel name for logging data. Leave empty to not log
 };
 
 /*!
- * @brief mjbots_behavior class is an parent class to be used to create mjbots_behavior. It supports 1 controller and
+ * @brief mjbots_control_loop class is an parent class to be used to create a control loop. It supports 1 controller and
  *        logging. The child class must implement calc_torques and prepare_log (if logging). The robot data is stored in
  *        the robot object. The behavior runs in its own thread. To start the thread run start()
  * @tparam log_type[optional] data type for logging
@@ -84,18 +84,19 @@ class Mjbots_Control_Loop: public Abstract_Realtime_Object{
 
 template<class log_type>
 Mjbots_Control_Loop<log_type>::Mjbots_Control_Loop(const Control_Loop_Options &options) :
-    Abstract_Realtime_Object(options.realtime_params_.main_rtp, options.realtime_params_.can_cpu) {
+    Abstract_Realtime_Object(options.m_realtime_params.main_rtp, options.m_realtime_params.can_cpu) {
   // Extract useful values from options
   m_options = options;
-  m_cpu = options.realtime_params_.main_cpu;
-  m_realtime_priority = options.realtime_params_.main_rtp;
-  m_frequency = options.frequency;
-  m_num_motors = options.motor_list_.size();
+  m_cpu = options.m_realtime_params.main_cpu;
+  m_realtime_priority = options.m_realtime_params.main_rtp;
+  m_frequency = options.m_frequency;
+  m_num_motors = options.m_motor_list.size();
   // Setup logging info and confirm template is provided if logging
-  m_channel_name = options.channel_name;
+  m_channel_name = options.m_channel_name;
   m_logging = !m_channel_name.empty();
   if(m_logging && std::is_same<log_type, void>()){
     std::cout<<"Warning, log_type is void, but logging is enabled"<<std::endl;
+    m_logging = false;
   }
 }
 
@@ -119,8 +120,8 @@ template<class log_type>
 void Mjbots_Control_Loop<log_type>::run() {
 
   // Create robot object
-  m_robot = std::make_shared<Mjbots_Robot_Interface>(Mjbots_Robot_Interface(m_options.motor_list_, m_options.realtime_params_,
-                                                                            m_options.max_torque, m_options.soft_start_duration));
+  m_robot = std::make_shared<Mjbots_Robot_Interface>(Mjbots_Robot_Interface(m_options.m_motor_list, m_options.m_realtime_params,
+                                                                            m_options.m_max_torque, m_options.m_soft_start_duration));
 
   float prev_msg_duration = 0;
 
