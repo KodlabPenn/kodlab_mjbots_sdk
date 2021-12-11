@@ -1,6 +1,8 @@
-//
-// Created by shane on 11/17/21.
-//
+// BSD 3-Clause License
+// Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+// Authors:
+// Shane Rozen-Levy <srozen01@seas.upenn.edu>
+
 
 #pragma once
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
@@ -118,6 +120,7 @@ void Mjbots_Control_Loop<log_type>::publish_log() {
 
 template<class log_type>
 void Mjbots_Control_Loop<log_type>::run() {
+  enable_ctrl_c();
 
   // Create robot object
   m_robot = std::make_shared<Mjbots_Robot_Interface>(Mjbots_Robot_Interface(m_options.m_motor_list, m_options.m_realtime_params,

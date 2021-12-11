@@ -1,3 +1,7 @@
+// BSD 3-Clause License
+// Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+// Authors:
+// Shane Rozen-Levy <srozen01@seas.upenn.edu>
 
 /* Basic example script demonstrating how to use the mjbots_control_loop to 2 motors. The functions to implement are
  * calc_torques and prepare_log. In this example we send a torque cmd of all zeros and log the motor information.
@@ -25,7 +29,6 @@ class Spin_Motor : public Mjbots_Control_Loop<many_motor_log>{
 };
 
 int main(int argc, char **argv) {
-  enable_ctrl_c(); // make sure system fails gracefully
   Control_Loop_Options options;
   // Define the motors in the robot
   options.m_motor_list.emplace_back(1, 1);

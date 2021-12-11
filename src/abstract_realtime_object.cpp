@@ -1,6 +1,8 @@
-//
-// Created by shane on 11/18/21.
-//
+// BSD 3-Clause License
+// Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+// Authors:
+// Shane Rozen-Levy <srozen01@seas.upenn.edu>
+
 
 #include "real_time_tools/timer.hpp"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"

@@ -1,6 +1,8 @@
-//
-// Created by shane on 11/3/21.
-//
+// BSD 3-Clause License
+// Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+// Authors:
+// Shane Rozen-Levy <srozen01@seas.upenn.edu>
+
 
 #pragma once
 

@@ -1,3 +1,8 @@
+// BSD 3-Clause License
+// Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+// Authors:
+// Shane Rozen-Levy <srozen01@seas.upenn.edu>
+
 /*
  * This example demonstrates how you can use the mjbots_control_loop and the cartesian leg to create a hopping robot
  */
@@ -119,7 +124,6 @@ class Hopping : public Mjbots_Control_Loop<leg_log>{
 };
 
 int main(int argc, char **argv) {
-  enable_ctrl_c();
   Control_Loop_Options options;
   options.m_motor_list.emplace_back(1, 1, 1, 0.1949);
   options.m_motor_list.emplace_back(2, 1, -1, 0.0389);
