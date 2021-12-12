@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Modified by Shane Rozen-Levy srozen01@seas.upenn.edu to use realtime library
+
 #pragma once
 
 #include <condition_variable>
@@ -27,7 +29,6 @@
 #include "kodlab_mjbots_sdk/pi3hat.h"
 #include <sys/types.h>
 #include <unistd.h>
-#include "kodlab_mjbots_sdk/realtime.h"
 #include "kodlab_mjbots_sdk/common_header.h"
 namespace mjbots {
 namespace moteus {
@@ -40,6 +41,7 @@ class Pi3HatMoteusInterface {
  public:
   struct Options {
     int cpu = -1;
+    int realtime_priority = -1;
 
     // If a servo is not present, it is assumed to be on bus 1.
     std::map<int, int> servo_bus_map;
@@ -122,23 +124,25 @@ class Pi3HatMoteusInterface {
   static void* static_run(void* void_interface_ptr){
     Pi3HatMoteusInterface* interface =
         (static_cast<Pi3HatMoteusInterface*>(void_interface_ptr));
-    pi3hat::Pi3Hat hat({});
-    interface->pi3hat_ = &hat;
-    interface->CHILD_Run();
+    interface->run();
     return nullptr;
   }
 
   void start(){
     thread_.parameters_.cpu_dma_latency_ = -1;
-    thread_.parameters_.priority_ = 98;
+    thread_.parameters_.priority_ = options_.realtime_priority;
+    thread_.parameters_.block_memory_ = true;
+    if (options_.cpu>=0){
+      thread_.parameters_.cpu_id_ = {options_.cpu};
+    }
     thread_.create_realtime_thread(static_run, this);
   }
 
  private:
 
-  void CHILD_Run( ) {
-    std::vector<int> cpu = {options_.cpu};
-    real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
+  void run( ) {
+    pi3hat::Pi3Hat::Configuration config;
+    pi3hat_ = std::make_shared<pi3hat::Pi3Hat>(config);
     while (true) {
       {
         std::unique_lock<std::mutex> lock(mutex_);
@@ -234,7 +238,7 @@ class Pi3HatMoteusInterface {
 
   /// All further variables are only used from within the child thread.
 
-  pi3hat::Pi3Hat* pi3hat_ = nullptr;
+  std::shared_ptr<pi3hat::Pi3Hat> pi3hat_ = nullptr;
 
   // These are kept persistently so that no memory allocation is
   // required in steady state.

@@ -1,41 +1,36 @@
-//
-// Created by shane on 11/18/21.
-//
+// BSD 3-Clause License
+// Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+// Authors:
+// Shane Rozen-Levy <srozen01@seas.upenn.edu>
 
-#include <unistd.h>
-#include <real_time_tools/process_manager.hpp>
+
+#include "real_time_tools/timer.hpp"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
-#include <iostream>
-abstract_realtime_object::abstract_realtime_object(int realtime_priority, int cpu):m_realtime_priority(realtime_priority),
-                                                                                   m_cpu(cpu){
+Abstract_Realtime_Object::Abstract_Realtime_Object(int realtime_priority, int cpu): m_realtime_priority(realtime_priority),
+                                                                                    m_cpu(cpu){
 }
 
-void abstract_realtime_object::join() {
-  m_thread->join();
+void Abstract_Realtime_Object::join() {
+  m_thread.join();
 }
 
-void *abstract_realtime_object::static_run(void *abstract_void_ptr) {
-  abstract_realtime_object* ptr =
-      (static_cast<abstract_realtime_object*>(abstract_void_ptr));
-  ptr->set_up_cpu_run();
+void *Abstract_Realtime_Object::static_run(void *abstract_void_ptr) {
+  Abstract_Realtime_Object* ptr =
+      (static_cast<Abstract_Realtime_Object*>(abstract_void_ptr));
+  real_time_tools::Timer::sleep_ms(10);
+  ptr->run();
   return nullptr;
 }
 
-void abstract_realtime_object::set_up_cpu_run() {
-  if(m_cpu > 0){
-    std::vector<int> cpu = {m_cpu};
-    real_time_tools::fix_current_process_to_cpu(cpu, ::getpid());
+void Abstract_Realtime_Object::start() {
+  // Setup realtime thread and then start
+  m_thread.parameters_.cpu_dma_latency_ = -1;
+  m_thread.parameters_.priority_ = m_realtime_priority;
+  if (m_cpu>=0){
+    m_thread.parameters_.cpu_id_ = {m_cpu};
   }
-  run();
-}
-
-void abstract_realtime_object::start() {
-  m_thread.reset(new real_time_tools::RealTimeThread());
-  m_thread->parameters_.cpu_dma_latency_ = -1;
-  m_thread->parameters_.priority_ = m_realtime_priority;
-  m_thread->create_realtime_thread(static_run, this);
-}
-
-abstract_realtime_object::abstract_realtime_object() {
-
+  m_thread.parameters_.block_memory_=true;
+  // Create realtime_thread takes a static function and a void*. In order to get the run function inside the control loop
+  // we call the static_run function which takes in a void ptr to a Abstract_Realtime_Object and then runs the run function
+  m_thread.create_realtime_thread(static_run, this);
 }

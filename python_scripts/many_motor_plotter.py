@@ -16,6 +16,7 @@ log = lcm.EventLog(file_name, "r")
 
 timestamps = []
 margins = []
+message_duration = []
 positions = []
 velocities = []
 torques = []
@@ -25,12 +26,14 @@ for event in log:
         timestamps.append(msg.timestamp)
         velocities.append(msg.velocities)
         positions.append(msg.positions)
-        margins.append(msg.mean_margin)
+        margins.append(msg.margin)
         torques.append(msg.torques)
+        message_duration.append(msg.message_duration)
 
 
 timestamps = np.array(timestamps)
 margins = np.array(margins)
+message_duration = np.array(message_duration)
 velocities = np.array(velocities)
 positions = np.array(positions)
 
@@ -42,9 +45,12 @@ print("stdev dt = ",np.std(np.diff(timestamps)))
 print("Mean margin = ", mean_margin)
 print("std margin = ", np.std(margins))
 
+print("Mean message_duration = ", np.average(message_duration))
+print("std message_duration = ", np.std(message_duration))
+
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1)
 ax1.set_title(file_name)
-ax1.plot(timestamps, margins)
+ax1.plot(timestamps, message_duration)
 ax1.set_ylabel('Communication duration')
 
 ax2.plot(timestamps[:-1], np.diff(timestamps))

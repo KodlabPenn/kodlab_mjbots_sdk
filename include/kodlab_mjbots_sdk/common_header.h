@@ -1,4 +1,4 @@
-// Taken from solo8 repo for handeling ctrlc
+// Taken from solo8 repo for handling ctrl+c
 
 #pragma once
 #include <atomic>

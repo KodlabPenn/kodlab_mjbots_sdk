@@ -1,13 +1,15 @@
-//
-// Created by shane on 11/3/21.
-//
+// BSD 3-Clause License
+// Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+// Authors:
+// Shane Rozen-Levy <srozen01@seas.upenn.edu>
 
-#include "kodlab_mjbots_sdk/realtime_robot.h"
+
+#include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
 
 #include <utility>
 #include "iostream"
 
-void Realtime_Robot::initialize_command() {
+void Mjbots_Robot_Interface::initialize_command() {
   for (const auto& id : m_servo_id_list) {
     m_commands.push_back({});
     m_commands.back().id = id; //id
@@ -25,11 +27,10 @@ void Realtime_Robot::initialize_command() {
   for (auto& cmd : m_commands) {
     cmd.resolution = res;
     cmd.mode = mjbots::moteus::Mode::kStopped;
-    std::cout<<cmd.id<<std::endl;
   }
 }
 
-void Realtime_Robot::prepare_torque_command() {
+void Mjbots_Robot_Interface::prepare_torque_command() {
   for (auto& cmd : m_commands) {
     cmd.mode = mjbots::moteus::Mode::kPosition;
     cmd.position.kd_scale = 0;
@@ -38,45 +39,43 @@ void Realtime_Robot::prepare_torque_command() {
 }
 
 
-mjbots::moteus::QueryResult Realtime_Robot::Get(const std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply> &replies,
-                                                int id) {
+mjbots::moteus::QueryResult Mjbots_Robot_Interface::Get(const std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply> &replies,
+                                                        int id) {
   for (const auto& item : replies) {
     if (item.id == id) { return item.result; }
   }
   return {};
 }
-Realtime_Robot::Realtime_Robot(int num_servos,
-                               std::vector<int> servo_id_list,
-                               std::vector<int> servo_bus_list,
-                               int can_cpu,
-                               std::vector<float> offsets,
-                               std::vector<int> directions,
-                               float max_torque,
-                               int soft_start_duration): m_soft_start(max_torque, soft_start_duration){
 
-  m_num_servos = num_servos;
-  m_servo_id_list = servo_id_list;
-  m_servo_bus_list = servo_bus_list;
-
+Mjbots_Robot_Interface::Mjbots_Robot_Interface(const std::vector<Motor>& motor_list, const Realtime_Params& realtime_params, float max_torque,
+                                               int soft_start_duration):
+                               m_soft_start(max_torque, soft_start_duration) {
+  // Process motor list
+  m_num_servos = motor_list.size();
+  for (const auto & motor_elem : motor_list){
+    m_servo_id_list.push_back(motor_elem.id);
+    m_servo_bus_list.push_back(motor_elem.can_bus);
+    m_offsets.push_back(motor_elem.offset);
+    m_directions.push_back(motor_elem.direction);
+  }
   for (size_t i = 0; i < m_num_servos; ++i)
     m_servo_bus_map[m_servo_id_list[i]] = m_servo_bus_list[i];
 
-  m_offsets = offsets;
-  m_directions = directions;
-
+  // Create moteus interface
   mjbots::moteus::Pi3HatMoteusInterface::Options moteus_options;
-  moteus_options.cpu = can_cpu;
+  moteus_options.cpu = realtime_params.can_cpu;
+  moteus_options.realtime_priority = realtime_params.can_rtp;
   moteus_options.servo_bus_map = m_servo_bus_map;
-
   m_moteus_interface = std::make_unique<mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
 
+  // Initialize and send basic command
   initialize_command();
   m_replies = std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply>{m_commands.size()};
   m_moteus_data.commands = { m_commands.data(), m_commands.size() };
   m_moteus_data.replies = { m_replies.data(), m_replies.size() };
-
   send_command();
 
+  // Prepare variables for saving response and process reply
   for(int servo = 0; servo< m_num_servos; servo++){
     m_positions.push_back(0);
     m_velocities.push_back(0);
@@ -84,19 +83,20 @@ Realtime_Robot::Realtime_Robot(int num_servos,
     m_torque_measured.push_back(0);
     m_modes.push_back(mjbots::moteus::Mode::kStopped);
   }
-
   process_reply();
 
+  // Setup message for basic torque commands
   prepare_torque_command();
-
 }
-void Realtime_Robot::process_reply() {
+
+void Mjbots_Robot_Interface::process_reply() {
 
   // Make sure the m_can_result is valid before waiting otherwise undefined behavior
   if (m_can_result.valid()){
     m_can_result.wait();
   }
 
+  // Copy results to object so controller can use
   for(int servo =0; servo< m_num_servos; servo ++){
     const auto servo_reply = Get(m_replies, m_servo_id_list[servo]);
 
@@ -111,7 +111,7 @@ void Realtime_Robot::process_reply() {
   }
 }
 
-void Realtime_Robot::send_command() {
+void Mjbots_Robot_Interface::send_command() {
   m_cycle_count ++;
   auto promise = std::make_shared<std::promise<mjbots::moteus::Pi3HatMoteusInterface::Output>>();
   m_moteus_interface->Cycle(
@@ -124,7 +124,7 @@ void Realtime_Robot::send_command() {
   m_can_result = promise->get_future();
 }
 
-void Realtime_Robot::set_torques(std::vector<float> torques) {
+void Mjbots_Robot_Interface::set_torques(std::vector<float> torques) {
   m_soft_start.constrainTorques(torques, m_cycle_count);
   m_torque_cmd = torques;
 
@@ -133,30 +133,30 @@ void Realtime_Robot::set_torques(std::vector<float> torques) {
   }
 }
 
-std::vector<float> Realtime_Robot::get_joint_positions() {
+std::vector<float> Mjbots_Robot_Interface::get_joint_positions() {
   return m_positions;
 }
 
-std::vector<float> Realtime_Robot::get_joint_velocities() {
+std::vector<float> Mjbots_Robot_Interface::get_joint_velocities() {
   return m_velocities;
 }
 
-std::vector<mjbots::moteus::Mode> Realtime_Robot::get_joint_modes() {
+std::vector<mjbots::moteus::Mode> Mjbots_Robot_Interface::get_joint_modes() {
   return  m_modes;
 }
 
-std::vector<float> Realtime_Robot::get_joint_torque_cmd() {
+std::vector<float> Mjbots_Robot_Interface::get_joint_torque_cmd() {
   return m_torque_cmd;
 }
-std::vector<float> Realtime_Robot::get_joint_torque_measured() {
+std::vector<float> Mjbots_Robot_Interface::get_joint_torque_measured() {
   return m_torque_measured;
 }
-void Realtime_Robot::set_mode_stop() {
+void Mjbots_Robot_Interface::set_mode_stop() {
   for (auto& cmd : m_commands) {
     cmd.mode = mjbots::moteus::Mode::kStopped;
   }
 }
 
-void Realtime_Robot::shutdown() {
+void Mjbots_Robot_Interface::shutdown() {
   m_moteus_interface->shutdown();
 }
