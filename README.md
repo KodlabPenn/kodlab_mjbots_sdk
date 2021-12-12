@@ -17,7 +17,7 @@ library to allow for the position loop to run on the moteus.
 # Usage
 ## mjbots_control_loop:
 To use the `mjbots_control_loop` create a class which inherits the `mjbots_control_loop`
-and implements the implements `calc_torque` to set the torques in the robot object. 
+and implements `calc_torque` to set the torques in the robot object. 
 
     class Controller : public Mjbots_Control_Loop{
       using Mjbots_Control_Loop::Mjbots_Control_Loop;
