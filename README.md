@@ -48,6 +48,8 @@ Finally when creating the instance of the class set the `m_channel_name` option 
 
       options.m_channel_name = "motor_data";
       Controller control_loop(options)
+      
+To log data, on your laptop start the bot lcm tunnel with `bot-lcm-tunnel <IP>` and start logging using `lcm-logger`
 
 ## Soft start
 To configure the soft start, set the `options.m_max_torque` and `options.m_soft_start_duration`. Where the
