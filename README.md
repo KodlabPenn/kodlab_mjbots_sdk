@@ -121,4 +121,8 @@ Current command to build clean is
 Normal build is 
 
     cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake
-    
+
+# Running Code
+To run code, first scp the binary onto the pi, and then run it as sudo using:
+
+    sudo ./code_binary
