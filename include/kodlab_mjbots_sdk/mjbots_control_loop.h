@@ -201,6 +201,7 @@ void Mjbots_Control_Loop<log_type, input_type>::safe_process_input() {
       if(m_lcm_sub.m_new_message){
         process_input();
       }
+      m_lcm_sub.m_new_message = false;
       m_lcm_sub.m_mutex.unlock();
     }
   }

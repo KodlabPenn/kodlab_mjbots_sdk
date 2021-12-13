@@ -25,7 +25,7 @@ class Lcm_Subscriber: public Abstract_Realtime_Object{
   Lcm_Subscriber(int realtime_priority, int cpu, std::string channel_name);
 
   std::mutex m_mutex;
-  bool m_new_message;
+  bool m_new_message = false;
   msg_type m_data;
  protected:
   /*!
@@ -51,9 +51,10 @@ class Lcm_Subscriber: public Abstract_Realtime_Object{
 template<class msg_type>
 void Lcm_Subscriber<msg_type>::run() {
   m_lcm.subscribe(m_channel_name, &Lcm_Subscriber::handle_msg, this);
+  m_mutex.unlock();
   std::cout<<"Subscribing to "<<m_channel_name<<std::endl;
   while (!CTRL_C_DETECTED){
-    m_lcm.handleTimeout(100000);
+    m_lcm.handleTimeout(1000);
   }
 }
 
@@ -65,6 +66,7 @@ Lcm_Subscriber<msg_type>::Lcm_Subscriber(int realtime_priority, int cpu, std::st
   if(!m_channel_name.empty())
     start();
 }
+
 template<class msg_type>
 void Lcm_Subscriber<msg_type>::handle_msg(const lcm::ReceiveBuffer *rbuf,
                                           const std::string &chan,
