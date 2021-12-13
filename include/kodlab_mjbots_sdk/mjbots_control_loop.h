@@ -12,7 +12,7 @@
 #include "real_time_tools/timer.hpp"
 #include "real_time_tools/hard_spinner.hpp"
 #include <type_traits>
-
+#include "void_lcm.hpp"
 /*!
  * @brief options struct for creating a mjbots behavior
  */
@@ -33,7 +33,7 @@ struct Control_Loop_Options{
  *        the robot object. The behavior runs in its own thread. To start the thread run start()
  * @tparam log_type[optional] data type for logging
  */
-template<class log_type = void, class input_type = void>
+template<class log_type = void_lcm, class input_type = void_lcm>
 class Mjbots_Control_Loop: public Abstract_Realtime_Object{
  public:
   /*!
@@ -74,7 +74,7 @@ class Mjbots_Control_Loop: public Abstract_Realtime_Object{
 
   void safe_process_input();
 
-  virtual void process_input(const input_type& new_data) = 0;
+  virtual void process_input(){};
 
   std::shared_ptr<Mjbots_Robot_Interface> m_robot;   /// ptr to the robot object, if unique causes many issues, also should be
                                                      /// initialized inside thread
@@ -86,7 +86,7 @@ class Mjbots_Control_Loop: public Abstract_Realtime_Object{
   std::string m_logging_channel_name;              /// Channel name to publish logs to, leave empty if not publishing
   lcm::LCM m_lcm;                          /// LCM object
   log_type m_log_data;                     /// object containing log data
-  Lcm_Subscriber<log_type> m_lcm_sub;
+  Lcm_Subscriber<input_type> m_lcm_sub;
 };
 
 
@@ -94,7 +94,8 @@ class Mjbots_Control_Loop: public Abstract_Realtime_Object{
 
 template<class log_type, class input_type>
 Mjbots_Control_Loop<log_type, input_type>::Mjbots_Control_Loop(const Control_Loop_Options &options) :
-    Abstract_Realtime_Object(options.m_realtime_params.main_rtp, options.m_realtime_params.can_cpu) {
+    Abstract_Realtime_Object(options.m_realtime_params.main_rtp, options.m_realtime_params.can_cpu),
+    m_lcm_sub(options.m_realtime_params.lcm_rtp, options.m_realtime_params.lcm_cpu, options.m_input_channel_name){
   // Extract useful values from options
   m_options = options;
   m_cpu = options.m_realtime_params.main_cpu;
@@ -104,19 +105,15 @@ Mjbots_Control_Loop<log_type, input_type>::Mjbots_Control_Loop(const Control_Loo
   // Setup logging info and confirm template is provided if logging
   m_logging_channel_name = options.m_log_channel_name;
   m_logging = !m_logging_channel_name.empty();
-  if(m_logging && std::is_same<log_type, void>()){
-    std::cout<<"Warning, log_type is void, but logging is enabled"<<std::endl;
+  if(m_logging && std::is_same<log_type, void_lcm>()){
+    std::cout<<"Warning, log_type is default, but logging is enabled"<<std::endl;
     m_logging = false;
   }
 
   m_input = !options.m_input_channel_name.empty();
-  if(m_input && std::is_same<input_type, void>()){
-    std::cout<<"Warning, input_type is void, but input is enabled"<<std::endl;
+  if(m_input && std::is_same<input_type, void_lcm>()){
+    std::cout<<"Warning, input_type is default, but input is enabled"<<std::endl;
     m_input = false;
-  }
-  if(m_input){
-    m_log_data = Lcm_Subscriber<log_type>(options.m_realtime_params.lcm_rtp, options.m_realtime_params.lcm_cpu,
-                                          m_options.m_input_channel_name);
   }
 }
 
@@ -192,13 +189,17 @@ void Mjbots_Control_Loop<log_type, input_type>::run() {
 
   // try to shutdown, but fail
   m_robot->shutdown();
+  if(m_input){
+    m_lcm_sub.join();
+  }
 }
+
 template<class log_type, class input_type>
 void Mjbots_Control_Loop<log_type, input_type>::safe_process_input() {
   if(m_input){
     if (m_lcm_sub.m_mutex.try_lock()){
       if(m_lcm_sub.m_new_message){
-        process_input(m_lcm_sub.m_data);
+        process_input();
       }
       m_lcm_sub.m_mutex.unlock();
     }

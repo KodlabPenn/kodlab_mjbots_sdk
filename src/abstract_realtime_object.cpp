@@ -34,3 +34,6 @@ void Abstract_Realtime_Object::start() {
   // we call the static_run function which takes in a void ptr to a Abstract_Realtime_Object and then runs the run function
   m_thread.create_realtime_thread(static_run, this);
 }
+Abstract_Realtime_Object::Abstract_Realtime_Object() {
+
+}

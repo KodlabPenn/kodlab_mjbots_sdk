@@ -26,6 +26,7 @@ class Lcm_Subscriber: public Abstract_Realtime_Object{
 
   std::mutex m_mutex;
   bool m_new_message;
+  msg_type m_data;
  protected:
   /*!
    * @brief callback function when msg is received. To be overriden by child class
@@ -44,13 +45,13 @@ class Lcm_Subscriber: public Abstract_Realtime_Object{
 
   std::string m_channel_name;
   lcm::LCM m_lcm;
-  msg_type m_data;
 };
 
 /************************************Implementation********************************************************************/
 template<class msg_type>
 void Lcm_Subscriber<msg_type>::run() {
   m_lcm.subscribe(m_channel_name, &Lcm_Subscriber::handle_msg, this);
+  std::cout<<"Subscribing to "<<m_channel_name<<std::endl;
   while (!CTRL_C_DETECTED){
     m_lcm.handleTimeout(100000);
   }
@@ -61,7 +62,8 @@ Lcm_Subscriber<msg_type>::Lcm_Subscriber(int realtime_priority, int cpu, std::st
   m_channel_name(channel_name){
   m_cpu = cpu;
   m_realtime_priority = realtime_priority;
-  start();
+  if(!m_channel_name.empty())
+    start();
 }
 template<class msg_type>
 void Lcm_Subscriber<msg_type>::handle_msg(const lcm::ReceiveBuffer *rbuf,
