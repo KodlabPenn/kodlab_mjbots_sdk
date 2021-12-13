@@ -7,7 +7,7 @@
 #pragma once
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 #include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
-#include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
+#include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/timer.hpp"
 #include "real_time_tools/hard_spinner.hpp"

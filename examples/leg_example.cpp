@@ -11,7 +11,7 @@
 #include "leg_log.hpp"
 #include "leg_gain.hpp"
 #include "many_motor_log.hpp"
-#include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
+#include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
 
 class Hopping : public Mjbots_Control_Loop<many_motor_log, leg_gain>{

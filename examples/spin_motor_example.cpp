@@ -9,7 +9,7 @@
 
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 #include "many_motor_log.hpp"
-#include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
+#include "kodlab_mjbots_sdk/lcm_subscriber.h"
 
 class Spin_Motor : public Mjbots_Control_Loop<many_motor_log>{
   using Mjbots_Control_Loop<many_motor_log>::Mjbots_Control_Loop;
