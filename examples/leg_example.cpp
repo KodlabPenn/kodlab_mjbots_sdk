@@ -14,7 +14,7 @@
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
 
-class Hopping : public Mjbots_Control_Loop<many_motor_log, leg_gain>{
+class Hopping : public Mjbots_Control_Loop<leg_log, leg_gain>{
   using Mjbots_Control_Loop::Mjbots_Control_Loop;
 
   // We use calc_torques as the main control loop
@@ -86,24 +86,31 @@ class Hopping : public Mjbots_Control_Loop<many_motor_log, leg_gain>{
   }
 
   void prepare_log()  override{
-//    for (int servo = 0; servo < 2; servo++) {
-//      m_log_data.positions[servo] = m_robot->get_joint_positions()[servo];
-//      m_log_data.velocities[servo] = m_robot->get_joint_velocities()[servo];
-//      m_log_data.modes[servo] = static_cast<int>(m_robot->get_joint_modes()[servo]);
-//      m_log_data.torque_cmd[servo] = m_robot->get_joint_torque_cmd()[servo];
-//      m_log_data.torque_measure[servo]=m_robot->get_joint_torque_measured()[servo];
-//    }
-//    m_log_data.limb_position[0] = z-z0;
-//    m_log_data.limb_position[1] = x;
-//    m_log_data.limb_vel[0] = d_z;
-//    m_log_data.limb_vel[1] = d_x;
-//    m_log_data.limb_wrench[0] = f_z;
-//    m_log_data.limb_wrench[1] = f_x;
-//    m_log_data.hybrid_mode = m_mode;
+    for (int servo = 0; servo < 2; servo++) {
+      m_log_data.positions[servo] = m_robot->get_joint_positions()[servo];
+      m_log_data.velocities[servo] = m_robot->get_joint_velocities()[servo];
+      m_log_data.modes[servo] = static_cast<int>(m_robot->get_joint_modes()[servo]);
+      m_log_data.torque_cmd[servo] = m_robot->get_joint_torque_cmd()[servo];
+      m_log_data.torque_measure[servo]=m_robot->get_joint_torque_measured()[servo];
+    }
+    m_log_data.limb_position[0] = z-z0;
+    m_log_data.limb_position[1] = x;
+    m_log_data.limb_vel[0] = d_z;
+    m_log_data.limb_vel[1] = d_x;
+    m_log_data.limb_wrench[0] = f_z;
+    m_log_data.limb_wrench[1] = f_x;
+    m_log_data.hybrid_mode = m_mode;
   }
 
   void process_input()override{
     std::cout<<"Response received"<<std::endl;
+    kv = m_lcm_sub.m_data.kv;
+    k = m_lcm_sub.m_data.k;
+    k_stiff=m_lcm_sub.m_data.k_stiff;
+    b = m_lcm_sub.m_data.b;
+    b_stiff = m_lcm_sub.m_data.b_stiff;
+    kp = m_lcm_sub.m_data.kp;
+    kd = m_lcm_sub.m_data.kd;
   }
 
   enum hybrid_mode

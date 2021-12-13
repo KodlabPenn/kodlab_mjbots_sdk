@@ -72,8 +72,14 @@ class Mjbots_Control_Loop: public Abstract_Realtime_Object{
    */
   void publish_log();
 
+  /*!
+   * @brief handles mutex for processing input
+   */
   void safe_process_input();
 
+  /*!
+   * @brief virtual class to be implemented when logging. Process data in m_lcm_sub.m_data;
+   */
   virtual void process_input(){};
 
   std::shared_ptr<Mjbots_Robot_Interface> m_robot;   /// ptr to the robot object, if unique causes many issues, also should be
@@ -86,7 +92,7 @@ class Mjbots_Control_Loop: public Abstract_Realtime_Object{
   std::string m_logging_channel_name;              /// Channel name to publish logs to, leave empty if not publishing
   lcm::LCM m_lcm;                          /// LCM object
   log_type m_log_data;                     /// object containing log data
-  Lcm_Subscriber<input_type> m_lcm_sub;
+  Lcm_Subscriber<input_type> m_lcm_sub;    /// LCM subscriber object
 };
 
 
@@ -196,11 +202,15 @@ void Mjbots_Control_Loop<log_type, input_type>::run() {
 
 template<class log_type, class input_type>
 void Mjbots_Control_Loop<log_type, input_type>::safe_process_input() {
+  // Check to make sure using input
   if(m_input){
+    // Try to unlock mutex, if you can't don't worry and try next time
     if (m_lcm_sub.m_mutex.try_lock()){
+      // If new message process
       if(m_lcm_sub.m_new_message){
         process_input();
       }
+      // Set new message to false and unlock mutex
       m_lcm_sub.m_new_message = false;
       m_lcm_sub.m_mutex.unlock();
     }
