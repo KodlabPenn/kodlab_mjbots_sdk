@@ -16,6 +16,8 @@
  */
 class Abstract_Realtime_Object {
  public:
+  Abstract_Realtime_Object();
+
   Abstract_Realtime_Object(int realtime_priority, int cpu);
 
   /*!
@@ -41,8 +43,8 @@ class Abstract_Realtime_Object {
    */
   virtual void run() = 0;
 
-  int m_realtime_priority;                  /// Thread realtime priority
-  int m_cpu;                                /// CPU thread should run on, less than 0 is any thread
+  int m_realtime_priority = 1;                  /// Thread realtime priority
+  int m_cpu = -1;                                /// CPU thread should run on, less than 0 is any thread
   real_time_tools::RealTimeThread m_thread; /// realtime thread object
 };
 

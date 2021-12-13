@@ -6,7 +6,7 @@ msg = leg_gain()
 # current gains
 msg.k = 400
 msg.k_stiff = 1000
-msg.b =5
+msg.b = 5
 msg.b_stiff = 20
 msg.kp = 100
 msg.kd = 10

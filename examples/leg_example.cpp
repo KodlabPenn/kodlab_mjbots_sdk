@@ -9,11 +9,13 @@
 
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 #include "leg_log.hpp"
-#include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
+#include "leg_gain.hpp"
+#include "many_motor_log.hpp"
+#include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
 
-class Hopping : public Mjbots_Control_Loop<leg_log>{
-  using Mjbots_Control_Loop<leg_log>::Mjbots_Control_Loop;
+class Hopping : public Mjbots_Control_Loop<leg_log, leg_gain>{
+  using Mjbots_Control_Loop::Mjbots_Control_Loop;
 
   // We use calc_torques as the main control loop
   void calc_torques() override{
@@ -100,6 +102,17 @@ class Hopping : public Mjbots_Control_Loop<leg_log>{
     m_log_data.hybrid_mode = m_mode;
   }
 
+  void process_input()override{
+    std::cout<<"Response received"<<std::endl;
+    kv = m_lcm_sub.m_data.kv;
+    k = m_lcm_sub.m_data.k;
+    k_stiff=m_lcm_sub.m_data.k_stiff;
+    b = m_lcm_sub.m_data.b;
+    b_stiff = m_lcm_sub.m_data.b_stiff;
+    kp = m_lcm_sub.m_data.kp;
+    kd = m_lcm_sub.m_data.kd;
+  }
+
   enum hybrid_mode
   {
     SOFT_START = 0,
@@ -127,7 +140,8 @@ int main(int argc, char **argv) {
   Control_Loop_Options options;
   options.m_motor_list.emplace_back(1, 1, 1, 0.1949);
   options.m_motor_list.emplace_back(2, 1, -1, 0.0389);
-  options.m_channel_name = "leg_data";
+  options.m_log_channel_name = "leg_data";
+  options.m_input_channel_name = "leg_gains";
   options.m_soft_start_duration = 5000;
   options.m_max_torque = 12;
   Hopping control_loop(options);

@@ -47,6 +47,8 @@ struct Realtime_Params{
   int main_cpu = 2;  /// Which cpu the main loop should be on
   int main_rtp = 97; /// The realtime priority of the main thread
   int can_rtp = 98;  /// The realtime priority of the can thread
+  int lcm_rtp = 90;
+  int lcm_cpu = 0;
 };
 
 

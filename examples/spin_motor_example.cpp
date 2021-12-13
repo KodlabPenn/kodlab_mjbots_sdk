@@ -9,7 +9,7 @@
 
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 #include "many_motor_log.hpp"
-#include "kodlab_mjbots_sdk/abstract_lcm_subscriber.h"
+#include "kodlab_mjbots_sdk/lcm_subscriber.h"
 
 class Spin_Motor : public Mjbots_Control_Loop<many_motor_log>{
   using Mjbots_Control_Loop<many_motor_log>::Mjbots_Control_Loop;
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
   // Define the motors in the robot
   options.m_motor_list.emplace_back(1, 1);
   options.m_motor_list.emplace_back(2, 1);
-  options.m_channel_name = "motor_data";
+  options.m_log_channel_name = "motor_data";
 
   // Create control loop
   Spin_Motor control_loop(options);

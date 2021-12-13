@@ -44,9 +44,9 @@ Next implement the `prepare_log` to add data to the logging object.
         m_log_data.data = data;
       }
  
-Finally when creating the instance of the class set the `m_channel_name` option in the option struct.
+Finally when creating the instance of the class set the `m_log_channel_name` option in the option struct.
 
-      options.m_channel_name = "motor_data";
+      options.m_log_channel_name = "motor_data";
       Controller control_loop(options)
       
 To log data, on your laptop start the bot lcm tunnel with `bot-lcm-tunnel <IP>` and start logging using `lcm-logger`
