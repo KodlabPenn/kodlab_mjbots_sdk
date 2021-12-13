@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
   Control_Loop_Options options;
   options.m_motor_list.emplace_back(1, 1, 1, 0.1949);
   options.m_motor_list.emplace_back(2, 1, -1, 0.0389);
-  options.m_channel_name = "leg_data";
+  options.m_log_channel_name = "leg_data";
   options.m_soft_start_duration = 5000;
   options.m_max_torque = 12;
   Hopping control_loop(options);
