@@ -72,6 +72,10 @@ class Mjbots_Control_Loop: public Abstract_Realtime_Object{
    */
   void publish_log();
 
+  void safe_process_input();
+
+  virtual void process_input(const input_type& new_data) = 0;
+
   std::shared_ptr<Mjbots_Robot_Interface> m_robot;   /// ptr to the robot object, if unique causes many issues, also should be
                                                      /// initialized inside thread
   int m_frequency;                         /// frequency of the controller in Hz
@@ -82,7 +86,7 @@ class Mjbots_Control_Loop: public Abstract_Realtime_Object{
   std::string m_logging_channel_name;              /// Channel name to publish logs to, leave empty if not publishing
   lcm::LCM m_lcm;                          /// LCM object
   log_type m_log_data;                     /// object containing log data
-  Abstract_Lcm_Subscriber<log_type> m_lcm_sub;
+  Lcm_Subscriber<log_type> m_lcm_sub;
 };
 
 
@@ -111,8 +115,8 @@ Mjbots_Control_Loop<log_type, input_type>::Mjbots_Control_Loop(const Control_Loo
     m_input = false;
   }
   if(m_input){
-    m_log_data = Abstract_Lcm_Subscriber<log_type>(options.m_realtime_params.lcm_rtp, options.m_realtime_params.lcm_cpu,
-                                                   m_options.m_input_channel_name);
+    m_log_data = Lcm_Subscriber<log_type>(options.m_realtime_params.lcm_rtp, options.m_realtime_params.lcm_cpu,
+                                          m_options.m_input_channel_name);
   }
 }
 
@@ -160,13 +164,15 @@ void Mjbots_Control_Loop<log_type, input_type>::run() {
     calc_torques();
     // Prepare log
     prepare_log();
-    add_timing_log(dt_timer.tac() * 1000, sleep_duration * 1000, prev_msg_duration);
     message_duration_timer.tic();
 
     // Initiate communications cycle
     m_robot->send_command();
     // Publish log
+    add_timing_log(dt_timer.tac() * 1000, sleep_duration * 1000, prev_msg_duration);
     publish_log();
+    // handle new inputs if available
+    safe_process_input();
     // Wait until reply from motors is ready and then add reply to robot
     m_robot->process_reply();
     prev_msg_duration = message_duration_timer.tac() * 1000;
@@ -186,4 +192,15 @@ void Mjbots_Control_Loop<log_type, input_type>::run() {
 
   // try to shutdown, but fail
   m_robot->shutdown();
+}
+template<class log_type, class input_type>
+void Mjbots_Control_Loop<log_type, input_type>::safe_process_input() {
+  if(m_input){
+    if (m_lcm_sub.m_mutex.try_lock()){
+      if(m_lcm_sub.m_new_message){
+        process_input(m_lcm_sub.m_data);
+      }
+      m_lcm_sub.m_mutex.unlock();
+    }
+  }
 }

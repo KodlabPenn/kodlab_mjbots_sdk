@@ -14,7 +14,7 @@
  * @tparam msg_type the lcm msg type
  */
 template <class msg_type>
-class Abstract_Lcm_Subscriber: public Abstract_Realtime_Object{
+class Lcm_Subscriber: public Abstract_Realtime_Object{
  public:
   /*!
    * @brief constructor for abstract lcm subscriber
@@ -22,8 +22,10 @@ class Abstract_Lcm_Subscriber: public Abstract_Realtime_Object{
    * @param cpu the cpu for this process
    * @param channel_name the string for the channel name
    */
-  Abstract_Lcm_Subscriber(int realtime_priority, int cpu, std::string channel_name);
+  Lcm_Subscriber(int realtime_priority, int cpu, std::string channel_name);
 
+  std::mutex m_mutex;
+  bool m_new_message;
  protected:
   /*!
    * @brief callback function when msg is received. To be overriden by child class
@@ -31,9 +33,9 @@ class Abstract_Lcm_Subscriber: public Abstract_Realtime_Object{
    * @param chan channel name
    * @param msg ptr to the incoming message data
    */
-  virtual void handle_msg(const lcm::ReceiveBuffer* rbuf,
+  void handle_msg(const lcm::ReceiveBuffer* rbuf,
                           const std::string& chan,
-                          const msg_type* msg) = 0;
+                          const msg_type* msg);
 
   /*!
    * @brief subscribes to the lcm channel using handle message and handles ctrl c detection
@@ -42,23 +44,31 @@ class Abstract_Lcm_Subscriber: public Abstract_Realtime_Object{
 
   std::string m_channel_name;
   lcm::LCM m_lcm;
+  msg_type m_data;
 };
 
 /************************************Implementation********************************************************************/
 template<class msg_type>
-void Abstract_Lcm_Subscriber<msg_type>::run() {
-  m_lcm.subscribe(m_channel_name, &Abstract_Lcm_Subscriber::handle_msg, this);
+void Lcm_Subscriber<msg_type>::run() {
+  m_lcm.subscribe(m_channel_name, &Lcm_Subscriber::handle_msg, this);
   while (!CTRL_C_DETECTED){
     m_lcm.handleTimeout(100000);
   }
 }
 
 template<class msg_type>
-Abstract_Lcm_Subscriber<msg_type>::Abstract_Lcm_Subscriber(int realtime_priority, int cpu, std::string channel_name):
+Lcm_Subscriber<msg_type>::Lcm_Subscriber(int realtime_priority, int cpu, std::string channel_name):
   m_channel_name(channel_name){
   m_cpu = cpu;
   m_realtime_priority = realtime_priority;
   start();
 }
-
-
+template<class msg_type>
+void Lcm_Subscriber<msg_type>::handle_msg(const lcm::ReceiveBuffer *rbuf,
+                                          const std::string &chan,
+                                          const msg_type *msg) {
+  m_mutex.lock();
+  m_data = *msg;
+  m_new_message = true;
+  m_mutex.unlock();
+}
