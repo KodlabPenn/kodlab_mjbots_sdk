@@ -1,5 +1,5 @@
 import lcm
-from lcm_types.many_motor_log import many_motor_log
+from lcm_types.ManyMotorLog import ManyMotorLog
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
@@ -22,7 +22,7 @@ velocities = []
 torques = []
 for event in log:
     if event.channel == "motor_data":
-        msg = many_motor_log.decode(event.data)
+        msg = ManyMotorLog.decode(event.data)
         timestamps.append(msg.timestamp)
         velocities.append(msg.velocities)
         positions.append(msg.positions)

@@ -1,4 +1,4 @@
-struct many_motor_log
+struct ManyMotorLog
 {
   float  timestamp;
   float    positions[13];

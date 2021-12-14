@@ -12,7 +12,7 @@
 #include "real_time_tools/timer.hpp"
 #include "real_time_tools/hard_spinner.hpp"
 #include <type_traits>
-#include "void_lcm.hpp"
+#include "VoidLcm.hpp"
 
 namespace kodlab::mjbots {
 /*!
@@ -36,7 +36,7 @@ struct ControlLoopOptions {
  * @tparam LogClass[optional] data type for logging
  * @tparam InputClass[optional] class for input data 
  */
-template<class LogClass = void_lcm, class InputClass = void_lcm>
+template<class LogClass = VoidLcm, class InputClass = VoidLcm>
 class MjbotsControlLoop : public AbstractRealtimeObject {
  public:
   /*!
@@ -114,13 +114,13 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(const ControlLoopOpti
   // Setup logging info and confirm template is provided if logging
   logging_channel_name_ = options.log_channel_name;
   logging_ = !logging_channel_name_.empty();
-  if (logging_ && std::is_same<log_type, void_lcm>()) {
+  if (logging_ && std::is_same<log_type, VoidLcm>()) {
     std::cout << "Warning, log_type is default, but logging is enabled" << std::endl;
     logging_ = false;
   }
 
   input_ = !options.input_channel_name.empty();
-  if (input_ && std::is_same<input_type, void_lcm>()) {
+  if (input_ && std::is_same<input_type, VoidLcm>()) {
     std::cout << "Warning, input_type is default, but input is enabled" << std::endl;
     input_ = false;
   }

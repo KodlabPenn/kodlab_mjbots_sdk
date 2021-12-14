@@ -8,11 +8,11 @@
  */
 
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
-#include "many_motor_log.hpp"
+#include "ManyMotorLog.hpp"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 
-class Spin_Motor : public kodlab::mjbots::MjbotsControlLoop<many_motor_log> {
-  using MjbotsControlLoop<many_motor_log>::MjbotsControlLoop;
+class Spin_Motor : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
+  using MjbotsControlLoop::MjbotsControlLoop;
   void CalcTorques() override {
     std::vector<float> torques(num_motors_, 0);
     robot_->SetTorques(torques);

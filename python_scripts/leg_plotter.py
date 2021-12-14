@@ -1,5 +1,5 @@
 import lcm
-from lcm_types.leg_log import leg_log
+from lcm_types.LegLog import LegLog
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
@@ -27,7 +27,7 @@ limb_forces = []
 hybrid_mode = []
 for event in log:
     if event.channel == "leg_log":
-        msg = leg_log.decode(event.data)
+        msg = LegLog.decode(event.data)
         timestamps.append(msg.timestamp)
         velocities.append(msg.velocities)
         positions.append(msg.positions)

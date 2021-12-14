@@ -8,13 +8,12 @@
  */
 
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
-#include "leg_log.hpp"
-#include "leg_gain.hpp"
-#include "many_motor_log.hpp"
+#include "LegGains.hpp"
+#include "LegLog.hpp"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
 
-class Hopping : public kodlab::mjbots::MjbotsControlLoop<leg_log, leg_gain> {
+class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
   using MjbotsControlLoop::MjbotsControlLoop;
 
   // We use CalcTorques as the main control loop

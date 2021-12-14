@@ -1,7 +1,7 @@
 import lcm
-from lcm_types.leg_gain import leg_gain
+from lcm_types.LegGains import LegGains
 
-msg = leg_gain()
+msg = LegGains()
 
 # current gains
 msg.k = 400

@@ -1,9 +1,0 @@
-struct motor_log
-{
-  float  timestamp;
-  float    positions[2];
-  float    velocities[2];
-  float    torques[2];
-  int16_t    modes[2];
-  float mean_margin;
-}

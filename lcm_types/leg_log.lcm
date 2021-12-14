@@ -1,4 +1,4 @@
-struct leg_log
+struct LegLog
 {
   float  timestamp;
   float    positions[2];

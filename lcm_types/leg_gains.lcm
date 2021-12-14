@@ -1,4 +1,4 @@
-struct leg_gain
+struct LegGains
 {
   float  k;
   float  b;
