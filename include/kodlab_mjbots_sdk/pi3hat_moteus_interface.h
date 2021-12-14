@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "kodlab_mjbots_sdk/common_header.h"
+#include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 namespace mjbots {
 namespace moteus {
 
@@ -37,7 +38,7 @@ namespace moteus {
 /// Internally it uses a background thread to operate the pi3hat,
 /// enabling the main thread to perform work while servo communication
 /// is taking place.
-class Pi3HatMoteusInterface {
+class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
  public:
   struct Options {
     int cpu = -1;
@@ -49,6 +50,8 @@ class Pi3HatMoteusInterface {
 
   Pi3HatMoteusInterface(const Options& options)
       : options_(options){
+    realtime_priority_ = options.realtime_priority;
+    cpu_ = options.cpu;
     Start();
   }
 
@@ -58,7 +61,7 @@ class Pi3HatMoteusInterface {
       done_ = true;
       condition_.notify_one();
     }
-    thread_.join();
+    Join();
   }
 
   void shutdown() {
@@ -67,7 +70,7 @@ class Pi3HatMoteusInterface {
       done_ = true;
       condition_.notify_one();
     }
-    thread_.join();
+    Join();
   }
 
   struct ServoCommand {
@@ -121,26 +124,10 @@ class Pi3HatMoteusInterface {
     data_ = data;
     condition_.notify_all();
   }
-  static void* StaticRun(void* void_interface_ptr){
-    Pi3HatMoteusInterface* interface =
-        (static_cast<Pi3HatMoteusInterface*>(void_interface_ptr));
-    interface->Run();
-    return nullptr;
-  }
-
-  void Start(){
-    thread_.parameters_.cpu_dma_latency_ = -1;
-    thread_.parameters_.priority_ = options_.realtime_priority;
-    thread_.parameters_.block_memory_ = true;
-    if (options_.cpu>=0){
-      thread_.parameters_.cpu_id_ = {options_.cpu};
-    }
-    thread_.create_realtime_thread(StaticRun, this);
-  }
 
  private:
 
-  void Run( ) {
+  void Run( ) override{
     pi3hat::Pi3Hat::Configuration config;
     pi3hat_ = std::make_shared<pi3hat::Pi3Hat>(config);
     while (true) {
@@ -232,8 +219,6 @@ class Pi3HatMoteusInterface {
   bool done_ = false;
   CallbackFunction callback_;
   Data data_;
-
-  real_time_tools::RealTimeThread thread_;
 
 
   /// All further variables are only used from within the child thread.

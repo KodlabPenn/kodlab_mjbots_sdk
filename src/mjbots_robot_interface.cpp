@@ -67,7 +67,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
   moteus_options.cpu = realtime_params.can_cpu;
   moteus_options.realtime_priority = realtime_params.can_rtp;
   moteus_options.servo_bus_map = servo_bus_map_;
-  moteus_interface_ = std::make_unique<::mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
+  moteus_interface_ = std::make_shared<::mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
 
   // Initialize and send basic command
   InitializeCommand();
