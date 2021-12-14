@@ -21,66 +21,64 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
     std::vector<float> torques = {0, 0};
 
     // Run the FK to get leg state
-    m_leg.FK(robot_->GetJointPositions(), z, x);
-    m_leg.FkVel(robot_->GetJointPositions(), robot_->GetJointVelocities(), d_z, d_x);
+    leg_.FK(robot_->GetJointPositions(), z_, x_);
+    leg_.FkVel(robot_->GetJointPositions(), robot_->GetJointVelocities(), d_z_, d_x_);
 
     //Check hybrid modes and switch if need be
-    if (m_mode != HybridMode::kSoftStart && z0 - z > 0.002 && d_z < 0) {
-      m_mode = HybridMode::kStance;
-    } else if (m_mode != HybridMode::kSoftStart && z0 - z < 0.001 && d_z > 0) {
-      m_mode = HybridMode::kFlight;
+    if (mode_ != HybridMode::kSoftStart && z0_ - z_ > kTouchdownTol && d_z_ < 0) {
+      mode_ = HybridMode::kStance;
+    } else if (mode_ != HybridMode::kSoftStart && z0_ - z_ < 0 && d_z_ > 0) {
+      mode_ = HybridMode::kFlight;
     }
 
     // Switch per mode and Run behavior
-    switch (m_mode) {
+    switch (mode_) {
       case HybridMode::kSoftStart: {
         // In soft Start, control to a joint space position
-        double q1_goal = -0.6;
-        double q2_goal = 1.2;
-        double q_kp = 6;
-        double q_kd = 0.2;
+        double q1_goal = kSoftStartAngle;
+        double q2_goal = -2 * kSoftStartAngle;
 
-        torques[0] = (q_kp * (q1_goal - robot_->GetJointPositions()[0]) - q_kd * robot_->GetJointVelocities()[0]);
-        torques[1] = (q_kp * (q2_goal - robot_->GetJointPositions()[1]) - q_kd * robot_->GetJointVelocities()[1]);
+        torques[0] = (kSoftKp * (q1_goal - robot_->GetJointPositions()[0]) - kSoftKd * robot_->GetJointVelocities()[0]);
+        torques[1] = (kSoftKp * (q2_goal - robot_->GetJointPositions()[1]) - kSoftKd * robot_->GetJointVelocities()[1]);
 
         // If reached target and slow enough, switch to limp space, and set leg length as rest length
-        if (std::abs(q1_goal - robot_->GetJointPositions()[0]) < 0.05 &&
-            std::abs(q2_goal - robot_->GetJointPositions()[1]) < 0.05 &&
-            std::abs(robot_->GetJointVelocities()[0]) < 0.08 &&
-            std::abs(robot_->GetJointVelocities()[1]) < 0.08) {
-          m_mode = kFlight;
-          z0 = z;
+        if (std::abs(q1_goal - robot_->GetJointPositions()[0]) < kSoftPositionThreshold &&
+            std::abs(q2_goal - robot_->GetJointPositions()[1]) < kSoftPositionThreshold &&
+            std::abs(robot_->GetJointVelocities()[0]) < kSoftVelocityThreshold &&
+            std::abs(robot_->GetJointVelocities()[1]) < kSoftVelocityThreshold) {
+          mode_ = kFlight;
+          z0_ = z_;
           std::cout << "Starting Limb mode" << std::endl;
         }
         break;
       }
       case HybridMode::kFlight: {
         // In flight we use pd loops to control in limb space
-        f_z = k_stiff * (z0 - z) - b_stiff * d_z;
+        f_z_ = k_stiff_ * (z0_ - z_) - b_stiff_ * d_z_;
         // We Constrain f_x to prevent large jumps in x force
-        f_x = kodlab::SoftStart::Constrain(-kp * x - kd * d_x, -20, 20);
+        f_x_ = kodlab::SoftStart::Constrain(-kp_ * x_ - kd_ * d_x_, -kMaxF_x, kMaxF_x);
 
         // convert from limb space to joint space
-        torques = m_leg.InverseDynamics(robot_->GetJointPositions(), f_z, f_x);
+        torques = leg_.InverseDynamics(robot_->GetJointPositions(), f_z_, f_x_);
         break;
       }
       case HybridMode::kStance: {
         // In stance we use an Avik style active damping controller with gravity ffwd term
-        float av = sqrtf((z - z0) * (z - z0) * w_v * w_v + d_z * d_z);
-        float F = kv * d_z / av + m * 9.81 * 1;
+        float av = sqrtf((z_ - z0_) * (z_ - z0_) * w_v_ * w_v_ + d_z_ * d_z_);
+        float F = kv_ * d_z_ / av + m_ * 9.81 * 1;
 
         // Confirm z direction force is positive
-        f_z = fmax(k * (z0 - z) - b * d_z + F, 0.0);
+        f_z_ = fmax(k_ * (z0_ - z_) - b_ * d_z_ + F, 0.0);
         // Set x direction force to 0 since robot is constrained in the x direction
-        f_x = 0;
+        f_x_ = 0;
 
         // Convert from limb space to join space
-        torques = m_leg.InverseDynamics(robot_->GetJointPositions(), f_z, f_x);
+        torques = leg_.InverseDynamics(robot_->GetJointPositions(), f_z_, f_x_);
         break;
       }
     }
     //ffwd term for gravity comp
-    torques[0] = torques[0] + 1 * 9.81 * 0.15 * 0.56 * sinf(robot_->GetJointPositions()[0]);
+    torques[0] = torques[0] + 1 * 9.81 * 0.15 * 0.56 * sinf(robot_->GetJointPositions()[0]); // based on motor mass and length
     robot_->SetTorques(torques);
   }
 
@@ -92,24 +90,24 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
       log_data_.torque_cmd[servo] = robot_->GetJointTorqueCmd()[servo];
       log_data_.torque_measure[servo] = robot_->GetJointTorqueMeasured()[servo];
     }
-    log_data_.limb_position[0] = z - z0;
-    log_data_.limb_position[1] = x;
-    log_data_.limb_vel[0] = d_z;
-    log_data_.limb_vel[1] = d_x;
-    log_data_.limb_wrench[0] = f_z;
-    log_data_.limb_wrench[1] = f_x;
-    log_data_.hybrid_mode = m_mode;
+    log_data_.limb_position[0] = z_ - z0_;
+    log_data_.limb_position[1] = x_;
+    log_data_.limb_vel[0] = d_z_;
+    log_data_.limb_vel[1] = d_x_;
+    log_data_.limb_wrench[0] = f_z_;
+    log_data_.limb_wrench[1] = f_x_;
+    log_data_.hybrid_mode = mode_;
   }
 
   void ProcessInput() override {
     std::cout << "Response received" << std::endl;
-    kv = lcm_sub_.data_.kv;
-    k = lcm_sub_.data_.k;
-    k_stiff = lcm_sub_.data_.k_stiff;
-    b = lcm_sub_.data_.b;
-    b_stiff = lcm_sub_.data_.b_stiff;
-    kp = lcm_sub_.data_.kp;
-    kd = lcm_sub_.data_.kd;
+    kv_ = lcm_sub_.data_.kv;
+    k_ = lcm_sub_.data_.k;
+    k_stiff_ = lcm_sub_.data_.k_stiff;
+    b_ = lcm_sub_.data_.b;
+    b_stiff_ = lcm_sub_.data_.b_stiff;
+    kp_ = lcm_sub_.data_.kp;
+    kd_ = lcm_sub_.data_.kd;
   }
 
   enum HybridMode {
@@ -118,20 +116,36 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
     kStance = 2
   };
 
-  kodlab::CartesianLeg m_leg = kodlab::CartesianLeg(0.15, 0.15);
-  float kv = 0; /// Active damping gain
-  float k = 800; /// Stance spring stiffness
-  float k_stiff = 1600; /// Flight spring stiffness
-  float m = 1.2; /// Robot mass
-  float b = 15; /// Damping in stance
-  float b_stiff = 15; /// Damping in flight
-  float z0 = 0; /// Rest length of leg
-  float kp = 800; /// flight spring stiffness in x direction
-  float kd = 10; /// flight damping in x direction
-  float z, x, d_z, d_x; /// Limb space state
-  float f_z, f_x; /// Limp space effort
-  float w_v = sqrtf(k / m); /// Natural frequency
-  HybridMode m_mode = HybridMode::kSoftStart;
+  // Member classes
+  kodlab::CartesianLeg leg_ = kodlab::CartesianLeg(0.15, 0.15);
+  HybridMode mode_ = HybridMode::kSoftStart;
+
+  // States
+  float z_, x_, d_z_, d_x_; /// Limb space state
+  float f_z_, f_x_; /// Limp space effort
+
+  // Gains that can be set via input
+  float kv_ = 0; /// Active damping gain
+  float k_ = 800; /// Stance spring stiffness
+  float k_stiff_ = 1600; /// Flight spring stiffness
+  float m_ = 1.2; /// Robot mass
+  float b_ = 15; /// Damping in stance
+  float b_stiff_ = 15; /// Damping in flight
+  float z0_ = 0; /// Rest length of leg
+  float kp_ = 800; /// flight spring stiffness in x direction
+  float kd_ = 10; /// flight damping in x direction
+  float w_v_ = sqrtf(k_ / m_); /// Natural frequency
+
+  // Other gains
+  const float kTouchdownTol = 0.002;   /// Amount of spring compression in m needed to be considered in td
+  const float kMaxF_x = 20;            /// Minimum and maximum force in the x direction in flight, used to
+                                        /// Prevent the leg from overshooting do to large x direction error at liftoff
+  // Soft start parameters
+  const float kSoftStartAngle = -0.6; /// Initial soft start angle for hip
+  const float kSoftKp = 6;             /// Joint space soft start position gain
+  const float kSoftKd = 0.2;           /// Joint space soft start velocity gain
+  const float kSoftPositionThreshold = 0.05;/// Threshold error from target in rad for terminating soft start
+  const float kSoftVelocityThreshold = 0.08;/// Threshold error from 0 in rad/s for terminating soft start
 };
 
 int main(int argc, char **argv) {

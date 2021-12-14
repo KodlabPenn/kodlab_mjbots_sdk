@@ -31,4 +31,4 @@ static void EnableCtrlC() {
   sigaction(SIGINT, &sigIntHandler, NULL);
   CTRL_C_DETECTED = false;
 }
-}
+}  // namespace kodlab

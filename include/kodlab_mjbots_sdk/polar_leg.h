@@ -27,4 +27,4 @@ class PolarLeg {
   float l1_;
   float l2_;
 };
-}
+} // namespace kodlab

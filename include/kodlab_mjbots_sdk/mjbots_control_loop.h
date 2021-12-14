@@ -5,13 +5,13 @@
 
 
 #pragma once
+#include <type_traits>
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 #include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/timer.hpp"
 #include "real_time_tools/hard_spinner.hpp"
-#include <type_traits>
 #include "VoidLcm.hpp"
 
 namespace kodlab::mjbots {
@@ -81,7 +81,8 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   void SafeProcessInput();
 
   /*!
-   * @brief virtual class to be implemented when logging. Process data in m_lcm_sub.m_data;
+   * @brief virtual class to be implemented when logging. Process data in m_lcm_sub.m_data; This function is threadsafe
+   * and won't run if the LCM thread holds the mutex
    */
   virtual void ProcessInput() {};
 
@@ -220,4 +221,4 @@ void MjbotsControlLoop<log_type, input_type>::SafeProcessInput() {
     }
   }
 }
-}
+} // namespace kodlab::mjbots

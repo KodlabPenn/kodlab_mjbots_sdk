@@ -4,7 +4,8 @@
 // Shane Rozen-Levy <srozen01@seas.upenn.edu>
 
 #pragma once
-#include <lcm/lcm-cpp.hpp>
+#include <string>
+#include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/thread.hpp"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 
@@ -81,4 +82,4 @@ void LcmSubscriber<msg_type>::HandleMsg(const lcm::ReceiveBuffer *rbuf,
   // Unlock mutex
   mutex_.unlock();
 }
-}
+} // namespace kodlab

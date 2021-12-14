@@ -139,7 +139,7 @@ class MjbotsRobotInterface {
   std::vector<int> directions_;            /// Direction of motors
   bool timeout_ = false;                   /// True if communication has timed out
   std::vector<::mjbots::moteus::Mode> modes_;/// Vector of the motor modes
-  long int cycle_count_ = 0;               /// How many cycles have happened, used for soft Start
+  u_int64_t cycle_count_ = 0;               /// How many cycles have happened, used for soft Start
 
   std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> commands_;  /// Vector of servo commands
   std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> replies_;     /// Vector of replies
@@ -168,4 +168,4 @@ class MjbotsRobotInterface {
   static ::mjbots::moteus::QueryResult Get(const std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> &replies,
                                          int id);
 };
-}
+} // namespace kodlab::mjbots

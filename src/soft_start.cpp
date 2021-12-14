@@ -29,4 +29,4 @@ void SoftStart::ConstrainTorques(std::vector<float> &torques, int count) {
 }
 SoftStart::SoftStart(float max_torque, int duration)
     : max_torque_(fabs(max_torque)), duration_(duration), slope_(fabs(max_torque) / (fmax(duration, 1))) {}
-}
+} // namespace kodlab

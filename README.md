@@ -5,9 +5,9 @@ pi3_hat library developed by mjbots: https://github.com/mjbots/pi3hat
 2. Integration with NYU realtime_tools library: https://github.com/machines-in-motion/real_time_tools 
 for better realtime performance
 3. Integration with LCM (https://lcm-proj.github.io/) for remote logging and remote input to the robot
-4.  The `mjbots_control_loop` object which handles the structure of the control loop for
+4.  The `MjbotsControlLoop` object which handles the structure of the control loop for
 the easy creation of new controllers
-5. The `mjbots_robot_interface` which provides a convenient interface for communicating with any number
+5. The `MjbotsRobotInterface` which provides a convenient interface for communicating with any number
 of moteus motor controllers 
 
 Note: This library only supports torque commands. If you wish to use
@@ -15,9 +15,9 @@ position control, you either must close the loop yourself or modify the
 library to allow for the position loop to Run on the moteus.
 
 # Usage
-## mjbots_control_loop:
-To use the `mjbots_control_loop` create a class which inherits the `mjbots_control_loop`
-and implements `calc_torque` to set the torques in the robot object. 
+## MjbotsControlLoop:
+To use the `MjbotsControlLoop` create a class which inherits the `MjbotsControlLoop`
+and implements `CalcTorques` to set the torques in the robot object. 
 
     class Controller : public MjbotsControlLoop{
       using MjbotsControlLoop::MjbotsControlLoop;
@@ -29,12 +29,12 @@ and implements `calc_torque` to set the torques in the robot object.
 
 ## Accessing robot state
 To access the robot state use `robot_->GetJointPositions()` or `robot_->GetJointVelocities()`
-or `robot_->get_torque_cmd()`
+or `robot_->GetTorqueCmd()`
 
 ## Logging
 To add logging to your robot either use one of the provided lcm objects or create your own, build
 lcm data types with the provided script, and then include the relevant header. Then when defining
-the child class of the `mjbots_control_loop` add the template argument of the lcm class.
+the child class of the `MjbotsControlLoop` add the template argument of the lcm class.
  
     class Controller : public MjbotsControlLoop<lcm_type>
  
@@ -46,10 +46,23 @@ Next implement the `PrepareLog` to add data to the logging object.
  
 Finally when creating the instance of the class set the `log_channel_name` option in the option struct.
 
-      options.log_channel_name = "motor_data";
+      options.log_channel_name = "example";
       Controller control_loop(options)
       
 To log data, on your laptop Start the bot lcm tunnel with `bot-lcm-tunnel <IP>` and Start logging using `lcm-logger`
+
+## Input LCM Communication
+In order to set gains during run time or to communicate between your laptop and the robot, first define the LCM data
+type you would like to use, then build lcm types. Next when defining the child class of 
+`MjbotsControlLoop` add the input template argument of the lcm class along with the logging lcm class.
+
+    class Controller : public MjbotsControlLoop<LcmLog, LcmInput>
+
+Next, implement the `ProcessInput` function to do things with the data in `lcm_sub_.data_`
+
+      void ProcessInput()  override{
+        gains_ = lcm_sub_.data_.gains;
+      }
 
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the

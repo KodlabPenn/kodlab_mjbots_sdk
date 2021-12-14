@@ -161,4 +161,4 @@ void MjbotsRobotInterface::SetModeStop() {
 void MjbotsRobotInterface::Shutdown() {
   moteus_interface_->shutdown();
 }
-}
+} // namespace kodlab::mjbots

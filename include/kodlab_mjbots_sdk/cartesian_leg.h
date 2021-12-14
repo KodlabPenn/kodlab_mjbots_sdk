@@ -14,7 +14,6 @@ namespace kodlab {
  */
 class CartesianLeg {
  public:
-
   /*!
    * @brief create the cartesian leg using link lengths
    * @param l1 length of the femur
@@ -49,7 +48,7 @@ class CartesianLeg {
   void FkVel(const std::vector<float> &angles, const std::vector<float> &d_angles, float &d_z, float &d_x) const;
 
  private:
-  float l1_; /// Length of femur
-  float l2_; /// Length of shin
+  float l1_;  /// Length of femur
+  float l2_;  /// Length of shin
 };
-}
+} // namespace kodlab

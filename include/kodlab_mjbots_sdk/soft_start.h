@@ -6,7 +6,7 @@
 
 #pragma once
 #include <vector>
-#include <math.h>
+#include <cmath>
 
 namespace kodlab {
 /*!
@@ -51,4 +51,4 @@ class SoftStart {
    */
   SoftStart(float max_torque, int duration);
 };
-}
+} // namespace kodlab

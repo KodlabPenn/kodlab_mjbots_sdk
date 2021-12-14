@@ -44,8 +44,8 @@ class AbstractRealtimeObject {
    */
   virtual void Run() = 0;
 
-  int realtime_priority_ = 1;                  /// Thread realtime priority
-  int cpu_ = -1;                                /// CPU thread should Run on, less than 0 is any thread
-  real_time_tools::RealTimeThread thread_; /// realtime thread object
+  int realtime_priority_ = 1;               /// Thread realtime priority
+  int cpu_ = -1;                            /// CPU thread should Run on, less than 0 is any thread
+  real_time_tools::RealTimeThread thread_;  /// realtime thread object
 };
-}
+}  // namespace kodlab

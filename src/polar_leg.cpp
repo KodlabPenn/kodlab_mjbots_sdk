@@ -35,4 +35,4 @@ void PolarLeg::FkVel(const std::vector<float> &angles,
   d_r = -(l1_ * l2_ * sinf(angles[1]) / sqrtf(denom)) * d_angles[1];
   d_theta = d_angles[0] + (l2_ * l2_ + l1_ * l2_ * cosf(angles[1])) / denom * d_angles[1];
 }
-}
+} // namespace kodlab

@@ -5,7 +5,7 @@
 
 
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
-#include <math.h>
+#include <cmath>
 namespace kodlab {
 CartesianLeg::CartesianLeg(float l1, float l2) : l1_(l1), l2_(l2) {}
 
@@ -32,4 +32,4 @@ void CartesianLeg::FkVel(const std::vector<float> &angles,
   d_x = (l1_ * cosf(angles[0]) + l2_ * cosf(angles[0] + angles[1])) * d_angles[0]
       + (l2_ * cosf(angles[0] + angles[1])) * d_angles[1];
 }
-}
+} // namespace kodlab

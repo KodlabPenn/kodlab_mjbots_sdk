@@ -38,4 +38,4 @@ void AbstractRealtimeObject::Start() {
 AbstractRealtimeObject::AbstractRealtimeObject() {
 
 }
-}
+} // namespace kodlab
