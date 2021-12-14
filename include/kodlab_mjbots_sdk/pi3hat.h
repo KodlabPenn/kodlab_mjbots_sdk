@@ -223,7 +223,7 @@ class Pi3Hat {
 
     // A bitmask indicating CAN buses to check for data even if no
     // replies are expected.
-    //  * bit 0 is unused, so the used bits start from 1
+    //  * bit 0 is unused, so the used bits Start from 1
     uint32_t force_can_check = 0;
 
     // These are data to store results in.

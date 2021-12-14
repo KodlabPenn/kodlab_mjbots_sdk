@@ -281,7 +281,7 @@ constexpr uint32_t SPI_CS_TXD = 1 << 18;
 /// This class interacts with the SPI0 device on a raspberry pi using
 /// the BCM2835/6/7's registers directly.  The kernel driver must not
 /// be active (it can be loaded, as long as you're not using it), and
-/// this must be run as root or otherwise have access to /dev/mem.
+/// this must be Run as root or otherwise have access to /dev/mem.
 class PrimarySpi {
  public:
   struct Options {
@@ -461,7 +461,7 @@ constexpr int AUXSPI_STAT_BUSY = 1 << 6;
 
 /// This class interacts with the AUX SPI1 device on a raspberry pi
 /// using the BCM2835/6/7's registers directly.  The kernel driver
-/// must not be active, and this must be run as root or otherwise have
+/// must not be active, and this must be Run as root or otherwise have
 /// access to /dev/mem.
 class AuxSpi {
  public:

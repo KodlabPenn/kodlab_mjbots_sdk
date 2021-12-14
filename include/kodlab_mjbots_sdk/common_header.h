@@ -22,7 +22,7 @@ static void my_handler(int)
 /**
  * @brief Enable to kill the demos cleanly with a ctrl+c
  */
-static void enable_ctrl_c()
+static void EnableCtrlC()
 {
   // make sure we catch the ctrl+c signal to kill the application properly.
   struct sigaction sigIntHandler;

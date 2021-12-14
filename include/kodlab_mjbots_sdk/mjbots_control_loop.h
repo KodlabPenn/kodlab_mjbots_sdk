@@ -16,142 +16,143 @@
 /*!
  * @brief options struct for creating a mjbots behavior
  */
-struct Control_Loop_Options{
-  std::vector<Motor> m_motor_list;    /// List of motors in robot
-  Realtime_Params m_realtime_params;  /// Set of parameters for robot's realtimeness
+struct ControlLoopOptions{
+  std::vector<Motor> motor_list;    /// List of motors in robot
+  RealtimeParams realtime_params;  /// Set of parameters for robot's realtimeness
 
-  float m_max_torque = 20;             /// Maximum torque in Nm
-  int m_soft_start_duration = 1000;    /// Duration of the soft start in cycles
-  int m_frequency = 1000;              /// Frequency of the control loop in Hz
-  std::string m_log_channel_name;          /// LCM channel name for logging data. Leave empty to not log
-  std::string m_input_channel_name;          /// LCM channel name for input data. Leave empty to not use input
+  float max_torque = 20;             /// Maximum torque in Nm
+  int soft_start_duration = 1000;    /// Duration of the soft Start in cycles
+  int frequency = 1000;              /// Frequency of the control loop in Hz
+  std::string log_channel_name;          /// LCM channel name for logging data. Leave empty to not log
+  std::string input_channel_name;          /// LCM channel name for input data. Leave empty to not use input
 };
 
 /*!
  * @brief mjbots_control_loop class is an parent class to be used to create a control loop. It supports 1 controller and
- *        logging. The child class must implement calc_torques and prepare_log (if logging). The robot data is stored in
- *        the robot object. The behavior runs in its own thread. To start the thread run start()
- * @tparam log_type[optional] data type for logging
+ *        logging. The child class must implement CalcTorques and PrepareLog (if logging). The robot data is stored in
+ *        the robot object. The behavior runs in its own thread. To Start the thread Run Start()
+ * @tparam LogClass[optional] data type for logging
+ * @tparam InputClass[optional] class for input data 
  */
-template<class log_type = void_lcm, class input_type = void_lcm>
-class Mjbots_Control_Loop: public Abstract_Realtime_Object{
+template<class LogClass = void_lcm, class InputClass = void_lcm>
+class MjbotsControlLoop: public AbstractRealtimeObject{
  public:
   /*!
-   * @brief constructs and mjbots behavior based on the options struct. Does not start the controller.
+   * @brief constructs and mjbots behavior based on the options struct. Does not Start the controller.
    * @param options contains options defining the behavior
    */
-  Mjbots_Control_Loop(const Control_Loop_Options &options);
+  MjbotsControlLoop(const ControlLoopOptions &options);
 
  protected:
 
   /*!
    * @brief runs the controller at frequency and logs the data
    */
-  void run() override;
+  void Run() override;
 
   /*!
    * @brief function to be implemented by child. Must set torques in the robot class
    */
-  virtual void calc_torques() = 0;
+  virtual void CalcTorques() = 0;
 
   /*!
    * @brief adds data to m_log_data if logging is being used. To be implemented by child class
    */
-  virtual void prepare_log(){};
+  virtual void PrepareLog(){};
 
   /*!
    * @brief adds logging information to log. Log must have entries timestamp, margin, and message_duration
-   * @param t time in ms since start
+   * @param t time in ms since Start
    * @param margin amount of time controller slept in ms
    * @param message_duration how long it took for the message to controllers to be sent and returned in ms
    */
-  void add_timing_log(float t, float margin, float message_duration);
+  void AddTimingLog(float t, float margin, float message_duration);
 
   /*!
    * @brief publishes log to lcm
    */
-  void publish_log();
+  void PublishLog();
 
   /*!
    * @brief handles mutex for processing input
    */
-  void safe_process_input();
+  void SafeProcessInput();
 
   /*!
    * @brief virtual class to be implemented when logging. Process data in m_lcm_sub.m_data;
    */
-  virtual void process_input(){};
+  virtual void ProcessInput(){};
 
-  std::shared_ptr<Mjbots_Robot_Interface> m_robot;   /// ptr to the robot object, if unique causes many issues, also should be
+  std::shared_ptr<MjbotsRobotInterface> robot_;   /// ptr to the robot object, if unique causes many issues, also should be
                                                      /// initialized inside thread
-  int m_frequency;                         /// frequency of the controller in Hz
-  int m_num_motors;                        /// Number of motors
-  Control_Loop_Options m_options;              /// Options struct
-  bool m_logging = false;                  /// Boolean to determine if logging is in use
-  bool m_input = false;
-  std::string m_logging_channel_name;              /// Channel name to publish logs to, leave empty if not publishing
-  lcm::LCM m_lcm;                          /// LCM object
-  log_type m_log_data;                     /// object containing log data
-  Lcm_Subscriber<input_type> m_lcm_sub;    /// LCM subscriber object
+  int frequency_;                         /// frequency of the controller in Hz
+  int num_motors_;                        /// Number of motors
+  ControlLoopOptions options_;              /// Options struct
+  bool logging_ = false;                  /// Boolean to determine if logging is in use
+  bool input_ = false;
+  std::string logging_channel_name_;              /// Channel name to publish logs to, leave empty if not publishing
+  lcm::LCM lcm_;                          /// LCM object
+  LogClass log_data_;                     /// object containing log data
+  LcmSubscriber<InputClass> lcm_sub_;    /// LCM subscriber object
 };
 
 
 /******************************************Implementation**************************************************************/
 
 template<class log_type, class input_type>
-Mjbots_Control_Loop<log_type, input_type>::Mjbots_Control_Loop(const Control_Loop_Options &options) :
-    Abstract_Realtime_Object(options.m_realtime_params.main_rtp, options.m_realtime_params.can_cpu),
-    m_lcm_sub(options.m_realtime_params.lcm_rtp, options.m_realtime_params.lcm_cpu, options.m_input_channel_name){
+MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(const ControlLoopOptions &options) :
+    AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
+    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name){
   // Extract useful values from options
-  m_options = options;
-  m_cpu = options.m_realtime_params.main_cpu;
-  m_realtime_priority = options.m_realtime_params.main_rtp;
-  m_frequency = options.m_frequency;
-  m_num_motors = options.m_motor_list.size();
+  options_ = options;
+  cpu_ = options.realtime_params.main_cpu;
+  realtime_priority_ = options.realtime_params.main_rtp;
+  frequency_ = options.frequency;
+  num_motors_ = options.motor_list.size();
   // Setup logging info and confirm template is provided if logging
-  m_logging_channel_name = options.m_log_channel_name;
-  m_logging = !m_logging_channel_name.empty();
-  if(m_logging && std::is_same<log_type, void_lcm>()){
+  logging_channel_name_ = options.log_channel_name;
+  logging_ = !logging_channel_name_.empty();
+  if(logging_ && std::is_same<log_type, void_lcm>()){
     std::cout<<"Warning, log_type is default, but logging is enabled"<<std::endl;
-    m_logging = false;
+    logging_ = false;
   }
 
-  m_input = !options.m_input_channel_name.empty();
-  if(m_input && std::is_same<input_type, void_lcm>()){
+  input_ = !options.input_channel_name.empty();
+  if(input_ && std::is_same<input_type, void_lcm>()){
     std::cout<<"Warning, input_type is default, but input is enabled"<<std::endl;
-    m_input = false;
+    input_ = false;
   }
 }
 
 
 template<class log_type, class input_type>
-void Mjbots_Control_Loop<log_type, input_type>::add_timing_log(float t, float margin, float message_duration) {
-  if(m_logging){
-    m_log_data.timestamp = t;
-    m_log_data.margin = margin;
-    m_log_data.message_duration = message_duration;
+void MjbotsControlLoop<log_type, input_type>::AddTimingLog(float t, float margin, float message_duration) {
+  if(logging_){
+    log_data_.timestamp = t;
+    log_data_.margin = margin;
+    log_data_.message_duration = message_duration;
   }
 }
 
 template<class log_type, class input_type>
-void Mjbots_Control_Loop<log_type, input_type>::publish_log() {
-  if(m_logging)
-    m_lcm.publish(m_logging_channel_name, &m_log_data);
+void MjbotsControlLoop<log_type, input_type>::PublishLog() {
+  if(logging_)
+    lcm_.publish(logging_channel_name_, &log_data_);
 }
 
 template<class log_type, class input_type>
-void Mjbots_Control_Loop<log_type, input_type>::run() {
-  enable_ctrl_c();
+void MjbotsControlLoop<log_type, input_type>::Run() {
+  EnableCtrlC();
 
   // Create robot object
-  m_robot = std::make_shared<Mjbots_Robot_Interface>(Mjbots_Robot_Interface(m_options.m_motor_list, m_options.m_realtime_params,
-                                                                            m_options.m_max_torque, m_options.m_soft_start_duration));
+  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(options_.motor_list, options_.realtime_params,
+                                                                       options_.max_torque, options_.soft_start_duration));
 
   float prev_msg_duration = 0;
 
   // Create spinner to time loop
   real_time_tools::HardSpinner spinner;
-  spinner.set_frequency(m_frequency);
+  spinner.set_frequency(frequency_);
 
   // Create additional timers for other timing information
   real_time_tools::Timer dt_timer;
@@ -164,20 +165,20 @@ void Mjbots_Control_Loop<log_type, input_type>::run() {
     spinner.spin();
 
     // Calculate torques
-    calc_torques();
+    CalcTorques();
     // Prepare log
-    prepare_log();
+    PrepareLog();
     message_duration_timer.tic();
 
     // Initiate communications cycle
-    m_robot->send_command();
+    robot_->SendCommand();
     // Publish log
-    add_timing_log(dt_timer.tac() * 1000, sleep_duration * 1000, prev_msg_duration);
-    publish_log();
+    AddTimingLog(dt_timer.tac() * 1000, sleep_duration * 1000, prev_msg_duration);
+    PublishLog();
     // handle new inputs if available
-    safe_process_input();
+    SafeProcessInput();
     // Wait until reply from motors is ready and then add reply to robot
-    m_robot->process_reply();
+    robot_->ProcessReply();
     prev_msg_duration = message_duration_timer.tac() * 1000;
   }
 
@@ -186,33 +187,33 @@ void Mjbots_Control_Loop<log_type, input_type>::run() {
   std::cout<<"TODO: Don't segfault" << std::endl;
 
   // Send a few stop commands
-  m_robot->process_reply();
-  m_robot->set_mode_stop();
-  m_robot->send_command();
-  m_robot->process_reply();
-  m_robot->send_command();
-  m_robot->process_reply();
+  robot_->ProcessReply();
+  robot_->SetModeStop();
+  robot_->SendCommand();
+  robot_->ProcessReply();
+  robot_->SendCommand();
+  robot_->ProcessReply();
 
-  // try to shutdown, but fail
-  m_robot->shutdown();
-  if(m_input){
-    m_lcm_sub.join();
+  // try to Shutdown, but fail
+  robot_->Shutdown();
+  if(input_){
+    lcm_sub_.Join();
   }
 }
 
 template<class log_type, class input_type>
-void Mjbots_Control_Loop<log_type, input_type>::safe_process_input() {
+void MjbotsControlLoop<log_type, input_type>::SafeProcessInput() {
   // Check to make sure using input
-  if(m_input){
+  if(input_){
     // Try to unlock mutex, if you can't don't worry and try next time
-    if (m_lcm_sub.m_mutex.try_lock()){
+    if (lcm_sub_.mutex_.try_lock()){
       // If new message process
-      if(m_lcm_sub.m_new_message){
-        process_input();
+      if(lcm_sub_.new_message_){
+        ProcessInput();
       }
       // Set new message to false and unlock mutex
-      m_lcm_sub.m_new_message = false;
-      m_lcm_sub.m_mutex.unlock();
+      lcm_sub_.new_message_ = false;
+      lcm_sub_.mutex_.unlock();
     }
   }
 }

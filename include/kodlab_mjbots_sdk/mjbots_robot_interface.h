@@ -42,7 +42,7 @@ struct Motor{
 /*!
  * @brief struct for setting the realtime params for the robot
  */
-struct Realtime_Params{
+struct RealtimeParams{
   int can_cpu = 3;   /// Which cpu the can should be on
   int main_cpu = 2;  /// Which cpu the main loop should be on
   int main_rtp = 97; /// The realtime priority of the main thread
@@ -52,7 +52,7 @@ struct Realtime_Params{
 };
 
 
-class Mjbots_Robot_Interface {
+class MjbotsRobotInterface {
  public:
   /*!
    * @brief constructs an mjbots_robot_interface to communicate with a collection of moeteusses
@@ -61,103 +61,103 @@ class Mjbots_Robot_Interface {
    * @param max_torque the maximum torque to allow per motor
    * @param soft_start_duration how long in dt to spend ramping the torque
    */
-  Mjbots_Robot_Interface(const std::vector<Motor>& motor_list,
-                         const Realtime_Params& realtime_params,
-                         float max_torque = 20,
-                         int soft_start_duration = 1);
+  MjbotsRobotInterface(const std::vector<Motor>& motor_list,
+                       const RealtimeParams& realtime_params,
+                       float max_torque = 20,
+                       int soft_start_duration = 1);
 
   /*!
    * @brief Checks to make sure the response is ready and then adds the response to the data members in the robot interface
    * should be called after send command.
    * WARNING this is a blocking function call
    */
-  void process_reply();
+  void ProcessReply();
 
   /*!
    * @brief initiates a cycle of communication with the pi3hat. Sends torques and requests responses.
    * WARNING this is a non blocking function call, to get the response use process reply.
-   * WARNING you must call process_reply after calling send_command before sending the next command
+   * WARNING you must call ProcessReply after calling SendCommand before sending the next command
    */
-  void send_command();
+  void SendCommand();
 
   /*!
    * @brief setter for torque command
    * @param torques[in] vector of torques
    */
-  void set_torques(std::vector<float> torques);
+  void SetTorques(std::vector<float> torques);
 
   /*!
-   * @brief sets the moteus message to be stop, run this followed by send command to stop the motors
+   * @brief sets the moteus message to be stop, Run this followed by send command to stop the motors
    */
-  void set_mode_stop();
+  void SetModeStop();
 
   /*!
    * @brief shuts down the can thread
    */
-  void shutdown();
+  void Shutdown();
 
   /*!
    * @brief accessor for joint positions, takes into account direction and offset
    * @return the joint positions
    */
-  std::vector<float> get_joint_positions();
+  std::vector<float> GetJointPositions();
 
   /*!
    * @brief accessor for joint velocities, takes into account direction
    * @return the joint velocities
    */
-  std::vector<float> get_joint_velocities();
+  std::vector<float> GetJointVelocities();
 
   /*!
    * @brief accessor for the torque md, takes into account direction
    * @return the torque cmd
    */
-  std::vector<float> get_joint_torque_cmd();
+  std::vector<float> GetJointTorqueCmd();
 
   /*!
    * @brief accessor for the measured torque by the motors, takes into account direction
    * @return the measured torque
    */
-  std::vector<float> get_joint_torque_measured();
+  std::vector<float> GetJointTorqueMeasured();
 
   /*!
    * @brief accessor for the joint modes
    * @return the joint modes
    */
-  std::vector<mjbots::moteus::Mode> get_joint_modes();
+  std::vector<mjbots::moteus::Mode> GetJointModes();
 
  private:
-  int m_num_servos;                         /// The number of motors in the robot
-  std::vector<int> m_servo_id_list;         /// Vector of the servo id
-  std::vector<int> m_servo_bus_list;        /// Vector of the servo bus
-  std::map<int, int> m_servo_bus_map;       /// map from servo id to servo bus
-  std::vector<float> m_positions;           /// Vector of the motor positions
-  std::vector<float> m_velocities;          /// Vector of the motor velocities
-  std::vector<float> m_torque_cmd;          /// Vector of the torque command sent to motors
-  std::vector<float> m_torque_measured;     /// Vector of the torque measured by motors
-  std::vector<float> m_offsets;             /// Offset of the motor position
-  std::vector<int> m_directions;            /// Direction of motors
-  bool m_timeout = false;                   /// True if communication has timed out
-  std::vector<mjbots::moteus::Mode> m_modes;/// Vector of the motor modes
-  long int m_cycle_count = 0;               /// How many cycles have happened, used for soft start
+  int num_servos_;                         /// The number of motors in the robot
+  std::vector<int> servo_id_list_;         /// Vector of the servo id
+  std::vector<int> servo_bus_list_;        /// Vector of the servo bus
+  std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
+  std::vector<float> positions_;           /// Vector of the motor positions
+  std::vector<float> velocities_;          /// Vector of the motor velocities
+  std::vector<float> torque_cmd_;          /// Vector of the torque command sent to motors
+  std::vector<float> torque_measured_;     /// Vector of the torque measured by motors
+  std::vector<float> offsets_;             /// Offset of the motor position
+  std::vector<int> directions_;            /// Direction of motors
+  bool timeout_ = false;                   /// True if communication has timed out
+  std::vector<mjbots::moteus::Mode> modes_;/// Vector of the motor modes
+  long int cycle_count_ = 0;               /// How many cycles have happened, used for soft Start
 
-  std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> m_commands;  /// Vector of servo commands
-  std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply> m_replies;     /// Vector of replies
-  std::unique_ptr<mjbots::moteus::Pi3HatMoteusInterface> m_moteus_interface;    /// pi3hat interface
-  mjbots::moteus::Pi3HatMoteusInterface::Data m_moteus_data;                    /// Data
-  std::future<mjbots::moteus::Pi3HatMoteusInterface::Output> m_can_result;      /// future can result, used to check if
+  std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> commands_;  /// Vector of servo commands
+  std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply> replies_;     /// Vector of replies
+  std::unique_ptr<mjbots::moteus::Pi3HatMoteusInterface> moteus_interface_;    /// pi3hat interface
+  mjbots::moteus::Pi3HatMoteusInterface::Data moteus_data_;                    /// Data
+  std::future<mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
                                                                                 /// response is ready
-  Soft_Start m_soft_start;                                                      /// Soft start object
+  SoftStart soft_start_;                                                      /// Soft Start object
 
   /*!
    * @brief initialize the command with resolutions
    */
-  void initialize_command();
+  void InitializeCommand();
 
   /*!
    * @brief sets command to torque mode
    */
-  void prepare_torque_command();
+  void PrepareTorqueCommand();
 
   /*!
    * @brief gets reply the corresponds to id

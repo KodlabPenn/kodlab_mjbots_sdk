@@ -12,48 +12,48 @@ of moteus motor controllers
 
 Note: This library only supports torque commands. If you wish to use
 position control, you either must close the loop yourself or modify the 
-library to allow for the position loop to run on the moteus.
+library to allow for the position loop to Run on the moteus.
 
 # Usage
 ## mjbots_control_loop:
 To use the `mjbots_control_loop` create a class which inherits the `mjbots_control_loop`
 and implements `calc_torque` to set the torques in the robot object. 
 
-    class Controller : public Mjbots_Control_Loop{
-      using Mjbots_Control_Loop::Mjbots_Control_Loop;
-      void calc_torques() override{
+    class Controller : public MjbotsControlLoop{
+      using MjbotsControlLoop::MjbotsControlLoop;
+      void CalcTorques() override{
         std::vector<float> torques = control_effort;
-        m_robot->set_torques(torques);
+        robot_->SetTorques(torques);
       }    
     };
 
 ## Accessing robot state
-To access the robot state use `m_robot->get_joint_positions()` or `m_robot->get_joint_velocities()`
-or `m_robot->get_torque_cmd()`
+To access the robot state use `robot_->GetJointPositions()` or `robot_->GetJointVelocities()`
+or `robot_->get_torque_cmd()`
 
 ## Logging
 To add logging to your robot either use one of the provided lcm objects or create your own, build
 lcm data types with the provided script, and then include the relevant header. Then when defining
 the child class of the `mjbots_control_loop` add the template argument of the lcm class.
  
-    class Controller : public Mjbots_Control_Loop<lcm_type>
+    class Controller : public MjbotsControlLoop<lcm_type>
  
-Next implement the `prepare_log` to add data to the logging object.
+Next implement the `PrepareLog` to add data to the logging object.
 
-      void prepare_log()  override{
-        m_log_data.data = data;
+      void PrepareLog()  override{
+        log_data_.data = data;
       }
  
-Finally when creating the instance of the class set the `m_log_channel_name` option in the option struct.
+Finally when creating the instance of the class set the `log_channel_name` option in the option struct.
 
-      options.m_log_channel_name = "motor_data";
+      options.log_channel_name = "motor_data";
       Controller control_loop(options)
       
-To log data, on your laptop start the bot lcm tunnel with `bot-lcm-tunnel <IP>` and start logging using `lcm-logger`
+To log data, on your laptop Start the bot lcm tunnel with `bot-lcm-tunnel <IP>` and Start logging using `lcm-logger`
 
-## Soft start
-To configure the soft start, set the `options.m_max_torque` and `options.m_soft_start_duration`. Where the
-max torque is the maximum torque per motor and the soft start duration is how long the torque ramp should last
+## Soft Start
+To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
+max torque is the maximum torque per motor and the soft Start duration is how long the torque ramp should last
 in iterations of the control loop. 
 
 # Setup
@@ -66,12 +66,12 @@ in iterations of the control loop.
 * Change the pi password to something that you will remember
 * scp setup script onto pi `scp <path to kodlab_mjbots_sdk>/utils/setup-system.py pi@IP:~/`
 * scp performance governer onto pi `scp <path to kodlab_mjbots_sdk>/utils/performance_governor.sh pi@IP:~/`
-* run setup script (change password and ssid in setup script) `sudo python3 setup-system.py`
-* run performance governor script
+* Run setup script (change password and ssid in setup script) `sudo python3 setup-system.py`
+* Run performance governor script
 * Reboot pi
 * Add pi to `etc/hosts` to make ssh easier
 * Add ssh key
-* run rsync command to get libraries onto computer (see below)
+* Run rsync command to get libraries onto computer (see below)
 
 
 ## Laptop Toolchain 
@@ -106,10 +106,10 @@ Add the following lines to your `~/.bashrc`
     
     sudo python3 setup.py install
 * Add `export PYTHONPATH="${PYTHONPATH}:$HOME/mjbots/kodlab_mjbots_sdk"` to your `~/.bashrc`
-* run `./scripts/make_lcm.sh` to generate lcm files. You will need to rerun this command each time you change an lcm definition.
+* Run `./scripts/make_lcm.sh` to generate lcm files. You will need to rerun this command each time you change an lcm definition.
 * Install libbot2 from `https://github.com/KodlabPenn/libbot2`
 
-* On the host computer to setup the connection run `bot-lcm-tunnel <PI-IP/hostname>`. From here you can start m_logging with
+* On the host computer to setup the connection Run `bot-lcm-tunnel <PI-IP/hostname>`. From here you can Start logging_ with
 
 
       lcm-logger
@@ -125,6 +125,6 @@ Normal build is
     cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake
 
 # Running Code
-To run code, first scp the binary onto the pi, and then run it as sudo using:
+To Run code, first scp the binary onto the pi, and then Run it as sudo using:
 
     sudo ./code_binary

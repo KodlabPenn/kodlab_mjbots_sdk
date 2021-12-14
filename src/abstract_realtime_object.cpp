@@ -6,34 +6,34 @@
 
 #include "real_time_tools/timer.hpp"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
-Abstract_Realtime_Object::Abstract_Realtime_Object(int realtime_priority, int cpu): m_realtime_priority(realtime_priority),
-                                                                                    m_cpu(cpu){
+AbstractRealtimeObject::AbstractRealtimeObject(int realtime_priority, int cpu): realtime_priority_(realtime_priority),
+                                                                                cpu_(cpu){
 }
 
-void Abstract_Realtime_Object::join() {
-  m_thread.join();
+void AbstractRealtimeObject::Join() {
+  thread_.join();
 }
 
-void *Abstract_Realtime_Object::static_run(void *abstract_void_ptr) {
-  Abstract_Realtime_Object* ptr =
-      (static_cast<Abstract_Realtime_Object*>(abstract_void_ptr));
+void *AbstractRealtimeObject::StaticRun(void *abstract_void_ptr) {
+  AbstractRealtimeObject* ptr =
+      (static_cast<AbstractRealtimeObject*>(abstract_void_ptr));
   real_time_tools::Timer::sleep_ms(10);
-  ptr->run();
+  ptr->Run();
   return nullptr;
 }
 
-void Abstract_Realtime_Object::start() {
-  // Setup realtime thread and then start
-  m_thread.parameters_.cpu_dma_latency_ = -1;
-  m_thread.parameters_.priority_ = m_realtime_priority;
-  if (m_cpu>=0){
-    m_thread.parameters_.cpu_id_ = {m_cpu};
+void AbstractRealtimeObject::Start() {
+  // Setup realtime thread and then Start
+  thread_.parameters_.cpu_dma_latency_ = -1;
+  thread_.parameters_.priority_ = realtime_priority_;
+  if (cpu_>=0){
+    thread_.parameters_.cpu_id_ = {cpu_};
   }
-  m_thread.parameters_.block_memory_=true;
-  // Create realtime_thread takes a static function and a void*. In order to get the run function inside the control loop
-  // we call the static_run function which takes in a void ptr to a Abstract_Realtime_Object and then runs the run function
-  m_thread.create_realtime_thread(static_run, this);
+  thread_.parameters_.block_memory_=true;
+  // Create realtime_thread takes a static function and a void*. In order to get the Run function inside the control loop
+  // we call the StaticRun function which takes in a void ptr to a Abstract_Realtime_Object and then runs the Run function
+  thread_.create_realtime_thread(StaticRun, this);
 }
-Abstract_Realtime_Object::Abstract_Realtime_Object() {
+AbstractRealtimeObject::AbstractRealtimeObject() {
 
 }

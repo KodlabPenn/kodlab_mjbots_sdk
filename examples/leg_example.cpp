@@ -14,16 +14,16 @@
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
 
-class Hopping : public Mjbots_Control_Loop<leg_log, leg_gain>{
-  using Mjbots_Control_Loop::Mjbots_Control_Loop;
+class Hopping : public MjbotsControlLoop<leg_log, leg_gain>{
+  using MjbotsControlLoop::MjbotsControlLoop;
 
-  // We use calc_torques as the main control loop
-  void calc_torques() override{
+  // We use CalcTorques as the main control loop
+  void CalcTorques() override{
     std::vector<float> torques = {0,0};
 
-    // Run the fk to get leg state
-    m_leg.fk(m_robot->get_joint_positions(), z, x);
-    m_leg.fk_vel(m_robot-> get_joint_positions(), m_robot->get_joint_velocities(), d_z, d_x);
+    // Run the FK to get leg state
+    m_leg.FK(robot_->GetJointPositions(), z, x);
+    m_leg.FkVel(robot_->GetJointPositions(), robot_->GetJointVelocities(), d_z, d_x);
 
     //Check hybrid modes and switch if need be
     if(m_mode != hybrid_mode::SOFT_START && z0-z > 0.002  && d_z < 0){
@@ -32,23 +32,23 @@ class Hopping : public Mjbots_Control_Loop<leg_log, leg_gain>{
       m_mode = hybrid_mode::FLIGHT;
     }
 
-    // Switch per mode and run behavior
+    // Switch per mode and Run behavior
     switch (m_mode) {
       case hybrid_mode::SOFT_START:{
-        // In soft start, control to a joint space position
+        // In soft Start, control to a joint space position
         double q1_goal = -0.6;
         double q2_goal = 1.2;
         double q_kp = 6;
         double q_kd = 0.2;
 
-        torques[0] = (q_kp * (q1_goal -m_robot->get_joint_positions()[0]) - q_kd * m_robot->get_joint_velocities()[0]);
-        torques[1] = (q_kp * (q2_goal -m_robot->get_joint_positions()[1]) - q_kd * m_robot->get_joint_velocities()[1]);
+        torques[0] = (q_kp * (q1_goal - robot_->GetJointPositions()[0]) - q_kd * robot_->GetJointVelocities()[0]);
+        torques[1] = (q_kp * (q2_goal - robot_->GetJointPositions()[1]) - q_kd * robot_->GetJointVelocities()[1]);
 
         // If reached target and slow enough, switch to limp space, and set leg length as rest length
-        if (std::abs(q1_goal -m_robot->get_joint_positions()[0]) < 0.05 &&
-            std::abs(q2_goal -m_robot->get_joint_positions()[1])< 0.05 &&
-            std::abs(m_robot->get_joint_velocities()[0]) < 0.08 &&
-            std::abs(m_robot->get_joint_velocities()[1]) < 0.08){
+        if (std::abs(q1_goal - robot_->GetJointPositions()[0]) < 0.05 &&
+            std::abs(q2_goal - robot_->GetJointPositions()[1])< 0.05 &&
+            std::abs(robot_->GetJointVelocities()[0]) < 0.08 &&
+            std::abs(robot_->GetJointVelocities()[1]) < 0.08){
           m_mode = FLIGHT;
           z0 = z;
           std::cout<<"Starting Limb mode"<<std::endl;
@@ -58,11 +58,11 @@ class Hopping : public Mjbots_Control_Loop<leg_log, leg_gain>{
       case hybrid_mode::FLIGHT:{
         // In flight we use pd loops to control in limb space
         f_z = k_stiff * (z0 - z) - b_stiff * d_z;
-        // We constrain f_x to prevent large jumps in x force
-        f_x = Soft_Start::constrain(- kp * x - kd * d_x, -20, 20);
+        // We Constrain f_x to prevent large jumps in x force
+        f_x = SoftStart::Constrain(-kp * x - kd * d_x, -20, 20);
 
         // convert from limb space to joint space
-        torques = m_leg.inverse_dynamics(m_robot->get_joint_positions(), f_z, f_x);
+        torques = m_leg.InverseDynamics(robot_->GetJointPositions(), f_z, f_x);
         break;
       }
       case hybrid_mode::STANCE:{
@@ -76,41 +76,41 @@ class Hopping : public Mjbots_Control_Loop<leg_log, leg_gain>{
         f_x = 0;
 
         // Convert from limb space to join space
-        torques = m_leg.inverse_dynamics(m_robot->get_joint_positions(), f_z, f_x);
+        torques = m_leg.InverseDynamics(robot_->GetJointPositions(), f_z, f_x);
         break;
       }
     }
     //ffwd term for gravity comp
-    torques[0] = torques[0] + 1 * 9.81 * 0.15 * 0.56 * sinf(m_robot->get_joint_positions()[0]);
-    m_robot->set_torques(torques);
+    torques[0] = torques[0] + 1 * 9.81 * 0.15 * 0.56 * sinf(robot_->GetJointPositions()[0]);
+    robot_->SetTorques(torques);
   }
 
-  void prepare_log()  override{
+  void PrepareLog()  override{
     for (int servo = 0; servo < 2; servo++) {
-      m_log_data.positions[servo] = m_robot->get_joint_positions()[servo];
-      m_log_data.velocities[servo] = m_robot->get_joint_velocities()[servo];
-      m_log_data.modes[servo] = static_cast<int>(m_robot->get_joint_modes()[servo]);
-      m_log_data.torque_cmd[servo] = m_robot->get_joint_torque_cmd()[servo];
-      m_log_data.torque_measure[servo]=m_robot->get_joint_torque_measured()[servo];
+      log_data_.positions[servo] = robot_->GetJointPositions()[servo];
+      log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
+      log_data_.modes[servo] = static_cast<int>(robot_->GetJointModes()[servo]);
+      log_data_.torque_cmd[servo] = robot_->GetJointTorqueCmd()[servo];
+      log_data_.torque_measure[servo]= robot_->GetJointTorqueMeasured()[servo];
     }
-    m_log_data.limb_position[0] = z-z0;
-    m_log_data.limb_position[1] = x;
-    m_log_data.limb_vel[0] = d_z;
-    m_log_data.limb_vel[1] = d_x;
-    m_log_data.limb_wrench[0] = f_z;
-    m_log_data.limb_wrench[1] = f_x;
-    m_log_data.hybrid_mode = m_mode;
+    log_data_.limb_position[0] = z-z0;
+    log_data_.limb_position[1] = x;
+    log_data_.limb_vel[0] = d_z;
+    log_data_.limb_vel[1] = d_x;
+    log_data_.limb_wrench[0] = f_z;
+    log_data_.limb_wrench[1] = f_x;
+    log_data_.hybrid_mode = m_mode;
   }
 
-  void process_input()override{
+  void ProcessInput()override{
     std::cout<<"Response received"<<std::endl;
-    kv = m_lcm_sub.m_data.kv;
-    k = m_lcm_sub.m_data.k;
-    k_stiff=m_lcm_sub.m_data.k_stiff;
-    b = m_lcm_sub.m_data.b;
-    b_stiff = m_lcm_sub.m_data.b_stiff;
-    kp = m_lcm_sub.m_data.kp;
-    kd = m_lcm_sub.m_data.kd;
+    kv = lcm_sub_.data_.kv;
+    k = lcm_sub_.data_.k;
+    k_stiff=lcm_sub_.data_.k_stiff;
+    b = lcm_sub_.data_.b;
+    b_stiff = lcm_sub_.data_.b_stiff;
+    kp = lcm_sub_.data_.kp;
+    kd = lcm_sub_.data_.kd;
   }
 
   enum hybrid_mode
@@ -120,7 +120,7 @@ class Hopping : public Mjbots_Control_Loop<leg_log, leg_gain>{
     STANCE = 2
   };
 
-  Cartesian_Leg m_leg = Cartesian_Leg(0.15, 0.15);
+  CartesianLeg m_leg = CartesianLeg(0.15, 0.15);
   float kv = 0; /// Active damping gain
   float k = 800; /// Stance spring stiffness
   float k_stiff = 1600; /// Flight spring stiffness
@@ -137,15 +137,15 @@ class Hopping : public Mjbots_Control_Loop<leg_log, leg_gain>{
 };
 
 int main(int argc, char **argv) {
-  Control_Loop_Options options;
-  options.m_motor_list.emplace_back(1, 1, 1, 0.1949);
-  options.m_motor_list.emplace_back(2, 1, -1, 0.0389);
-  options.m_log_channel_name = "leg_data";
-  options.m_input_channel_name = "leg_gains";
-  options.m_soft_start_duration = 5000;
-  options.m_max_torque = 12;
+  ControlLoopOptions options;
+  options.motor_list.emplace_back(1, 1, 1, 0.1949);
+  options.motor_list.emplace_back(2, 1, -1, 0.0389);
+  options.log_channel_name = "leg_data";
+  options.input_channel_name = "leg_gains";
+  options.soft_start_duration = 5000;
+  options.max_torque = 12;
   Hopping control_loop(options);
-  control_loop.start();
-  control_loop.join();
+  control_loop.Start();
+  control_loop.Join();
   return 0;
 }

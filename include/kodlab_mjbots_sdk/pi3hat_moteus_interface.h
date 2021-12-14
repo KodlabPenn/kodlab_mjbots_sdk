@@ -49,7 +49,7 @@ class Pi3HatMoteusInterface {
 
   Pi3HatMoteusInterface(const Options& options)
       : options_(options){
-    start();
+    Start();
   }
 
   ~Pi3HatMoteusInterface() {
@@ -121,26 +121,26 @@ class Pi3HatMoteusInterface {
     data_ = data;
     condition_.notify_all();
   }
-  static void* static_run(void* void_interface_ptr){
+  static void* StaticRun(void* void_interface_ptr){
     Pi3HatMoteusInterface* interface =
         (static_cast<Pi3HatMoteusInterface*>(void_interface_ptr));
-    interface->run();
+    interface->Run();
     return nullptr;
   }
 
-  void start(){
+  void Start(){
     thread_.parameters_.cpu_dma_latency_ = -1;
     thread_.parameters_.priority_ = options_.realtime_priority;
     thread_.parameters_.block_memory_ = true;
     if (options_.cpu>=0){
       thread_.parameters_.cpu_id_ = {options_.cpu};
     }
-    thread_.create_realtime_thread(static_run, this);
+    thread_.create_realtime_thread(StaticRun, this);
   }
 
  private:
 
-  void run( ) {
+  void Run( ) {
     pi3hat::Pi3Hat::Configuration config;
     pi3hat_ = std::make_shared<pi3hat::Pi3Hat>(config);
     while (true) {
