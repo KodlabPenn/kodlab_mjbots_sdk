@@ -11,14 +11,14 @@
 #include "many_motor_log.hpp"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 
-class Spin_Motor : public MjbotsControlLoop<many_motor_log>{
+class Spin_Motor : public kodlab::mjbots::MjbotsControlLoop<many_motor_log> {
   using MjbotsControlLoop<many_motor_log>::MjbotsControlLoop;
-  void CalcTorques() override{
+  void CalcTorques() override {
     std::vector<float> torques(num_motors_, 0);
     robot_->SetTorques(torques);
   }
 
-  void PrepareLog()  override{
+  void PrepareLog() override {
     for (int servo = 0; servo < num_motors_; servo++) {
       log_data_.positions[servo] = robot_->GetJointPositions()[servo];
       log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
@@ -29,7 +29,7 @@ class Spin_Motor : public MjbotsControlLoop<many_motor_log>{
 };
 
 int main(int argc, char **argv) {
-  ControlLoopOptions options;
+  kodlab::mjbots::ControlLoopOptions options;
   // Define the motors in the robot
   options.motor_list.emplace_back(1, 1);
   options.motor_list.emplace_back(2, 1);

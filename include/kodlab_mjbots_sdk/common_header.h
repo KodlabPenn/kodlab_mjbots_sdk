@@ -4,6 +4,7 @@
 #include <atomic>
 #include <signal.h>  // manage the ctrl+c signal
 
+namespace kodlab {
 /**
  * @brief This boolean is here to kill cleanly the application upon ctrl+c
  */
@@ -14,16 +15,14 @@ static std::atomic_bool CTRL_C_DETECTED(false);
  *
  * @param s is the id of the signal
  */
-static void my_handler(int)
-{
+static void my_handler(int) {
   CTRL_C_DETECTED = true;
 }
 
 /**
  * @brief Enable to kill the demos cleanly with a ctrl+c
  */
-static void EnableCtrlC()
-{
+static void EnableCtrlC() {
   // make sure we catch the ctrl+c signal to kill the application properly.
   struct sigaction sigIntHandler;
   sigIntHandler.sa_handler = my_handler;
@@ -31,4 +30,5 @@ static void EnableCtrlC()
   sigIntHandler.sa_flags = 0;
   sigaction(SIGINT, &sigIntHandler, NULL);
   CTRL_C_DETECTED = false;
+}
 }

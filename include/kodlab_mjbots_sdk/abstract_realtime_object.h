@@ -8,6 +8,7 @@
 #include "real_time_tools/thread.hpp"
 #include "kodlab_mjbots_sdk/common_header.h"
 
+namespace kodlab {
 /*!
  * @brief template class for using a realtime thread with an object.
  * WARNING: unique ptr do not play nicely with the abstract realtime object due to the way the abstract realtime object
@@ -36,7 +37,7 @@ class AbstractRealtimeObject {
    * @param abstract_void_ptr ptr to an abstract_realtime_object child class
    * @return nulptr
    */
-  static void* StaticRun(void* abstract_void_ptr);
+  static void *StaticRun(void *abstract_void_ptr);
 
   /*!
    * @brief pure virtual function which contains the thread behavior. Must be implemented by child class
@@ -47,4 +48,4 @@ class AbstractRealtimeObject {
   int cpu_ = -1;                                /// CPU thread should Run on, less than 0 is any thread
   real_time_tools::RealTimeThread thread_; /// realtime thread object
 };
-
+}

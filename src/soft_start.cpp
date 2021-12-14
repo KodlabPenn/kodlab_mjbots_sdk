@@ -6,26 +6,27 @@
 
 #include "kodlab_mjbots_sdk/soft_start.h"
 
- void SoftStart::Constrain(std::vector<float>& values, float min_val, float max_val){
-  for(auto& value : values){
+namespace kodlab {
+void SoftStart::Constrain(std::vector<float> &values, float min_val, float max_val) {
+  for (auto &value : values) {
     value = fmin(fmax(value, min_val), max_val);
   }
 }
 
-float SoftStart::Constrain(float values, float min_val, float max_val){
-    return fmin(fmax(values, min_val), max_val);
+float SoftStart::Constrain(float values, float min_val, float max_val) {
+  return fmin(fmax(values, min_val), max_val);
 }
 
-
-void SoftStart::ConstrainTorques(std::vector<float>& torques, int count) {
-  if(count > duration_){
+void SoftStart::ConstrainTorques(std::vector<float> &torques, int count) {
+  if (count > duration_) {
     Constrain(torques, -max_torque_, max_torque_);
-  }
-  else{
+  } else {
     float max_val = count * slope_;
     Constrain(torques, -max_val, max_val);
 
   }
 
 }
-SoftStart::SoftStart(float max_torque, int duration): max_torque_(fabs(max_torque)), duration_(duration), slope_(fabs(max_torque)/(fmax(duration, 1))) {}
+SoftStart::SoftStart(float max_torque, int duration)
+    : max_torque_(fabs(max_torque)), duration_(duration), slope_(fabs(max_torque) / (fmax(duration, 1))) {}
+}

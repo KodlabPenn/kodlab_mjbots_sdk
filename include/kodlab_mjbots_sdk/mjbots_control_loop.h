@@ -13,10 +13,12 @@
 #include "real_time_tools/hard_spinner.hpp"
 #include <type_traits>
 #include "void_lcm.hpp"
+
+namespace kodlab::mjbots {
 /*!
  * @brief options struct for creating a mjbots behavior
  */
-struct ControlLoopOptions{
+struct ControlLoopOptions {
   std::vector<Motor> motor_list;    /// List of motors in robot
   RealtimeParams realtime_params;  /// Set of parameters for robot's realtimeness
 
@@ -35,7 +37,7 @@ struct ControlLoopOptions{
  * @tparam InputClass[optional] class for input data 
  */
 template<class LogClass = void_lcm, class InputClass = void_lcm>
-class MjbotsControlLoop: public AbstractRealtimeObject{
+class MjbotsControlLoop : public AbstractRealtimeObject {
  public:
   /*!
    * @brief constructs and mjbots behavior based on the options struct. Does not Start the controller.
@@ -58,7 +60,7 @@ class MjbotsControlLoop: public AbstractRealtimeObject{
   /*!
    * @brief adds data to m_log_data if logging is being used. To be implemented by child class
    */
-  virtual void PrepareLog(){};
+  virtual void PrepareLog() {};
 
   /*!
    * @brief adds logging information to log. Log must have entries timestamp, margin, and message_duration
@@ -81,10 +83,11 @@ class MjbotsControlLoop: public AbstractRealtimeObject{
   /*!
    * @brief virtual class to be implemented when logging. Process data in m_lcm_sub.m_data;
    */
-  virtual void ProcessInput(){};
+  virtual void ProcessInput() {};
 
-  std::shared_ptr<MjbotsRobotInterface> robot_;   /// ptr to the robot object, if unique causes many issues, also should be
-                                                     /// initialized inside thread
+  std::shared_ptr<MjbotsRobotInterface>
+      robot_;   /// ptr to the robot object, if unique causes many issues, also should be
+  /// initialized inside thread
   int frequency_;                         /// frequency of the controller in Hz
   int num_motors_;                        /// Number of motors
   ControlLoopOptions options_;              /// Options struct
@@ -96,13 +99,12 @@ class MjbotsControlLoop: public AbstractRealtimeObject{
   LcmSubscriber<InputClass> lcm_sub_;    /// LCM subscriber object
 };
 
-
 /******************************************Implementation**************************************************************/
 
 template<class log_type, class input_type>
 MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(const ControlLoopOptions &options) :
     AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
-    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name){
+    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) {
   // Extract useful values from options
   options_ = options;
   cpu_ = options.realtime_params.main_cpu;
@@ -112,22 +114,21 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(const ControlLoopOpti
   // Setup logging info and confirm template is provided if logging
   logging_channel_name_ = options.log_channel_name;
   logging_ = !logging_channel_name_.empty();
-  if(logging_ && std::is_same<log_type, void_lcm>()){
-    std::cout<<"Warning, log_type is default, but logging is enabled"<<std::endl;
+  if (logging_ && std::is_same<log_type, void_lcm>()) {
+    std::cout << "Warning, log_type is default, but logging is enabled" << std::endl;
     logging_ = false;
   }
 
   input_ = !options.input_channel_name.empty();
-  if(input_ && std::is_same<input_type, void_lcm>()){
-    std::cout<<"Warning, input_type is default, but input is enabled"<<std::endl;
+  if (input_ && std::is_same<input_type, void_lcm>()) {
+    std::cout << "Warning, input_type is default, but input is enabled" << std::endl;
     input_ = false;
   }
 }
 
-
 template<class log_type, class input_type>
 void MjbotsControlLoop<log_type, input_type>::AddTimingLog(float t, float margin, float message_duration) {
-  if(logging_){
+  if (logging_) {
     log_data_.timestamp = t;
     log_data_.margin = margin;
     log_data_.message_duration = message_duration;
@@ -136,7 +137,7 @@ void MjbotsControlLoop<log_type, input_type>::AddTimingLog(float t, float margin
 
 template<class log_type, class input_type>
 void MjbotsControlLoop<log_type, input_type>::PublishLog() {
-  if(logging_)
+  if (logging_)
     lcm_.publish(logging_channel_name_, &log_data_);
 }
 
@@ -145,8 +146,10 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
   EnableCtrlC();
 
   // Create robot object
-  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(options_.motor_list, options_.realtime_params,
-                                                                       options_.max_torque, options_.soft_start_duration));
+  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(options_.motor_list,
+                                                                       options_.realtime_params,
+                                                                       options_.max_torque,
+                                                                       options_.soft_start_duration));
 
   float prev_msg_duration = 0;
 
@@ -183,8 +186,8 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
   }
 
   // Might be related to use of new
-  std::cout<<"\nCTRL C Detected. Sending stop command and then segaulting" << std::endl;
-  std::cout<<"TODO: Don't segfault" << std::endl;
+  std::cout << "\nCTRL C Detected. Sending stop command and then segaulting" << std::endl;
+  std::cout << "TODO: Don't segfault" << std::endl;
 
   // Send a few stop commands
   robot_->ProcessReply();
@@ -196,7 +199,7 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
 
   // try to Shutdown, but fail
   robot_->Shutdown();
-  if(input_){
+  if (input_) {
     lcm_sub_.Join();
   }
 }
@@ -204,11 +207,11 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
 template<class log_type, class input_type>
 void MjbotsControlLoop<log_type, input_type>::SafeProcessInput() {
   // Check to make sure using input
-  if(input_){
+  if (input_) {
     // Try to unlock mutex, if you can't don't worry and try next time
-    if (lcm_sub_.mutex_.try_lock()){
+    if (lcm_sub_.mutex_.try_lock()) {
       // If new message process
-      if(lcm_sub_.new_message_){
+      if (lcm_sub_.new_message_) {
         ProcessInput();
       }
       // Set new message to false and unlock mutex
@@ -216,4 +219,5 @@ void MjbotsControlLoop<log_type, input_type>::SafeProcessInput() {
       lcm_sub_.mutex_.unlock();
     }
   }
+}
 }

@@ -13,16 +13,17 @@
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
 
+namespace kodlab::mjbots {
 /*!
  * @brief Motor struct used for defining a motor in the robot
  */
-struct Motor{
+struct Motor {
   /*!
    * @brief constructor to set id and can_bus
    * @param id_ the can_id of the motor, must be unique
    * @param can_bus_ the can bus the motor is on
    */
-  Motor(int id_, int can_bus_): can_bus(can_bus_), id(id_){}
+  Motor(int id_, int can_bus_) : can_bus(can_bus_), id(id_) {}
 
   /*!
    * @brief constructor to set id, can_bus, offset, and direction
@@ -31,18 +32,18 @@ struct Motor{
    * @param direction_ the direction of the motor, should be 1 or -1
    * @param offset_ the offset of the motor in radians
    */
-  Motor(int id_, int can_bus_, int direction_, float offset_):
-        can_bus(can_bus_), id(id_), direction(direction_), offset(offset_){}
+  Motor(int id_, int can_bus_, int direction_, float offset_) :
+      can_bus(can_bus_), id(id_), direction(direction_), offset(offset_) {}
   int can_bus;       /// The can bus the motor is on
   int id;            /// Motor can id, must be unique
   int direction = 1; /// direction of the motor, should be 1 or -1
-  float offset  = 0; /// Offset of the motor in radians
+  float offset = 0; /// Offset of the motor in radians
 };
 
 /*!
  * @brief struct for setting the realtime params for the robot
  */
-struct RealtimeParams{
+struct RealtimeParams {
   int can_cpu = 3;   /// Which cpu the can should be on
   int main_cpu = 2;  /// Which cpu the main loop should be on
   int main_rtp = 97; /// The realtime priority of the main thread
@@ -50,7 +51,6 @@ struct RealtimeParams{
   int lcm_rtp = 90;
   int lcm_cpu = 0;
 };
-
 
 class MjbotsRobotInterface {
  public:
@@ -61,8 +61,8 @@ class MjbotsRobotInterface {
    * @param max_torque the maximum torque to allow per motor
    * @param soft_start_duration how long in dt to spend ramping the torque
    */
-  MjbotsRobotInterface(const std::vector<Motor>& motor_list,
-                       const RealtimeParams& realtime_params,
+  MjbotsRobotInterface(const std::vector<Motor> &motor_list,
+                       const RealtimeParams &realtime_params,
                        float max_torque = 20,
                        int soft_start_duration = 1);
 
@@ -124,7 +124,7 @@ class MjbotsRobotInterface {
    * @brief accessor for the joint modes
    * @return the joint modes
    */
-  std::vector<mjbots::moteus::Mode> GetJointModes();
+  std::vector<::mjbots::moteus::Mode> GetJointModes();
 
  private:
   int num_servos_;                         /// The number of motors in the robot
@@ -138,15 +138,15 @@ class MjbotsRobotInterface {
   std::vector<float> offsets_;             /// Offset of the motor position
   std::vector<int> directions_;            /// Direction of motors
   bool timeout_ = false;                   /// True if communication has timed out
-  std::vector<mjbots::moteus::Mode> modes_;/// Vector of the motor modes
+  std::vector<::mjbots::moteus::Mode> modes_;/// Vector of the motor modes
   long int cycle_count_ = 0;               /// How many cycles have happened, used for soft Start
 
-  std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> commands_;  /// Vector of servo commands
-  std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply> replies_;     /// Vector of replies
-  std::unique_ptr<mjbots::moteus::Pi3HatMoteusInterface> moteus_interface_;    /// pi3hat interface
-  mjbots::moteus::Pi3HatMoteusInterface::Data moteus_data_;                    /// Data
-  std::future<mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
-                                                                                /// response is ready
+  std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> commands_;  /// Vector of servo commands
+  std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> replies_;     /// Vector of replies
+  std::unique_ptr<::mjbots::moteus::Pi3HatMoteusInterface> moteus_interface_;    /// pi3hat interface
+  ::mjbots::moteus::Pi3HatMoteusInterface::Data moteus_data_;                    /// Data
+  std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
+  /// response is ready
   SoftStart soft_start_;                                                      /// Soft Start object
 
   /*!
@@ -165,6 +165,7 @@ class MjbotsRobotInterface {
    * @param id servo id
    * @return the result from servo of id id
    */
-  static mjbots::moteus::QueryResult Get(const std::vector<mjbots::moteus::Pi3HatMoteusInterface::ServoReply>& replies, int id);
+  static ::mjbots::moteus::QueryResult Get(const std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> &replies,
+                                         int id);
 };
-
+}

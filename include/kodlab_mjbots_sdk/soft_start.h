@@ -8,6 +8,7 @@
 #include <vector>
 #include <math.h>
 
+namespace kodlab {
 /*!
  * @brief implements a basic soft Start/torque ramp. For the duration, torque will ramp from 0 to max_torque linearly
  */
@@ -24,7 +25,7 @@ class SoftStart {
    * @param torques[in, out] the torques to be constrained
    * @param count the number of steps it has been
    */
-  void ConstrainTorques(std::vector<float>& torques, int count);
+  void ConstrainTorques(std::vector<float> &torques, int count);
 
   /*!
    * @brief constrains all values in values between min_val and max_val
@@ -32,7 +33,7 @@ class SoftStart {
    * @param min_val minimum value allowed in vector
    * @param max_val maximum value allowed in vector
    */
-  static void Constrain(std::vector<float>& values, float min_val, float max_val);
+  static void Constrain(std::vector<float> &values, float min_val, float max_val);
 
   /*!
    * @brief constrains a single value between min_val and max_val
@@ -50,4 +51,4 @@ class SoftStart {
    */
   SoftStart(float max_torque, int duration);
 };
-
+}
