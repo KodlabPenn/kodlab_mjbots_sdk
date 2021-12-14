@@ -26,12 +26,12 @@ dx = []
 limb_forces = []
 hybrid_mode = []
 for event in log:
-    if event.channel == "leg_log":
+    if event.channel == "leg_data":
         msg = LegLog.decode(event.data)
         timestamps.append(msg.timestamp)
         velocities.append(msg.velocities)
         positions.append(msg.positions)
-        margins.append(msg.mean_margin)
+        margins.append(msg.margin)
         torques.append(msg.torque_cmd)
         z.append(msg.limb_position[0])
         x.append(msg.limb_position[1])
