@@ -13,22 +13,24 @@ print(file_name)
 
 log = lcm.EventLog(file_name, "r")
 
-
 timestamps = []
 margins = []
 message_duration = []
 positions = []
 velocities = []
 torques = []
+count = 0
 for event in log:
     if event.channel == "motor_data":
-        msg = ManyMotorLog.decode(event.data)
-        timestamps.append(msg.timestamp)
-        velocities.append(msg.velocities)
-        positions.append(msg.positions)
-        margins.append(msg.margin)
-        torques.append(msg.torques)
-        message_duration.append(msg.message_duration)
+        if count > 20:
+            msg = ManyMotorLog.decode(event.data)
+            timestamps.append(msg.timestamp)
+            velocities.append(msg.velocities)
+            positions.append(msg.positions)
+            margins.append(msg.margin)
+            torques.append(msg.torques)
+            message_duration.append(msg.message_duration)
+        count += 1
 
 
 timestamps = np.array(timestamps)

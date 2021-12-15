@@ -160,9 +160,11 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
 
   // Create additional timers for other timing information
   real_time_tools::Timer dt_timer;
-  dt_timer.tic();
   real_time_tools::Timer message_duration_timer;
 
+  spinner.spin();
+  spinner.spin();
+  dt_timer.tic();
   while (!CTRL_C_DETECTED) {
     // sleep the correct amount
     float sleep_duration = spinner.predict_sleeping_time();

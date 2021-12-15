@@ -10,6 +10,7 @@
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 #include "ManyMotorLog.hpp"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
+#include <sys/mman.h>
 
 class Spin_Motor : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
@@ -25,15 +26,27 @@ class Spin_Motor : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
       log_data_.modes[servo] = static_cast<int>(robot_->GetJointModes()[servo]);
       log_data_.torques[servo] = robot_->GetJointTorqueCmd()[servo];
     }
+    for (int servo = num_motors_; servo < 13; servo++) {
+      log_data_.positions[servo] = 0;
+      log_data_.velocities[servo] = 0;
+      log_data_.modes[servo] = 0;
+      log_data_.torques[servo] = 0;
+    }
   }
 };
 
 int main(int argc, char **argv) {
   kodlab::mjbots::ControlLoopOptions options;
   // Define the motors in the robot
-  options.motor_list.emplace_back(1, 1);
-  options.motor_list.emplace_back(2, 1);
+  options.motor_list.emplace_back(10, 4);
+  options.motor_list.emplace_back(11, 4);
+  options.motor_list.emplace_back(12, 4);
+
   options.log_channel_name = "motor_data";
+
+  options.frequency = 1000;
+  options.realtime_params.main_cpu = 3;
+  options.realtime_params.can_cpu  = 2;
 
   // Create control loop
   Spin_Motor control_loop(options);
