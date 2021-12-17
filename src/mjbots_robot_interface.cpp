@@ -77,6 +77,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
   moteus_data_.cycle_duration  = cycle_duration_;
   moteus_data_.reply_duration  = reply_duration_;
   moteus_data_.send_duration  = send_duration_;
+  moteus_data_.child_cycle_duration  = child_cycle_duration_;
   moteus_data_.timeout = timeout_;
   SendCommand();
 

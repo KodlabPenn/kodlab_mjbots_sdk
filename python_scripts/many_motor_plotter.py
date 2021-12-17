@@ -22,6 +22,8 @@ torques = []
 cycle_duration = []
 send_duration = []
 reply_duration = []
+child_cycle_duration = []
+
 count = 0
 for event in log:
     if event.channel == "motor_data":
@@ -36,6 +38,7 @@ for event in log:
             cycle_duration.append(msg.cycle_duration)
             send_duration.append(msg.send_duration)
             reply_duration.append(msg.reply_duration)
+            child_cycle_duration.append(msg.child_cycle_duration)
         count += 1
 
 
@@ -48,6 +51,7 @@ positions = np.array(positions)
 reply_duration = np.array(reply_duration)
 send_duration = np.array(send_duration)
 cycle_duration = np.array(cycle_duration)
+child_cycle_duration = np.array(child_cycle_duration)
 
 mean_dt = np.average(np.diff(timestamps))
 mean_margin = np.average(margins)
@@ -60,6 +64,7 @@ print("std margin = ", np.std(margins))
 print("Mean message_duration = ", np.average(message_duration))
 print("std message_duration = ", np.std(message_duration))
 
+print("Mean child cycle duration = ", np.average(child_cycle_duration))
 print("Mean pi3 hat cycle duration = ", np.average(cycle_duration))
 print("Mean send_duration = ", np.average(send_duration))
 print("Mean reply_duration = ", np.average(reply_duration))
@@ -76,6 +81,7 @@ ax3.plot(timestamps, cycle_duration)
 ax3.set_ylabel('duration(s)')
 ax3.plot(timestamps, send_duration)
 ax3.plot(timestamps, reply_duration)
+ax3.plot(timestamps, child_cycle_duration)
 
 ax4.plot(timestamps, positions)
 ax4.set_ylabel('Positions(rad)')

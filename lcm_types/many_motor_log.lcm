@@ -9,5 +9,6 @@ struct ManyMotorLog
   float message_duration;
   float send_duration;
   float cycle_duration;
+  float child_cycle_duration;
   float reply_duration;
 }

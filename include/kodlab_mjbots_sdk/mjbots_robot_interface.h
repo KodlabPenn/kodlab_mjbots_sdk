@@ -123,6 +123,8 @@ class MjbotsRobotInterface {
   std::shared_ptr<float> cycle_duration_ = std::make_shared<float>(0);
   std::shared_ptr<float> reply_duration_ = std::make_shared<float>(0);
   std::shared_ptr<float> send_duration_  = std::make_shared<float>(0);
+  std::shared_ptr<float> child_cycle_duration_  = std::make_shared<float>(0);
+
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::vector<int> servo_id_list_;         /// Vector of the servo id

@@ -101,6 +101,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     std::shared_ptr<float> send_duration;
     std::shared_ptr<float> reply_duration;
     std::shared_ptr<float> cycle_duration;
+    std::shared_ptr<float> child_cycle_duration;
   };
 
   struct Output {
@@ -156,6 +157,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   }
 
   Output CHILD_Cycle() {
+    child_cycle_timer.tic();
     tx_can_.resize(data_.commands.size());
     int out_idx = 0;
     for (const auto& cmd : data_.commands) {
@@ -214,6 +216,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     if (output.timeout) {
      std::cout << "Error, pi3 hat timeout" << std::endl;
     }
+    *data_.child_cycle_duration = child_cycle_timer.tac() * 1000;
     return result;
   }
 
@@ -237,6 +240,8 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   // required in steady state.
   std::vector<pi3hat::CanFrame> tx_can_;
   std::vector<pi3hat::CanFrame> rx_can_;
+
+  real_time_tools::Timer child_cycle_timer;
 };
 
 
