@@ -174,13 +174,13 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
     CalcTorques();
     // Prepare log
     PrepareLog();
-    message_duration_timer.tic();
-
-    // Initiate communications cycle
-    robot_->SendCommand();
     // Publish log
     AddTimingLog(dt_timer.tac() * 1000, sleep_duration * 1000, prev_msg_duration);
     PublishLog();
+
+    message_duration_timer.tic();
+    // Initiate communications cycle
+    robot_->SendCommand();
     // handle new inputs if available
     SafeProcessInput();
     // Wait until reply from motors is ready and then add reply to robot

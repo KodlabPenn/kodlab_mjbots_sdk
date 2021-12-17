@@ -74,6 +74,10 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
   replies_ = std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply>{commands_.size()};
   moteus_data_.commands = {commands_.data(), commands_.size()};
   moteus_data_.replies = {replies_.data(), replies_.size()};
+  moteus_data_.cycle_duration  = & cycle_duration_;
+  moteus_data_.reply_duration  = & reply_duration_;
+  moteus_data_.send_duration  = & send_duration_;
+  moteus_data_.timeout = & timeout_;
   SendCommand();
 
   // Prepare variables for saving response and process reply
@@ -95,7 +99,7 @@ void MjbotsRobotInterface::ProcessReply() {
   if (can_result_.valid()) {
     can_result_.wait();
   }
-
+//  std::cout<<cycle_duration_<<std::endl;
   // Copy results to object so controller can use
   for (int servo = 0; servo < num_servos_; servo++) {
     const auto servo_reply = Get(replies_, servo_id_list_[servo]);
@@ -104,10 +108,9 @@ void MjbotsRobotInterface::ProcessReply() {
     velocities_[servo] = directions_[servo] * (servo_reply.velocity * 2 * M_PI);
     modes_[servo] = servo_reply.mode;
   }
-  timeout_ = moteus_data_.timeout;
-  if (timeout_) {
-    std::cout << "Error, pi3 hat timeout" << std::endl;
-  }
+//  if (timeout_) {
+//    std::cout << "Error, pi3 hat timeout" << std::endl;
+//  }
 }
 
 void MjbotsRobotInterface::SendCommand() {

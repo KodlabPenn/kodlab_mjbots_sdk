@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <stdexcept>
+#include "real_time_tools/timer.hpp"
 
 namespace mjbots {
 namespace pi3hat {
@@ -236,6 +237,9 @@ class Pi3Hat {
     int error = 0;
     bool attitude_present = false;
     bool timeout = false;
+    float send_duration = 0;
+    float reply_duration = 0;
+    float cycle_duration = 0;
     size_t rx_can_size = 0;
     size_t rx_rf_size = 0;
 

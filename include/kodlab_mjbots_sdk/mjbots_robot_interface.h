@@ -120,6 +120,9 @@ class MjbotsRobotInterface {
    */
   std::vector<::mjbots::moteus::Mode> GetJointModes();
 
+  float cycle_duration_ = 0;
+  float reply_duration_ = 0;
+  float send_duration_ = 0;
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::vector<int> servo_id_list_;         /// Vector of the servo id
