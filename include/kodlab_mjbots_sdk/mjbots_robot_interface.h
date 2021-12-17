@@ -115,12 +115,6 @@ class MjbotsRobotInterface {
   std::vector<float> GetJointTorqueCmd();
 
   /*!
-   * @brief accessor for the measured torque by the motors, takes into account direction
-   * @return the measured torque
-   */
-  std::vector<float> GetJointTorqueMeasured();
-
-  /*!
    * @brief accessor for the joint modes
    * @return the joint modes
    */
@@ -134,7 +128,6 @@ class MjbotsRobotInterface {
   std::vector<float> positions_;           /// Vector of the motor positions
   std::vector<float> velocities_;          /// Vector of the motor velocities
   std::vector<float> torque_cmd_;          /// Vector of the torque command sent to motors
-  std::vector<float> torque_measured_;     /// Vector of the torque measured by motors
   std::vector<float> offsets_;             /// Offset of the motor position
   std::vector<int> directions_;            /// Direction of motors
   bool timeout_ = false;                   /// True if communication has timed out

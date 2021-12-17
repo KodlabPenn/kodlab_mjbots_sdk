@@ -604,9 +604,9 @@ struct QueryCommand {
   Resolution q_current = Resolution::kIgnore;
   Resolution d_current = Resolution::kIgnore;
   Resolution rezero_state = Resolution::kIgnore;
-  Resolution voltage = Resolution::kInt8; // Can be 0
-  Resolution temperature = Resolution::kInt8; // Can be 0
-  Resolution fault = Resolution::kInt8;
+  Resolution voltage = Resolution::kIgnore; // Can be 0
+  Resolution temperature = Resolution::kIgnore; // Can be 0
+  Resolution fault = Resolution::kIgnore;
 
   bool any_set() const {
     return mode != Resolution::kIgnore ||

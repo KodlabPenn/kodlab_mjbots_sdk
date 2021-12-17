@@ -16,11 +16,11 @@ void MjbotsRobotInterface::InitializeCommand() {
   }
 
   ::mjbots::moteus::PositionResolution res; // This is just for the command
-  res.position = ::mjbots::moteus::Resolution::kInt16; //Can be 0
-  res.velocity = ::mjbots::moteus::Resolution::kInt16; //Can be 0
+  res.position = ::mjbots::moteus::Resolution::kIgnore; //Can be 0
+  res.velocity = ::mjbots::moteus::Resolution::kIgnore; //Can be 0
   res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
-  res.kp_scale = ::mjbots::moteus::Resolution::kInt8; //Can be 0 iff kp is set to 0 on motors
-  res.kd_scale = ::mjbots::moteus::Resolution::kInt8; //Can be 0 iff kd is set to 0 on motors during config
+  res.kp_scale = ::mjbots::moteus::Resolution::kIgnore; //Can be 0 iff kp is set to 0 on motors
+  res.kd_scale = ::mjbots::moteus::Resolution::kIgnore; //Can be 0 iff kd is set to 0 on motors during config
   res.maximum_torque = ::mjbots::moteus::Resolution::kIgnore;
   res.stop_position = ::mjbots::moteus::Resolution::kIgnore;
   res.watchdog_timeout = ::mjbots::moteus::Resolution::kIgnore;
@@ -81,7 +81,6 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
     positions_.push_back(0);
     velocities_.push_back(0);
     torque_cmd_.push_back(0);
-    torque_measured_.push_back(0);
     modes_.push_back(::mjbots::moteus::Mode::kStopped);
   }
   ProcessReply();
@@ -103,7 +102,6 @@ void MjbotsRobotInterface::ProcessReply() {
 
     positions_[servo] = directions_[servo] * (servo_reply.position * 2 * M_PI) + offsets_[servo];
     velocities_[servo] = directions_[servo] * (servo_reply.velocity * 2 * M_PI);
-    torque_measured_[servo] = directions_[servo] * (servo_reply.torque);
     modes_[servo] = servo_reply.mode;
   }
   timeout_ = moteus_data_.timeout;
@@ -148,9 +146,6 @@ std::vector<::mjbots::moteus::Mode> MjbotsRobotInterface::GetJointModes() {
 
 std::vector<float> MjbotsRobotInterface::GetJointTorqueCmd() {
   return torque_cmd_;
-}
-std::vector<float> MjbotsRobotInterface::GetJointTorqueMeasured() {
-  return torque_measured_;
 }
 void MjbotsRobotInterface::SetModeStop() {
   for (auto &cmd : commands_) {

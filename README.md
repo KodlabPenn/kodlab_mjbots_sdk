@@ -14,6 +14,9 @@ Note: This library only supports torque commands. If you wish to use
 position control, you either must close the loop yourself or modify the 
 library to allow for the position loop to Run on the moteus.
 
+#Important
+In order to keep the message size down, kp and kd on the motors must be set to 0
+
 # Usage
 ## MjbotsControlLoop:
 To use the `MjbotsControlLoop` create a class which inherits the `MjbotsControlLoop`
