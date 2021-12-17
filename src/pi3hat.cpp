@@ -1486,7 +1486,7 @@ class Pi3Hat::Impl {
           since_last_ns > input.rx_extra_wait_ns) {
         // We've read all the replies we are expecting and have polled
         // everything at least once if requested.
-        output->timeout = true;
+        output->timeout = false;
         return;
       }
 
@@ -1494,6 +1494,7 @@ class Pi3Hat::Impl {
           (delta_ns < input.min_tx_wait_ns ||
               since_last_ns < input.rx_extra_wait_ns)) {
         // The timeout has expired.
+        output->timeout = true;
         return;
       }
 

@@ -120,9 +120,9 @@ class MjbotsRobotInterface {
    */
   std::vector<::mjbots::moteus::Mode> GetJointModes();
 
-  float cycle_duration_ = 0;
-  float reply_duration_ = 0;
-  float send_duration_ = 0;
+  std::shared_ptr<float> cycle_duration_ = std::make_shared<float>(0);
+  std::shared_ptr<float> reply_duration_ = std::make_shared<float>(0);
+  std::shared_ptr<float> send_duration_  = std::make_shared<float>(0);
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::vector<int> servo_id_list_;         /// Vector of the servo id
@@ -133,7 +133,7 @@ class MjbotsRobotInterface {
   std::vector<float> torque_cmd_;          /// Vector of the torque command sent to motors
   std::vector<float> offsets_;             /// Offset of the motor position
   std::vector<int> directions_;            /// Direction of motors
-  bool timeout_ = false;                   /// True if communication has timed out
+  std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                   /// True if communication has timed out
   std::vector<::mjbots::moteus::Mode> modes_;/// Vector of the motor modes
   u_int64_t cycle_count_ = 0;               /// How many cycles have happened, used for soft Start
 

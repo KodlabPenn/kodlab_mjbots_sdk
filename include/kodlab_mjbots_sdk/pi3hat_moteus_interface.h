@@ -97,10 +97,10 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
 
     pi3hat::Span<ServoReply> replies;
 
-    bool* timeout;
-    float* send_duration;
-    float* reply_duration;
-    float* cycle_duration ;
+    std::shared_ptr<bool> timeout;
+    std::shared_ptr<float> send_duration;
+    std::shared_ptr<float> reply_duration;
+    std::shared_ptr<float> cycle_duration;
   };
 
   struct Output {
@@ -200,9 +200,6 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
 
     Output result;
     const auto output = pi3hat_->Cycle(input);
-    if(output.timeout){
-      std::cout<<"off"<<std::endl;
-    }
     *data_.timeout = output.timeout;
     *data_.reply_duration = output.reply_duration;
     *data_.send_duration = output.send_duration;
@@ -213,6 +210,9 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
       data_.replies[i].id = (can.id & 0x7f00) >> 8;
       data_.replies[i].result = moteus::ParseQueryResult(can.data, can.size);
       result.query_result_size = i + 1;
+    }
+    if (output.timeout) {
+     std::cout << "Error, pi3 hat timeout" << std::endl;
     }
     return result;
   }
