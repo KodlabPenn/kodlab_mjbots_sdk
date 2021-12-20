@@ -1426,16 +1426,15 @@ class Pi3Hat::Impl {
 
   void ReadCan(const Input& input, const ExpectedReply& expected_replies,
                Output* output) {
-    int bus_replies[] = {
-        expected_replies.count[1] + expected_replies.count[2],
-        expected_replies.count[3] + expected_replies.count[4],
-        expected_replies.count[5],
-    };
+    reply_count_[0]+= expected_replies.count[1] + expected_replies.count[2];
+    reply_count_[1]+= expected_replies.count[3] + expected_replies.count[4];
+    reply_count_[2]+= expected_replies.count[5];
+
 
     const bool to_check[] = {
-        bus_replies[0] || input.force_can_check & 0x06,
-        bus_replies[1] || input.force_can_check & 0x18,
-        bus_replies[2] || input.force_can_check & 0x20,
+        reply_count_[0] || input.force_can_check & 0x06,
+        reply_count_[1] || input.force_can_check & 0x18,
+        reply_count_[2] || input.force_can_check & 0x20,
     };
 
     const auto start_now = GetNow();
@@ -1444,25 +1443,25 @@ class Pi3Hat::Impl {
     while (true) {
       bool any_found = false;
       // Then check for CAN responses as necessary.
-      if (to_check[0] ) {
+      if (to_check[0] && reply_count_[0] > 0) {
         const int count = ReadCanFrames(aux_spi_, 0, 1, &input.rx_can, output);
-        bus_replies[0] -= count;
+        reply_count_[0] -= count;
         if (count) {
           last_reply = GetNow();
           any_found = true;
         }
       }
-      if (to_check[1] ) {
+      if (to_check[1] && reply_count_[1] > 0) {
         const int count = ReadCanFrames(aux_spi_, 1, 3, &input.rx_can, output);
-        bus_replies[1] -= count;
+        reply_count_[1] -= count;
         if (count) {
           last_reply = GetNow();
           any_found = true;
         }
       }
-      if (to_check[2] && config_.enable_aux) {
+      if (to_check[2] && config_.enable_aux && reply_count_[2] > 0) {
         const int count = ReadCanFrames(primary_spi_, 0, 5, &input.rx_can, output);
-        bus_replies[2] -= count;
+        reply_count_[2] -= count;
         if (count) {
           last_reply = GetNow();
           any_found = true;
@@ -1480,11 +1479,9 @@ class Pi3Hat::Impl {
       const auto delta_ns = cur_now - start_now;
       const auto since_last_ns = cur_now - last_reply;
 
-      if (bus_replies[0] <= 0 &&
-          bus_replies[1] <= 0 &&
-          bus_replies[2] <= 0 &&
-          delta_ns > input.min_tx_wait_ns &&
-          since_last_ns > input.rx_extra_wait_ns) {
+      if (reply_count_[0] <= 0 &&
+          reply_count_[1] <= 0 &&
+          reply_count_[2] <= 0 ) {
         // We've read all the replies we are expecting and have polled
         // everything at least once if requested.
         output->timeout = false;
@@ -1496,6 +1493,63 @@ class Pi3Hat::Impl {
               since_last_ns < input.rx_extra_wait_ns)) {
         // The timeout has expired.
         output->timeout = true;
+        return;
+      }
+
+      if (!any_found) {
+        // Give the controllers a chance to rest.
+        BusyWaitUs(20);
+      }
+    }
+  }
+
+  void ClearCan(const Input& input) {
+    const auto start_now = GetNow();
+    int64_t last_reply = start_now;
+
+    Output output;
+    while (true) {
+      bool any_found = false;
+      // Then check for CAN responses as necessary.
+      {
+        const int count = ReadCanFrames(aux_spi_, 0, 1, &input.rx_can, &output);
+        reply_count_[0] -= count;
+        if (count) {
+          last_reply = GetNow();
+          any_found = true;
+        }
+      }
+      {
+        const int count = ReadCanFrames(aux_spi_, 1, 3, &input.rx_can, &output);
+        reply_count_[1] -= count;
+        if (count) {
+          last_reply = GetNow();
+          any_found = true;
+        }
+      }
+      {
+        const int count = ReadCanFrames(primary_spi_, 0, 5, &input.rx_can, &output);
+        reply_count_[2] -= count;
+        if (count) {
+          last_reply = GetNow();
+          any_found = true;
+        }
+      }
+
+      if (output.rx_can_size >= input.rx_can.size()) {
+        // Our buffer is full, so no more frames could have been
+        // returned.
+        return;
+      }
+
+      const auto cur_now = GetNow();
+      const auto delta_ns = cur_now - start_now;
+      const auto since_last_ns = cur_now - last_reply;
+
+      if (delta_ns > input.timeout_ns && !
+          (delta_ns < input.min_tx_wait_ns ||
+              since_last_ns < input.rx_extra_wait_ns)) {
+        // The timeout has expired.
         return;
       }
 
@@ -1562,6 +1616,7 @@ class Pi3Hat::Impl {
   real_time_tools::Timer send_timer_;
   real_time_tools::Timer reply_timer_;
   real_time_tools::Timer cycle_timer_;
+  int reply_count_[3] = {0,0,0};
 };
 
 Pi3Hat::Pi3Hat(const Configuration& configuration)
@@ -1585,6 +1640,9 @@ Pi3Hat::DevicePerformance Pi3Hat::device_performance() {
 
 void Pi3Hat::ReadSpi(int spi_bus, int address, char* data, size_t size) {
   impl_->ReadSpi(spi_bus, address, data, size);
+}
+void Pi3Hat::ClearCan(const Pi3Hat::Input &input) {
+  impl_->ClearCan(input);
 }
 
 }

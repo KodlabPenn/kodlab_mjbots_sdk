@@ -256,6 +256,8 @@ class Pi3Hat {
   ///  * Return any RF slots that may have been received
   Output Cycle(const Input& input);
 
+  void ClearCan(const Input& input);
+
   struct ProcessorInfo {
     uint8_t git_hash[20] = {};
     bool dirty = false;

@@ -137,6 +137,11 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   void Run( ) override{
     pi3hat::Pi3Hat::Configuration config;
     pi3hat_ = std::make_shared<pi3hat::Pi3Hat>(config);
+
+    pi3hat::Pi3Hat::Input input;
+    rx_can_.resize(26);
+    input.rx_can = { rx_can_.data(), rx_can_.size() };
+    pi3hat_->ClearCan(input);
     while (true) {
       {
         std::unique_lock<std::mutex> lock(mutex_);
@@ -201,7 +206,8 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     pi3hat::Pi3Hat::Input input;
     input.tx_can = { tx_can_.data(), tx_can_.size() };
     input.rx_can = { rx_can_.data(), rx_can_.size() };
-
+    input.request_attitude = true;
+    input.attitude = &attitude_;
     Output result;
     const auto output = pi3hat_->Cycle(input);
     *data_.timeout = output.timeout;
@@ -228,7 +234,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   /// This block of variables are all controlled by the mutex.
   std::mutex mutex_;
   std::condition_variable condition_;
-  bool active_ = false;;
+  bool active_ = false;
   bool done_ = false;
   Data data_;
 
@@ -245,6 +251,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   real_time_tools::Timer child_cycle_timer;
 
   std::mutex cycle_mutex_;
+  pi3hat::Attitude attitude_;
 };
 
 
