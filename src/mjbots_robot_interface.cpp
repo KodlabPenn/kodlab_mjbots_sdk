@@ -97,9 +97,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
 void MjbotsRobotInterface::ProcessReply() {
 
   // Make sure the m_can_result is valid before waiting otherwise undefined behavior
-  if (can_result_.valid()) {
-    can_result_.wait();
-  }
+  moteus_interface_->WaitForCycle();
   // Copy results to object so controller can use
   for (int servo = 0; servo < num_servos_; servo++) {
     const auto servo_reply = Get(replies_, servo_id_list_[servo]);
@@ -112,15 +110,8 @@ void MjbotsRobotInterface::ProcessReply() {
 
 void MjbotsRobotInterface::SendCommand() {
   cycle_count_++;
-  auto promise = std::make_shared<std::promise<::mjbots::moteus::Pi3HatMoteusInterface::Output>>();
   moteus_interface_->Cycle(
-      moteus_data_,
-      [promise](const ::mjbots::moteus::Pi3HatMoteusInterface::Output &output) {
-        // This is called from an arbitrary thread, so we just set
-        // the promise value here.
-        promise->set_value(output);
-      });
-  can_result_ = promise->get_future();
+      moteus_data_);
 }
 
 void MjbotsRobotInterface::SetTorques(std::vector<float> torques) {

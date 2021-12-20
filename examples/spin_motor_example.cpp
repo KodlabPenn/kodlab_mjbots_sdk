@@ -50,14 +50,14 @@ int main(int argc, char **argv) {
   options.motor_list.emplace_back(14, 1);
   options.motor_list.emplace_back(15, 1);
 
-//  options.motor_list.emplace_back(16, 4);
-//  options.motor_list.emplace_back(17, 4);
-//  options.motor_list.emplace_back(18, 4);
-//
-//  options.motor_list.emplace_back(19, 2);
-//  options.motor_list.emplace_back(20, 2);
-//  options.motor_list.emplace_back(21, 2);
-//  options.motor_list.emplace_back(22, 2);
+  options.motor_list.emplace_back(16, 4);
+  options.motor_list.emplace_back(17, 4);
+  options.motor_list.emplace_back(18, 4);
+
+  options.motor_list.emplace_back(19, 2);
+  options.motor_list.emplace_back(20, 2);
+  options.motor_list.emplace_back(21, 2);
+  options.motor_list.emplace_back(22, 2);
 
   options.log_channel_name = "motor_data";
 

@@ -55,14 +55,14 @@ child_cycle_duration = np.array(child_cycle_duration)/1000
 
 mean_dt = np.average(np.diff(timestamps))
 mean_margin = np.average(margins)
-print("Mean dt = ",mean_dt)
-print("stdev dt = ",np.std(np.diff(timestamps)))
-
+# print("Mean dt = ",mean_dt)
+# print("stdev dt = ",np.std(np.diff(timestamps)))
+#
 print("Mean margin = ", mean_margin)
-print("std margin = ", np.std(margins))
+# print("std margin = ", np.std(margins))
 
 print("Mean message_duration = ", np.average(message_duration))
-print("std message_duration = ", np.std(message_duration))
+# print("std message_duration = ", np.std(message_duration))
 
 print("Mean child cycle duration = ", np.average(child_cycle_duration))
 print("Mean pi3 hat cycle duration = ", np.average(cycle_duration))

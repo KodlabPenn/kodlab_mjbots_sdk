@@ -108,25 +108,28 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     size_t query_result_size = 0;
   };
 
-  using CallbackFunction = std::function<void (const Output&)>;
-
   /// When called, this will schedule a cycle of communication with
-  /// the servos.  The callback will be invoked from an arbitrary
-  /// thread when the communication cycle has completed.
+  /// the servos.
   ///
   /// All memory pointed to by @p data must remain valid until the
   /// callback is invoked.
-  void Cycle(const Data& data, CallbackFunction callback) {
+  void Cycle(const Data& data) {
     std::lock_guard<std::mutex> lock(mutex_);
     if (active_) {
       throw std::logic_error(
           "Cycle cannot be called until the previous has completed");
     }
 
-    callback_ = std::move(callback);
+    cycle_mutex_.lock();
+
     active_ = true;
     data_ = data;
     condition_.notify_all();
+  }
+
+  void WaitForCycle(){
+    cycle_mutex_.lock();
+    cycle_mutex_.unlock();
   }
 
  private:
@@ -145,14 +148,13 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
         }
       }
 
-      auto output = CHILD_Cycle();
-      CallbackFunction callback_copy;
+      CHILD_Cycle();
+      // Communicate thread is done
       {
         std::unique_lock<std::mutex> lock(mutex_);
         active_ = false;
-        std::swap(callback_copy, callback_);
+        cycle_mutex_.unlock();
       }
-      callback_copy(output);
     }
   }
 
@@ -228,7 +230,6 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   std::condition_variable condition_;
   bool active_ = false;;
   bool done_ = false;
-  CallbackFunction callback_;
   Data data_;
 
 
@@ -242,7 +243,8 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   std::vector<pi3hat::CanFrame> rx_can_;
 
   real_time_tools::Timer child_cycle_timer;
-  int timeout = 0;
+
+  std::mutex cycle_mutex_;
 };
 
 

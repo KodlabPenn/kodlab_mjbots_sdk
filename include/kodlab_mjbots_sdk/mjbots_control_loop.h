@@ -153,7 +153,6 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
                                                                        options_.soft_start_duration));
 
   float prev_msg_duration = 0;
-
   // Create spinner to time loop
   real_time_tools::HardSpinner spinner;
   spinner.set_frequency(frequency_);
@@ -167,7 +166,6 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
   spinner.spin();
   spinner.spin();
   dt_timer.tic();
-
   while (!CTRL_C_DETECTED) {
     // sleep the correct amount
     float sleep_duration = spinner.predict_sleeping_time_micro();
