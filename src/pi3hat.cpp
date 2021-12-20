@@ -1512,7 +1512,7 @@ class Pi3Hat::Impl {
     // Send off all our CAN data to all buses.
     auto expected_replies = SendCan(input);
     Output result;
-    result.send_duration = send_timer_.tac() * 1000;
+    result.send_duration = send_timer_.tac();
 
     // While those are sending, do our other work.
     if (input.tx_rf.size()) {
@@ -1531,12 +1531,12 @@ class Pi3Hat::Impl {
 
     reply_timer_.tic();
     ReadCan(input, expected_replies, &result);
-    result.reply_duration = reply_timer_.tac() * 1000;
+    result.reply_duration = reply_timer_.tac();
     primary_spi_.gpio()->SetGpioMode(13, Rpi3Gpio::OUTPUT);
     static bool debug_toggle = false;
     primary_spi_.gpio()->SetGpioOutput(13, debug_toggle);
     debug_toggle = !debug_toggle;
-    result.cycle_duration = cycle_timer_.tac() * 1000;
+    result.cycle_duration = cycle_timer_.tac() ;
     return result;
   }
 

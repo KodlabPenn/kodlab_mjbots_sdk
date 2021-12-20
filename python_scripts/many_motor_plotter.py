@@ -42,16 +42,16 @@ for event in log:
         count += 1
 
 
-timestamps = np.array(timestamps)
-margins = np.array(margins)
-message_duration = np.array(message_duration)
+timestamps = np.array(timestamps)/1000
+margins = np.array(margins)/1000
+message_duration = np.array(message_duration)/1000
 velocities = np.array(velocities)
 positions = np.array(positions)
 
-reply_duration = np.array(reply_duration)
-send_duration = np.array(send_duration)
-cycle_duration = np.array(cycle_duration)
-child_cycle_duration = np.array(child_cycle_duration)
+reply_duration = np.array(reply_duration)/1000
+send_duration = np.array(send_duration)/1000
+cycle_duration = np.array(cycle_duration)/1000
+child_cycle_duration = np.array(child_cycle_duration)/1000
 
 mean_dt = np.average(np.diff(timestamps))
 mean_margin = np.average(margins)

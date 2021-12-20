@@ -216,7 +216,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     if (output.timeout) {
      std::cout << "Error, pi3 hat timeout" << std::endl;
     }
-    *data_.child_cycle_duration = child_cycle_timer.tac() * 1000;
+    *data_.child_cycle_duration = child_cycle_timer.tac();
     return result;
   }
 

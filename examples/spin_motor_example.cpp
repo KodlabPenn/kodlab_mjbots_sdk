@@ -50,24 +50,25 @@ int main(int argc, char **argv) {
   options.motor_list.emplace_back(14, 1);
   options.motor_list.emplace_back(15, 1);
 
-  options.motor_list.emplace_back(16, 4);
-  options.motor_list.emplace_back(17, 4);
-  options.motor_list.emplace_back(18, 4);
-
-  options.motor_list.emplace_back(19, 2);
-  options.motor_list.emplace_back(20, 2);
-  options.motor_list.emplace_back(21, 2);
-  options.motor_list.emplace_back(22, 2);
+//  options.motor_list.emplace_back(16, 4);
+//  options.motor_list.emplace_back(17, 4);
+//  options.motor_list.emplace_back(18, 4);
+//
+//  options.motor_list.emplace_back(19, 2);
+//  options.motor_list.emplace_back(20, 2);
+//  options.motor_list.emplace_back(21, 2);
+//  options.motor_list.emplace_back(22, 2);
 
   options.log_channel_name = "motor_data";
 
-  options.frequency = 800;
+  options.frequency = 1000;
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu  = 2;
 
   // Create control loop
   Spin_Motor control_loop(options);
   // Starts the loop, and then join it
+  std::cout<<"Starting loop"<<std::endl;
   control_loop.Start();
   control_loop.Join();
   return 0;

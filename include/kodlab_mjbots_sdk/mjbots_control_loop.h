@@ -162,12 +162,15 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
   real_time_tools::Timer dt_timer;
   real_time_tools::Timer message_duration_timer;
 
+
+  spinner.initialize();
   spinner.spin();
   spinner.spin();
   dt_timer.tic();
+
   while (!CTRL_C_DETECTED) {
     // sleep the correct amount
-    float sleep_duration = spinner.predict_sleeping_time();
+    float sleep_duration = spinner.predict_sleeping_time_micro();
     spinner.spin();
 
     // Calculate torques
@@ -175,7 +178,7 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
     // Prepare log
     PrepareLog();
     // Publish log
-    AddTimingLog(dt_timer.tac() * 1000, sleep_duration * 1000, prev_msg_duration);
+    AddTimingLog(dt_timer.tac(), sleep_duration, prev_msg_duration);
     PublishLog();
 
     message_duration_timer.tic();
@@ -185,7 +188,7 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
     SafeProcessInput();
     // Wait until reply from motors is ready and then add reply to robot
     robot_->ProcessReply();
-    prev_msg_duration = message_duration_timer.tac() * 1000;
+    prev_msg_duration = message_duration_timer.tac();
   }
 
   // Might be related to use of new
