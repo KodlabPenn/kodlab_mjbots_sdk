@@ -92,6 +92,8 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
 
   // Setup message for basic torque commands
   PrepareTorqueCommand();
+  SendCommand();
+  ProcessReply();
 }
 
 void MjbotsRobotInterface::ProcessReply() {

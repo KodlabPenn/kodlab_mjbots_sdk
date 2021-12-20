@@ -68,7 +68,6 @@ int main(int argc, char **argv) {
   // Create control loop
   Spin_Motor control_loop(options);
   // Starts the loop, and then join it
-  std::cout<<"Starting loop"<<std::endl;
   control_loop.Start();
   control_loop.Join();
   return 0;

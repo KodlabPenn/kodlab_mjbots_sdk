@@ -161,11 +161,11 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
   real_time_tools::Timer dt_timer;
   real_time_tools::Timer message_duration_timer;
 
-
   spinner.initialize();
   spinner.spin();
   spinner.spin();
   dt_timer.tic();
+  std::cout<<"Starting main loop"<<std::endl;
   while (!CTRL_C_DETECTED) {
     // sleep the correct amount
     float sleep_duration = spinner.predict_sleeping_time_micro();
