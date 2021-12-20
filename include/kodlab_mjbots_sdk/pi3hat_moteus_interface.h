@@ -242,6 +242,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   std::vector<pi3hat::CanFrame> rx_can_;
 
   real_time_tools::Timer child_cycle_timer;
+  int timeout = 0;
 };
 
 

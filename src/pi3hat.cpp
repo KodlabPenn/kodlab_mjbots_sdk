@@ -1443,7 +1443,7 @@ class Pi3Hat::Impl {
     while (true) {
       bool any_found = false;
       // Then check for CAN responses as necessary.
-      if (to_check[0]) {
+      if (to_check[0] ) {
         const int count = ReadCanFrames(aux_spi_, 0, 1, &input.rx_can, output);
         bus_replies[0] -= count;
         if (count) {
@@ -1451,7 +1451,7 @@ class Pi3Hat::Impl {
           any_found = true;
         }
       }
-      if (to_check[1]) {
+      if (to_check[1] ) {
         const int count = ReadCanFrames(aux_spi_, 1, 3, &input.rx_can, output);
         bus_replies[1] -= count;
         if (count) {

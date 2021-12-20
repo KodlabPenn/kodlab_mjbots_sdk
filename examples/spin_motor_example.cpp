@@ -15,7 +15,7 @@
 class Spin_Motor : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
   void CalcTorques() override {
-    std::vector<float> torques(num_motors_, 0);
+    std::vector<float> torques(num_motors_, 0.0);
     robot_->SetTorques(torques);
   }
 
@@ -42,13 +42,26 @@ class Spin_Motor : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
 int main(int argc, char **argv) {
   kodlab::mjbots::ControlLoopOptions options;
   // Define the motors in the robot
-  options.motor_list.emplace_back(10, 4);
-  options.motor_list.emplace_back(11, 4);
-  options.motor_list.emplace_back(12, 4);
+  options.motor_list.emplace_back(10, 3);
+  options.motor_list.emplace_back(11, 3);
+  options.motor_list.emplace_back(12, 3);
+
+  options.motor_list.emplace_back(13, 1);
+  options.motor_list.emplace_back(14, 1);
+  options.motor_list.emplace_back(15, 1);
+
+  options.motor_list.emplace_back(16, 4);
+  options.motor_list.emplace_back(17, 4);
+  options.motor_list.emplace_back(18, 4);
+
+  options.motor_list.emplace_back(19, 2);
+  options.motor_list.emplace_back(20, 2);
+  options.motor_list.emplace_back(21, 2);
+  options.motor_list.emplace_back(22, 2);
 
   options.log_channel_name = "motor_data";
 
-  options.frequency = 1000;
+  options.frequency = 800;
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu  = 2;
 

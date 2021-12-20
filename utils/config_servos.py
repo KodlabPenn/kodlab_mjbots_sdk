@@ -27,14 +27,15 @@ SCRIPT_PATH = os.path.dirname(__file__)
 #'1=1,2,3;2=4,5,6;3=7,8,9;4=10,11,12'
 MOTEUS_TOOL = ['moteus_tool',
                '--pi3hat-cfg',
-               '4=10,11,12',
+               '1=19,20,21,22',
                ]
-SERVO_LIST = '10,11,12'
+SERVO_LIST = '19,20,21,22'
 
 CONFIG = {
     'servopos.position_min' : [(SERVO_LIST, 'nan')],
     'servopos.position_max' : [(SERVO_LIST, 'nan')],
     'servo.pid_position.kp' : [(SERVO_LIST,   '0')],
+    'servo.pid_position.ki' : [(SERVO_LIST,   '0')],
     'servo.pid_position.kd' : [(SERVO_LIST,   '0')]}
 
 
