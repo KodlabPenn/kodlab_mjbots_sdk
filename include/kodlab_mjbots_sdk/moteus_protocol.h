@@ -597,15 +597,15 @@ inline void EmitPositionCommand(
 }
 
 struct QueryCommand {
-  Resolution mode = Resolution::kInt8; //Can be 0
+  Resolution mode = Resolution::kInt8;
   Resolution position = Resolution::kInt16;
   Resolution velocity = Resolution::kInt16;
-  Resolution torque = Resolution::kIgnore; // Ta;l to diego making this smaller
+  Resolution torque = Resolution::kIgnore;
   Resolution q_current = Resolution::kIgnore;
   Resolution d_current = Resolution::kIgnore;
   Resolution rezero_state = Resolution::kIgnore;
-  Resolution voltage = Resolution::kIgnore; // Can be 0
-  Resolution temperature = Resolution::kIgnore; // Can be 0
+  Resolution voltage = Resolution::kIgnore;
+  Resolution temperature = Resolution::kIgnore;
   Resolution fault = Resolution::kIgnore;
 
   bool any_set() const {

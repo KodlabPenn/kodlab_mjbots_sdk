@@ -23,7 +23,6 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
-#include <iostream>
 
 #include <array>
 #include <cstdlib>
@@ -1561,13 +1560,10 @@ class Pi3Hat::Impl {
   }
 
   Output Cycle(const Input& input) {
-    cycle_timer_.tic();
-    send_timer_.tic();
-
     // Send off all our CAN data to all buses.
     auto expected_replies = SendCan(input);
+
     Output result;
-    result.send_duration = send_timer_.tac();
 
     // While those are sending, do our other work.
     if (input.tx_rf.size()) {
@@ -1584,14 +1580,12 @@ class Pi3Hat::Impl {
                       input.request_attitude_detail);
     }
 
-    reply_timer_.tic();
     ReadCan(input, expected_replies, &result);
-    result.reply_duration = reply_timer_.tac();
+
     primary_spi_.gpio()->SetGpioMode(13, Rpi3Gpio::OUTPUT);
     static bool debug_toggle = false;
     primary_spi_.gpio()->SetGpioOutput(13, debug_toggle);
     debug_toggle = !debug_toggle;
-    result.cycle_duration = cycle_timer_.tac() ;
     return result;
   }
 
@@ -1613,9 +1607,6 @@ class Pi3Hat::Impl {
   // To keep track of which RF slots we have processed.
   uint32_t last_bitfield_ = 0;
 
-  real_time_tools::Timer send_timer_;
-  real_time_tools::Timer reply_timer_;
-  real_time_tools::Timer cycle_timer_;
   int reply_count_[3] = {0,0,0};
 };
 

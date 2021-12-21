@@ -120,11 +120,6 @@ class MjbotsRobotInterface {
    */
   std::vector<::mjbots::moteus::Mode> GetJointModes();
 
-  std::shared_ptr<float> cycle_duration_ = std::make_shared<float>(0);
-  std::shared_ptr<float> reply_duration_ = std::make_shared<float>(0);
-  std::shared_ptr<float> send_duration_  = std::make_shared<float>(0);
-  std::shared_ptr<float> child_cycle_duration_  = std::make_shared<float>(0);
-
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::vector<int> servo_id_list_;         /// Vector of the servo id
@@ -146,7 +141,6 @@ class MjbotsRobotInterface {
   std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
   /// response is ready
   SoftStart soft_start_;                                                      /// Soft Start object
-  real_time_tools::Timer extraTimer;
 
   /*!
    * @brief initialize the command with resolutions

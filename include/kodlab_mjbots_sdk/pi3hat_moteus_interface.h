@@ -98,10 +98,6 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     pi3hat::Span<ServoReply> replies;
 
     std::shared_ptr<bool> timeout;
-    std::shared_ptr<float> send_duration;
-    std::shared_ptr<float> reply_duration;
-    std::shared_ptr<float> cycle_duration;
-    std::shared_ptr<float> child_cycle_duration;
   };
 
   struct Output {
@@ -120,13 +116,12 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
           "Cycle cannot be called until the previous has completed");
     }
 
-    cycle_mutex_.lock();
-
     active_ = true;
     data_ = data;
     condition_.notify_all();
   }
 
+  /// Waits until the child cycle is finished
   void WaitForCycle(){
     cycle_mutex_.lock();
     cycle_mutex_.unlock();
@@ -153,18 +148,20 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
         }
       }
 
+      // Lock mutex while child_cycle is running
+      cycle_mutex_.lock();
+
       CHILD_Cycle();
-      // Communicate thread is done
       {
         std::unique_lock<std::mutex> lock(mutex_);
         active_ = false;
+        // Unlock mutex now that its done
         cycle_mutex_.unlock();
       }
     }
   }
 
   Output CHILD_Cycle() {
-    child_cycle_timer.tic();
     tx_can_.resize(data_.commands.size());
     int out_idx = 0;
     for (const auto& cmd : data_.commands) {
@@ -211,9 +208,6 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     Output result;
     const auto output = pi3hat_->Cycle(input);
     *data_.timeout = output.timeout;
-    *data_.reply_duration = output.reply_duration;
-    *data_.send_duration = output.send_duration;
-    *data_.cycle_duration = output.cycle_duration;
     for (size_t i = 0; i < output.rx_can_size && i < data_.replies.size(); i++) {
       const auto& can = rx_can_[i];
 
@@ -224,7 +218,6 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     if (output.timeout) {
      std::cout << "Error, pi3 hat timeout" << std::endl;
     }
-    *data_.child_cycle_duration = child_cycle_timer.tac();
     return result;
   }
 
@@ -247,8 +240,6 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   // required in steady state.
   std::vector<pi3hat::CanFrame> tx_can_;
   std::vector<pi3hat::CanFrame> rx_can_;
-
-  real_time_tools::Timer child_cycle_timer;
 
   std::mutex cycle_mutex_;
   pi3hat::Attitude attitude_;

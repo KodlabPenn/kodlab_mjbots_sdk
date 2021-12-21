@@ -237,9 +237,6 @@ class Pi3Hat {
     int error = 0;
     bool attitude_present = false;
     bool timeout = false;
-    float send_duration = 0;
-    float reply_duration = 0;
-    float cycle_duration = 0;
     size_t rx_can_size = 0;
     size_t rx_rf_size = 0;
 
@@ -256,6 +253,7 @@ class Pi3Hat {
   ///  * Return any RF slots that may have been received
   Output Cycle(const Input& input);
 
+  /// Clear can busses by reading data into input
   void ClearCan(const Input& input);
 
   struct ProcessorInfo {

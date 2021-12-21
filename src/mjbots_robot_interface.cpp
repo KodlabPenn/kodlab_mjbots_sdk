@@ -16,11 +16,11 @@ void MjbotsRobotInterface::InitializeCommand() {
   }
 
   ::mjbots::moteus::PositionResolution res; // This is just for the command
-  res.position = ::mjbots::moteus::Resolution::kIgnore; //Can be 0
-  res.velocity = ::mjbots::moteus::Resolution::kIgnore; //Can be 0
+  res.position = ::mjbots::moteus::Resolution::kIgnore;
+  res.velocity = ::mjbots::moteus::Resolution::kIgnore;
   res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
-  res.kp_scale = ::mjbots::moteus::Resolution::kIgnore; //Can be 0 iff kp is set to 0 on motors
-  res.kd_scale = ::mjbots::moteus::Resolution::kIgnore; //Can be 0 iff kd is set to 0 on motors during config
+  res.kp_scale = ::mjbots::moteus::Resolution::kIgnore;
+  res.kd_scale = ::mjbots::moteus::Resolution::kIgnore;
   res.maximum_torque = ::mjbots::moteus::Resolution::kIgnore;
   res.stop_position = ::mjbots::moteus::Resolution::kIgnore;
   res.watchdog_timeout = ::mjbots::moteus::Resolution::kIgnore;
@@ -74,10 +74,6 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
   replies_ = std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply>{commands_.size()};
   moteus_data_.commands = {commands_.data(), commands_.size()};
   moteus_data_.replies = {replies_.data(), replies_.size()};
-  moteus_data_.cycle_duration  = cycle_duration_;
-  moteus_data_.reply_duration  = reply_duration_;
-  moteus_data_.send_duration  = send_duration_;
-  moteus_data_.child_cycle_duration  = child_cycle_duration_;
   moteus_data_.timeout = timeout_;
   SendCommand();
 

@@ -153,6 +153,7 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
                                                                        options_.soft_start_duration));
 
   float prev_msg_duration = 0;
+
   // Create spinner to time loop
   real_time_tools::HardSpinner spinner;
   spinner.set_frequency(frequency_);

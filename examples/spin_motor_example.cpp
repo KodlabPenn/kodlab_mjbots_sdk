@@ -15,7 +15,7 @@
 class Spin_Motor : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
   void CalcTorques() override {
-    std::vector<float> torques(num_motors_, 0.0);
+    std::vector<float> torques(num_motors_, 0);
     robot_->SetTorques(torques);
   }
 
@@ -32,10 +32,6 @@ class Spin_Motor : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
       log_data_.modes[servo] = 0;
       log_data_.torques[servo] = 0;
     }
-    log_data_.cycle_duration = *robot_->cycle_duration_;
-    log_data_.reply_duration = *robot_->reply_duration_;
-    log_data_.send_duration  = *robot_->send_duration_;
-    log_data_.child_cycle_duration = *robot_->child_cycle_duration_;
   }
 };
 
