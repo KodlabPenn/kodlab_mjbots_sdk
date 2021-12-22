@@ -116,6 +116,8 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
           "Cycle cannot be called until the previous has completed");
     }
 
+    cycle_mutex_.lock();
+
     active_ = true;
     data_ = data;
     condition_.notify_all();
@@ -147,9 +149,6 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
           if (!active_) { continue; }
         }
       }
-
-      // Lock mutex while child_cycle is running
-      cycle_mutex_.lock();
 
       CHILD_Cycle();
       {

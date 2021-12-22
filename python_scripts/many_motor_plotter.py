@@ -28,13 +28,13 @@ count = 0
 for event in log:
     if event.channel == "motor_data":
         if count > 20:
-		msg = ManyMotorLog.decode(event.data)
-		timestamps.append(msg.timestamp)
-		velocities.append(msg.velocities)
-		positions.append(msg.positions)
-		margins.append(msg.margin)
-		torques.append(msg.torques)
-		message_duration.append(msg.message_duration)
+            msg = ManyMotorLog.decode(event.data)
+            timestamps.append(msg.timestamp)
+            velocities.append(msg.velocities)
+            positions.append(msg.positions)
+            margins.append(msg.margin)
+            torques.append(msg.torques)
+            message_duration.append(msg.message_duration)
         count += 1
 
 
