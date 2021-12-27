@@ -21,9 +21,7 @@ def read_enc():
     angle = 0
     for n in reply:
         angle = (angle << 8) + n
-    print(hex(angle))
     angle = angle & 0x3FFF
-    print(bin(angle))
 
     return angle
 
