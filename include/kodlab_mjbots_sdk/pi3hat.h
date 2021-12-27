@@ -256,6 +256,8 @@ class Pi3Hat {
   /// Clear can busses by reading data into input
   void ClearCan(const Input& input);
 
+  float readEncoder();
+
   struct ProcessorInfo {
     uint8_t git_hash[20] = {};
     bool dirty = false;

@@ -11,11 +11,13 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/soft_start.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/lcm_subscriber.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/abstract_realtime_object.h"
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_control_loop.h")
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_control_loop.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/AS5047P_Types.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/AS5047P_Util.h")
 
 # Make an automatic library - will be static or dynamic based on user setting
 add_library(kodlab_mjbots_sdk pi3hat.cpp mjbots_robot_interface.cpp polar_leg.cpp soft_start.cpp abstract_realtime_object.cpp
-        cartesian_leg.cpp ${HEADER_LIST})
+        cartesian_leg.cpp AS5047P_Types.cpp ${HEADER_LIST})
 
 # We need this directory, and users of our library will need it too
 target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty/Eigen ../lcm_types

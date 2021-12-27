@@ -13,7 +13,8 @@
 // limitations under the License.
 
 #include "kodlab_mjbots_sdk/pi3hat.h"
-
+#include "kodlab_mjbots_sdk/AS5047P_Types.h"
+#include "kodlab_mjbots_sdk/AS5047P_Util.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -34,7 +35,7 @@
 #include <stdarg.h>
 
 #include <bcm_host.h>
-
+#include "iostream"
 char g_data_block[4096] = {};
 
 void copy_data(void* ptr) {
@@ -285,7 +286,7 @@ constexpr uint32_t SPI_CS_TXD = 1 << 18;
 class PrimarySpi {
  public:
   struct Options {
-    int speed_hz = 10000000;
+    int speed_hz = 10000;
     int cs_hold_us = 3;
     int address_hold_us = 3;
 
@@ -392,6 +393,48 @@ class PrimarySpi {
 
     spi_->fifo = (address & 0x00ff);
 
+    // We are done when we have received one byte back.
+    while ((spi_->cs & SPI_CS_RXD) == 0);
+    (void) spi_->fifo;
+
+    if (size != 0) {
+      // Wait our address hold time.
+      BusyWaitUs(options_.address_hold_us);
+
+      // Now we write out dummy values, reading values in.
+      std::size_t remaining_read = size;
+      std::size_t remaining_write = remaining_read;
+      char* ptr = data;
+      while (remaining_read) {
+        // Make sure we don't write more than we have read spots remaining
+        // so that we can never overflow the RX fifo.
+        const bool can_write = (remaining_read - remaining_write) < 16;
+        if (can_write &&
+            remaining_write && (spi_->cs & SPI_CS_TXD) != 0) {
+          spi_->fifo = 0x00;
+          remaining_write--;
+        }
+
+        if (remaining_read && (spi_->cs & SPI_CS_RXD) != 0) {
+          *ptr = spi_->fifo & 0xff;
+          ptr++;
+          remaining_read--;
+        }
+      }
+    }
+
+    spi_->cs = (spi_->cs & (~SPI_CS_TA));
+  }
+
+  void SlowRead(int cs, int address, char* data, size_t size) {
+    BusyWaitUs(options_.cs_hold_us);
+    Rpi3Gpio::ActiveLow cs_holder(gpio_.get(), kSpi0CS[cs]);
+    BusyWaitUs(options_.cs_hold_us);
+
+    spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR
+
+    // 16 bit address
+    spi_->fifo = (address & 0xffff);
     // We are done when we have received one byte back.
     while ((spi_->cs & SPI_CS_RXD) == 0);
     (void) spi_->fifo;
@@ -1304,6 +1347,63 @@ class Pi3Hat::Impl {
     return result;
   }
 
+  template<class T>
+  T readEncoderReg(AS5047P_Types::ERROR_t *errorOut, bool verifyParity, bool checkForComError, bool checkForSensorError) {
+
+    uint16_t receivedData = 10;
+    uint16_t emptyData = 0;
+    // send read command
+    AS5047P_Types::SPI_Command_Frame_t readCMD(T::REG_ADDRESS, 1);
+    std::cout<<readCMD.data.raw<<std::endl;
+    primary_spi_.SlowRead(1, readCMD.data.raw, reinterpret_cast<char *>(&emptyData), 0);
+    // pause for a sec
+    BusyWaitUs(1);
+    // insert read call with nop and data no small
+    AS5047P_Types::SPI_Command_Frame_t nopFrame(AS5047P_Types::NOP_t::REG_ADDRESS, 1);
+    primary_spi_.SlowRead(1, nopFrame.data.raw, reinterpret_cast<char *>(&receivedData), sizeof(receivedData));
+    AS5047P_Types::SPI_ReadData_Frame_t recData(receivedData);
+    std::cout<<receivedData<<std::endl;
+    if (errorOut == nullptr) {
+      return T(recData.data.raw);
+    }
+
+    // reset error data
+    *errorOut = AS5047P_Types::ERROR_t();
+
+    // verify parity bit
+    if (verifyParity) {
+      errorOut->controllerSideErrors.flags.CONT_SPI_PARITY_ERROR = !AS5047P_Util::parityCheck(recData.data.raw);
+    }
+    //{TODO} make following code work
+//
+//    // check for communication error
+//    if (checkForComError) {
+//      checkForComErrorF(errorOut);
+//    }
+//
+//    // check for sensor error
+//    if (checkForSensorError) {
+//      checkForSensorErrorF(errorOut);
+//
+//      // check for communication error
+//      if (checkForComError) {
+//        checkForComErrorF(errorOut);
+//      }
+//    }
+
+    return T(recData.data.raw);
+
+  }
+
+  float readEncoder(AS5047P_Types::ERROR_t *errorOut = nullptr,
+                    bool verifyParity = false,
+                    bool checkForComError = false,
+                    bool checkForSensorError = false){
+      auto res = readEncoderReg<AS5047P_Types::ANGLECOM_t>(errorOut, verifyParity, checkForComError, checkForSensorError);
+      return (res.data.values.DAECANG/(float)16384)*360;
+  }
+
+
   void SendRf(const Span<RfSlot>& slots) {
     if (!config_.enable_aux) { return; }
 
@@ -1636,5 +1736,8 @@ void Pi3Hat::ClearCan(const Pi3Hat::Input &input) {
   impl_->ClearCan(input);
 }
 
+float Pi3Hat::readEncoder(){
+  return impl_->readEncoder();
+}
 }
 }
