@@ -330,7 +330,7 @@ class PrimarySpi {
             | (0 << 6) // CSPOL
             | (0 << 4) // CLEAR
             | (0 << 3) // CPOL
-            | (0 << 2) // CPHA
+            | (1 << 2) // CPHA
             | (0 << 0) // CS
     );
 
@@ -434,9 +434,13 @@ class PrimarySpi {
     spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR
 
     // 16 bit address
-    spi_->fifo = (address & 0xffff);
-    // We are done when we have received one byte back.
+    spi_->fifo = (address & 0xff);
+    while((spi_->cs & SPI_CS_TXD) == 0);
+    spi_->fifo = ((address >> 8) & 0xff);
+
+    // We are done when we transfer is done.
     while ((spi_->cs & SPI_CS_RXD) == 0);
+    while ((spi_->cs & SPI_CS_DONE) == 0);
     (void) spi_->fifo;
 
     if (size != 0) {
@@ -460,6 +464,61 @@ class PrimarySpi {
         if (remaining_read && (spi_->cs & SPI_CS_RXD) != 0) {
           *ptr = spi_->fifo & 0xff;
           ptr++;
+          remaining_read--;
+        }
+      }
+    }
+
+    spi_->cs = (spi_->cs & (~SPI_CS_TA));
+  }
+
+  void WriteAddress(int cs, int address) {
+    BusyWaitUs(options_.cs_hold_us);
+    Rpi3Gpio::ActiveLow cs_holder(gpio_.get(), kSpi0CS[cs]);
+    BusyWaitUs(options_.cs_hold_us);
+
+    spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR
+
+    // 16 bit address
+    spi_->fifo = (address & 0xff);
+    while((spi_->cs & SPI_CS_TXD) == 0);
+    spi_->fifo = ((address >> 8) & 0xff);
+    // We are done when we transfer is done.
+    while ((spi_->cs & SPI_CS_DONE) == 0);
+    (void) spi_->fifo;
+
+    BusyWaitUs(options_.address_hold_us);
+    spi_->cs = (spi_->cs & (~SPI_CS_TA));
+  }
+
+  void ReadAnything(int cs, char* data, size_t size) {
+    BusyWaitUs(options_.cs_hold_us);
+    Rpi3Gpio::ActiveLow cs_holder(gpio_.get(), kSpi0CS[cs]);
+    BusyWaitUs(options_.cs_hold_us);
+
+    spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR
+    (void) spi_->fifo;
+
+    if (size != 0) {
+      // Wait our address hold time.
+      BusyWaitUs(options_.address_hold_us);
+
+      // Now we write out dummy values, reading values in.
+      std::size_t remaining_read = size;
+      std::size_t remaining_write = remaining_read;
+      while (remaining_read) {
+        // Make sure we don't write more than we have read spots remaining
+        // so that we can never overflow the RX fifo.
+        const bool can_write = (remaining_read - remaining_write) < 16;
+        if (can_write &&
+            remaining_write && (spi_->cs & SPI_CS_TXD) != 0) {
+          spi_->fifo = 0x00;
+          remaining_write--;
+        }
+
+        if (remaining_read && (spi_->cs & SPI_CS_RXD) != 0) {
+          *data = spi_->fifo & 0xff;
+          data++;
           remaining_read--;
         }
       }
@@ -1349,27 +1408,26 @@ class Pi3Hat::Impl {
 
   template<class T>
   T readEncoderReg(AS5047P_Types::ERROR_t *errorOut, bool verifyParity, bool checkForComError, bool checkForSensorError) {
+    const int cs = 1;
+    uint16_t recievedData = 0;
 
-    uint16_t receivedData = 10;
-    uint16_t emptyData = 0;
     // send read command
     AS5047P_Types::SPI_Command_Frame_t readCMD(T::REG_ADDRESS, 1);
-    std::cout<<readCMD.data.raw<<std::endl;
-    primary_spi_.SlowRead(1, readCMD.data.raw, reinterpret_cast<char *>(&emptyData), 0);
+
+    primary_spi_.WriteAddress(cs, readCMD.data.raw);
     // pause for a sec
     BusyWaitUs(1);
-    // insert read call with nop and data no small
-    AS5047P_Types::SPI_Command_Frame_t nopFrame(AS5047P_Types::NOP_t::REG_ADDRESS, 1);
-    primary_spi_.SlowRead(1, nopFrame.data.raw, reinterpret_cast<char *>(&receivedData), sizeof(receivedData));
-    AS5047P_Types::SPI_ReadData_Frame_t recData(receivedData);
-    std::cout<<receivedData<<std::endl;
+    // insert read call with nop
+    primary_spi_.ReadAnything(cs, reinterpret_cast<char *>(&recievedData), sizeof(recievedData));
+
+    AS5047P_Types::SPI_ReadData_Frame_t recData(recievedData);
+    std::cout<<"Foo: "<<AS5047P_Util::parityCheck(recData.data.raw)<<std::endl;
     if (errorOut == nullptr) {
       return T(recData.data.raw);
     }
 
     // reset error data
     *errorOut = AS5047P_Types::ERROR_t();
-
     // verify parity bit
     if (verifyParity) {
       errorOut->controllerSideErrors.flags.CONT_SPI_PARITY_ERROR = !AS5047P_Util::parityCheck(recData.data.raw);
