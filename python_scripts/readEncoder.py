@@ -23,7 +23,7 @@ def read_enc():
         angle = (angle << 8) + n
     angle = angle & 0x3FFF
 
-    return angle
+    return angle/16384 * 360
 
 # Report the channel 0 and channel 1 voltages to the terminal
 try:

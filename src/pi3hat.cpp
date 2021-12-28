@@ -277,6 +277,8 @@ constexpr uint32_t SPI_CS_TA = 1 << 7;
 constexpr uint32_t SPI_CS_DONE = 1 << 16;
 constexpr uint32_t SPI_CS_RXD = 1 << 17;
 constexpr uint32_t SPI_CS_TXD = 1 << 18;
+constexpr uint32_t SPI_CS_CLEAR_RX = 5 << 18;
+constexpr uint32_t SPI_CS_CLEAR_TX = 4 << 18;
 
 
 /// This class interacts with the SPI0 device on a raspberry pi using
@@ -286,7 +288,7 @@ constexpr uint32_t SPI_CS_TXD = 1 << 18;
 class PrimarySpi {
  public:
   struct Options {
-    int speed_hz = 10000;
+    int speed_hz = 10000000;
     int cs_hold_us = 3;
     int address_hold_us = 3;
 
@@ -497,7 +499,6 @@ class PrimarySpi {
     BusyWaitUs(options_.cs_hold_us);
 
     spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR
-    (void) spi_->fifo;
 
     if (size != 0) {
       // Wait our address hold time.
@@ -506,6 +507,7 @@ class PrimarySpi {
       // Now we write out dummy values, reading values in.
       std::size_t remaining_read = size;
       std::size_t remaining_write = remaining_read;
+      char* ptr = data;
       while (remaining_read) {
         // Make sure we don't write more than we have read spots remaining
         // so that we can never overflow the RX fifo.
@@ -517,8 +519,8 @@ class PrimarySpi {
         }
 
         if (remaining_read && (spi_->cs & SPI_CS_RXD) != 0) {
-          *data = spi_->fifo & 0xff;
-          data++;
+          *ptr = spi_->fifo & 0xff;
+          ptr++;
           remaining_read--;
         }
       }
