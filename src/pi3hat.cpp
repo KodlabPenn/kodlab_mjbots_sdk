@@ -33,6 +33,7 @@
 #include <string>
 #include <vector>
 #include <stdarg.h>
+#include <bitset>
 
 #include <bcm_host.h>
 #include "iostream"
@@ -393,56 +394,10 @@ class PrimarySpi {
 
     spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR
 
-    spi_->fifo = (address & 0x00ff);
+    spi_->fifo = (address & 0xff);
 
     // We are done when we have received one byte back.
     while ((spi_->cs & SPI_CS_RXD) == 0);
-    (void) spi_->fifo;
-
-    if (size != 0) {
-      // Wait our address hold time.
-      BusyWaitUs(options_.address_hold_us);
-
-      // Now we write out dummy values, reading values in.
-      std::size_t remaining_read = size;
-      std::size_t remaining_write = remaining_read;
-      char* ptr = data;
-      while (remaining_read) {
-        // Make sure we don't write more than we have read spots remaining
-        // so that we can never overflow the RX fifo.
-        const bool can_write = (remaining_read - remaining_write) < 16;
-        if (can_write &&
-            remaining_write && (spi_->cs & SPI_CS_TXD) != 0) {
-          spi_->fifo = 0x00;
-          remaining_write--;
-        }
-
-        if (remaining_read && (spi_->cs & SPI_CS_RXD) != 0) {
-          *ptr = spi_->fifo & 0xff;
-          ptr++;
-          remaining_read--;
-        }
-      }
-    }
-
-    spi_->cs = (spi_->cs & (~SPI_CS_TA));
-  }
-
-  void SlowRead(int cs, int address, char* data, size_t size) {
-    BusyWaitUs(options_.cs_hold_us);
-    Rpi3Gpio::ActiveLow cs_holder(gpio_.get(), kSpi0CS[cs]);
-    BusyWaitUs(options_.cs_hold_us);
-
-    spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR
-
-    // 16 bit address
-    spi_->fifo = (address & 0xff);
-    while((spi_->cs & SPI_CS_TXD) == 0);
-    spi_->fifo = ((address >> 8) & 0xff);
-
-    // We are done when we transfer is done.
-    while ((spi_->cs & SPI_CS_RXD) == 0);
-    while ((spi_->cs & SPI_CS_DONE) == 0);
     (void) spi_->fifo;
 
     if (size != 0) {
@@ -485,26 +440,37 @@ class PrimarySpi {
     // 16 bit address
     spi_->fifo = (address & 0xff);
     while((spi_->cs & SPI_CS_TXD) == 0);
+    while((spi_->cs & SPI_CS_RXD) == 0);
+    (void) spi_->fifo;
+
     spi_->fifo = ((address >> 8) & 0xff);
     // We are done when we transfer is done.
     while ((spi_->cs & SPI_CS_DONE) == 0);
+    while((spi_->cs & SPI_CS_RXD) == 0);
     (void) spi_->fifo;
+
+//    while ((spi_->cs & SPI_CS_RXD) == 0);
+//    int void_val = spi_->fifo & 0xff;
+//    while ((spi_->cs & SPI_CS_RXD) == 0);
+//    void_val = spi_->fifo & 0xff;
+//    (void) spi_->fifo;
+//    (void) spi_->fifo;
 
     BusyWaitUs(options_.address_hold_us);
 
-    spi_->cs = (spi_->cs & (~SPI_CS_TA));
+
+    spi_->cs = (spi_->cs & (~SPI_CS_TA)); // Set not active
     spi_->cs = (spi_->cs | ((1 << 4)));  // CLEAR TX
 //    spi_->cs = (spi_->cs | ((1 << 5)));  // CLEAR RX
 
   }
 
   void ReadAnything(int cs, char* data, size_t size) {
-
     BusyWaitUs(options_.cs_hold_us);
     Rpi3Gpio::ActiveLow cs_holder(gpio_.get(), kSpi0CS[cs]);
     BusyWaitUs(options_.cs_hold_us);
     // Sets transfer to active
-    spi_->cs = (spi_->cs | (SPI_CS_TA ));  // CLEAR
+    spi_->cs = (spi_->cs | (SPI_CS_TA ));  // Set active
 
 
     if (size != 0) {
@@ -533,7 +499,7 @@ class PrimarySpi {
       }
     }
 
-    spi_->cs = (spi_->cs & (~SPI_CS_TA));
+    spi_->cs = (spi_->cs & (~SPI_CS_TA)); // Set not active
     spi_->cs = (spi_->cs | ((1 << 5)));  // CLEAR RX
   }
 
@@ -1429,21 +1395,26 @@ class Pi3Hat::Impl {
   template<class T>
   T readEncoderReg(AS5047P_Types::ERROR_t *errorOut, bool verifyParity, bool checkForComError, bool checkForSensorError) {
     const int cs = 1;
-    uint16_t recievedData = 0;
+    uint16_t recieved_data = 0;
 
     // send read command
     AS5047P_Types::SPI_Command_Frame_t readCMD(T::REG_ADDRESS, 1);
-
     primary_spi_.WriteAddress(cs, readCMD.data.raw);
     // pause for a sec
-//    BusyWaitUs(1);
-    // insert read call with nop
-    primary_spi_.ReadAnything(cs, reinterpret_cast<char *>(&recievedData), sizeof(recievedData));
+    BusyWaitUs(1);
 
-    AS5047P_Types::SPI_ReadData_Frame_t recData(recievedData);
-    if(countSetBits(recData.data.raw)%2 == 1){
-      std::cout<<"Parity error: "<<countSetBits(recData.data.raw)<<std::endl;
+    // insert read call with nop
+    primary_spi_.ReadAnything(cs, reinterpret_cast<char *>(&recieved_data), sizeof(recieved_data));
+
+    uint16_t flippedData = ((recieved_data & 0xff00) >> 8) | ((recieved_data & 0x00ff) << 8);
+
+    AS5047P_Types::SPI_ReadData_Frame_t recData(flippedData);
+
+    if(countSetBits(flippedData)%2 == 1){
+      std::cout<<"Parity error: "<<countSetBits(flippedData)<<std::endl;
     }
+
+    std::cout << "raw = " << std::bitset<16>(flippedData) << std::endl;
 
     if (errorOut == nullptr) {
       return T(recData.data.raw);

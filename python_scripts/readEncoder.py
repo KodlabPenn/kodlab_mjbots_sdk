@@ -26,12 +26,11 @@ def read_enc():
 
     return angle/16384 * 360
 
-# Report the channel 0 and channel 1 voltages to the terminal
 try:
     while True:
         enc = read_enc()
         print("enc:", round(enc, 3))
-        time.sleep(0.2)
+        time.sleep(1)
 
 finally:
     spi.close()
