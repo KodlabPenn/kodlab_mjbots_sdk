@@ -480,7 +480,7 @@ class PrimarySpi {
     BusyWaitUs(options_.cs_hold_us);
 
     // Sets transfer to active and clears FIFO
-    spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR
+    spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR TX && RX && set active
 
     // 16 bit address
     spi_->fifo = (address & 0xff);
@@ -493,6 +493,9 @@ class PrimarySpi {
     BusyWaitUs(options_.address_hold_us);
 
     spi_->cs = (spi_->cs & (~SPI_CS_TA));
+    spi_->cs = (spi_->cs | ((1 << 4)));  // CLEAR TX
+//    spi_->cs = (spi_->cs | ((1 << 5)));  // CLEAR RX
+
   }
 
   void ReadAnything(int cs, char* data, size_t size) {
@@ -531,6 +534,7 @@ class PrimarySpi {
     }
 
     spi_->cs = (spi_->cs & (~SPI_CS_TA));
+    spi_->cs = (spi_->cs | ((1 << 5)));  // CLEAR RX
   }
 
  private:
