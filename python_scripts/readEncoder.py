@@ -21,6 +21,7 @@ def read_enc():
     angle = 0
     for n in reply:
         angle = (angle << 8) + n
+    print(bin(angle).count("1"))
     angle = angle & 0x3FFF
 
     return angle/16384 * 360

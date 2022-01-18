@@ -479,6 +479,7 @@ class PrimarySpi {
     Rpi3Gpio::ActiveLow cs_holder(gpio_.get(), kSpi0CS[cs]);
     BusyWaitUs(options_.cs_hold_us);
 
+    // Sets transfer to active and clears FIFO
     spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR
 
     // 16 bit address
@@ -490,15 +491,18 @@ class PrimarySpi {
     (void) spi_->fifo;
 
     BusyWaitUs(options_.address_hold_us);
+
     spi_->cs = (spi_->cs & (~SPI_CS_TA));
   }
 
   void ReadAnything(int cs, char* data, size_t size) {
+
     BusyWaitUs(options_.cs_hold_us);
     Rpi3Gpio::ActiveLow cs_holder(gpio_.get(), kSpi0CS[cs]);
     BusyWaitUs(options_.cs_hold_us);
+    // Sets transfer to active
+    spi_->cs = (spi_->cs | (SPI_CS_TA ));  // CLEAR
 
-    spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR
 
     if (size != 0) {
       // Wait our address hold time.
@@ -1408,6 +1412,16 @@ class Pi3Hat::Impl {
     return result;
   }
 
+  unsigned int countSetBits(unsigned int n)
+  {
+    unsigned int count = 0;
+    while (n) {
+      count += n & 1;
+      n >>= 1;
+    }
+    return count;
+  }
+
   template<class T>
   T readEncoderReg(AS5047P_Types::ERROR_t *errorOut, bool verifyParity, bool checkForComError, bool checkForSensorError) {
     const int cs = 1;
@@ -1418,12 +1432,15 @@ class Pi3Hat::Impl {
 
     primary_spi_.WriteAddress(cs, readCMD.data.raw);
     // pause for a sec
-    BusyWaitUs(1);
+//    BusyWaitUs(1);
     // insert read call with nop
     primary_spi_.ReadAnything(cs, reinterpret_cast<char *>(&recievedData), sizeof(recievedData));
 
     AS5047P_Types::SPI_ReadData_Frame_t recData(recievedData);
-    std::cout<<"Foo: "<<AS5047P_Util::parityCheck(recData.data.raw)<<std::endl;
+    if(countSetBits(recData.data.raw)%2 == 1){
+      std::cout<<"Parity error: "<<countSetBits(recData.data.raw)<<std::endl;
+    }
+
     if (errorOut == nullptr) {
       return T(recData.data.raw);
     }
