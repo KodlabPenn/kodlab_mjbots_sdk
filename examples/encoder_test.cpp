@@ -13,7 +13,7 @@
 int main(int argc, char **argv) {
   mjbots::pi3hat::Pi3Hat hat({});
   while (true){
-    std::cout<<hat.readEncoder()<<std::endl;
+    std::cout<<hat.readEncoder(1)<<std::endl;
     sleep(1);
   }
   return 0;

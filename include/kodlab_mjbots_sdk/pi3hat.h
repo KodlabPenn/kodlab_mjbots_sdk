@@ -169,7 +169,7 @@ class Pi3Hat {
     // RF communication will be with a transmitter having this ID.
     uint32_t rf_id = 5678;
 
-    bool enable_aux = false;
+    bool enable_aux = true;
 
     CanConfiguration can[5] = {};
 
@@ -256,7 +256,12 @@ class Pi3Hat {
   /// Clear can busses by reading data into input
   void ClearCan(const Input& input);
 
-  float readEncoder();
+  /*!
+   * @brief reads an encoder on primary spi with cs = cs
+   * @param cs the cs pin
+   * @return angle in radians
+   */
+  float readEncoder(int cs);
 
   struct ProcessorInfo {
     uint8_t git_hash[20] = {};

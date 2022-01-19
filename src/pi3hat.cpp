@@ -33,7 +33,6 @@
 #include <string>
 #include <vector>
 #include <stdarg.h>
-#include <bitset>
 
 #include <bcm_host.h>
 #include "iostream"
@@ -278,9 +277,7 @@ constexpr uint32_t SPI_CS_TA = 1 << 7;
 constexpr uint32_t SPI_CS_DONE = 1 << 16;
 constexpr uint32_t SPI_CS_RXD = 1 << 17;
 constexpr uint32_t SPI_CS_TXD = 1 << 18;
-constexpr uint32_t SPI_CS_CLEAR_RX = 5 << 18;
-constexpr uint32_t SPI_CS_CLEAR_TX = 4 << 18;
-
+constexpr uint32_t SPI_CS_CPHA = 1 << 2;
 
 /// This class interacts with the SPI0 device on a raspberry pi using
 /// the BCM2835/6/7's registers directly.  The kernel driver must not
@@ -333,7 +330,7 @@ class PrimarySpi {
             | (0 << 6) // CSPOL
             | (0 << 4) // CLEAR
             | (0 << 3) // CPOL
-            | (1 << 2) // CPHA
+            | (0 << 2) // CPHA find a way to change at run time, needs to be 0 for can bus
             | (0 << 0) // CS
     );
 
@@ -435,6 +432,7 @@ class PrimarySpi {
     BusyWaitUs(options_.cs_hold_us);
 
     // Sets transfer to active and clears FIFO
+    spi_->cs = (spi_->cs | SPI_CS_CPHA); // set CPHA to 1
     spi_->cs = (spi_->cs | (SPI_CS_TA | (3 << 4)));  // CLEAR TX && RX && set active
 
     // 16 bit address
@@ -449,26 +447,21 @@ class PrimarySpi {
     while((spi_->cs & SPI_CS_RXD) == 0);
     (void) spi_->fifo;
 
-//    while ((spi_->cs & SPI_CS_RXD) == 0);
-//    int void_val = spi_->fifo & 0xff;
-//    while ((spi_->cs & SPI_CS_RXD) == 0);
-//    void_val = spi_->fifo & 0xff;
-//    (void) spi_->fifo;
-//    (void) spi_->fifo;
-
     BusyWaitUs(options_.address_hold_us);
 
 
     spi_->cs = (spi_->cs & (~SPI_CS_TA)); // Set not active
     spi_->cs = (spi_->cs | ((1 << 4)));  // CLEAR TX
-//    spi_->cs = (spi_->cs | ((1 << 5)));  // CLEAR RX
-
+    spi_->cs = (spi_->cs | ((1 << 5)));  // CLEAR RX
+    spi_->cs = (spi_->cs & (~SPI_CS_CPHA)); // set CPHA to 0
   }
 
   void ReadAnything(int cs, char* data, size_t size) {
     BusyWaitUs(options_.cs_hold_us);
     Rpi3Gpio::ActiveLow cs_holder(gpio_.get(), kSpi0CS[cs]);
     BusyWaitUs(options_.cs_hold_us);
+    spi_->cs = (spi_->cs | SPI_CS_CPHA); // set CPHA to 1
+
     // Sets transfer to active
     spi_->cs = (spi_->cs | (SPI_CS_TA ));  // Set active
 
@@ -501,6 +494,7 @@ class PrimarySpi {
 
     spi_->cs = (spi_->cs & (~SPI_CS_TA)); // Set not active
     spi_->cs = (spi_->cs | ((1 << 5)));  // CLEAR RX
+    spi_->cs = (spi_->cs & (~SPI_CS_CPHA)); // set CPHA to 0
   }
 
  private:
@@ -1393,8 +1387,7 @@ class Pi3Hat::Impl {
   }
 
   template<class T>
-  T readEncoderReg(AS5047P_Types::ERROR_t *errorOut, bool verifyParity, bool checkForComError, bool checkForSensorError) {
-    const int cs = 1;
+  T readEncoderReg(int cs) {
     uint16_t recieved_data = 0;
 
     // send read command
@@ -1406,6 +1399,7 @@ class Pi3Hat::Impl {
     // insert read call with nop
     primary_spi_.ReadAnything(cs, reinterpret_cast<char *>(&recieved_data), sizeof(recieved_data));
 
+    // Flip the data
     uint16_t flippedData = ((recieved_data & 0xff00) >> 8) | ((recieved_data & 0x00ff) << 8);
 
     AS5047P_Types::SPI_ReadData_Frame_t recData(flippedData);
@@ -1414,45 +1408,12 @@ class Pi3Hat::Impl {
       std::cout<<"Parity error: "<<countSetBits(flippedData)<<std::endl;
     }
 
-    std::cout << "raw = " << std::bitset<16>(flippedData) << std::endl;
-
-    if (errorOut == nullptr) {
-      return T(recData.data.raw);
-    }
-
-    // reset error data
-    *errorOut = AS5047P_Types::ERROR_t();
-    // verify parity bit
-    if (verifyParity) {
-      errorOut->controllerSideErrors.flags.CONT_SPI_PARITY_ERROR = !AS5047P_Util::parityCheck(recData.data.raw);
-    }
-    //{TODO} make following code work
-//
-//    // check for communication error
-//    if (checkForComError) {
-//      checkForComErrorF(errorOut);
-//    }
-//
-//    // check for sensor error
-//    if (checkForSensorError) {
-//      checkForSensorErrorF(errorOut);
-//
-//      // check for communication error
-//      if (checkForComError) {
-//        checkForComErrorF(errorOut);
-//      }
-//    }
-
     return T(recData.data.raw);
-
   }
 
-  float readEncoder(AS5047P_Types::ERROR_t *errorOut = nullptr,
-                    bool verifyParity = false,
-                    bool checkForComError = false,
-                    bool checkForSensorError = false){
-      auto res = readEncoderReg<AS5047P_Types::ANGLECOM_t>(errorOut, verifyParity, checkForComError, checkForSensorError);
-      return (res.data.values.DAECANG/(float)16384)*360;
+  float readEncoder(int cs){
+      auto res = readEncoderReg<AS5047P_Types::ANGLECOM_t>(cs);
+      return (res.data.values.DAECANG/(float)16384)*2*M_PI;
   }
 
 
@@ -1788,8 +1749,8 @@ void Pi3Hat::ClearCan(const Pi3Hat::Input &input) {
   impl_->ClearCan(input);
 }
 
-float Pi3Hat::readEncoder(){
-  return impl_->readEncoder();
+float Pi3Hat::readEncoder(int cs){
+  return impl_->readEncoder(cs);
 }
 }
 }
