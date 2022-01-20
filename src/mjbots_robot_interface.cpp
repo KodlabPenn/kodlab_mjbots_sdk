@@ -47,6 +47,30 @@ void MjbotsRobotInterface::PrepareTorqueCommand() {
 }
 
 MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
+                                           const std::vector<ExternalEncoder> &encoder_list,
+                                           const RealtimeParams &realtime_params,
+                                           float max_torque,
+                                           int soft_start_duration):MjbotsRobotInterface(motor_list,
+                                                                                         realtime_params,
+                                                                                         max_torque,
+                                                                                         soft_start_duration) {
+  num_external_encoders_ = encoder_list.size();
+  for(const auto &encoder_elem : encoder_list){
+    offsets_.push_back(encoder_elem.offset);
+    directions_.push_back(encoder_elem.direction);
+    encoder_cs_list_.push_back(encoder_elem.cs);
+    encoder_alpha_.push_back(encoder_elem.alpha);
+    encoder_speed_alpha_.push_back(encoder_elem.speed_alpha);
+    positions_.push_back(0);
+    velocities_.push_back(0);
+    torque_cmd_.push_back(0);
+    raw_encoder_positions_.push_back(0);
+    raw_encoder_velocities_.push_back(0);
+    modes_.push_back(::mjbots::moteus::Mode::kPosition);
+  }
+}
+
+MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
                                            const RealtimeParams &realtime_params,
                                            float max_torque,
                                            int soft_start_duration) :
@@ -96,6 +120,23 @@ void MjbotsRobotInterface::ProcessReply() {
 
   // Make sure the m_can_result is valid before waiting otherwise undefined behavior
   moteus_interface_->WaitForCycle();
+
+  for(int encoder = 0; encoder < num_external_encoders_; encoder++){
+    // Apply offsets and direction
+    float raw_position = directions_[num_servos_ + encoder] *
+        moteus_interface_->pi3hat_->readEncoder(encoder_cs_list_[encoder]) +
+        offsets_[num_servos_ + encoder];
+
+    // Calculate raw velocity
+    raw_encoder_velocities_[encoder] = (raw_position - raw_encoder_positions_[encoder])* 1000;
+    raw_encoder_positions_[encoder] = raw_position;
+    // Filter position and velocity
+    positions_[num_servos_ + encoder] = (1 - encoder_alpha_[encoder]) * positions_[num_servos_ + encoder] +
+        encoder_alpha_[encoder] * raw_encoder_positions_[encoder];
+    velocities_[num_servos_ + encoder] = (1 - encoder_speed_alpha_[encoder]) * velocities_[num_servos_ + encoder] +
+        encoder_speed_alpha_[encoder] * raw_encoder_velocities_[encoder];
+  }
+
   // Copy results to object so controller can use
   for (int servo = 0; servo < num_servos_; servo++) {
     const auto servo_reply = Get(replies_, servo_id_list_[servo]);
@@ -114,10 +155,10 @@ void MjbotsRobotInterface::SendCommand() {
 
 void MjbotsRobotInterface::SetTorques(std::vector<float> torques) {
   soft_start_.ConstrainTorques(torques, cycle_count_);
-  torque_cmd_ = torques;
 
   for (int servo = 0; servo < num_servos_; servo++) {
-    commands_[servo].position.feedforward_torque = directions_[servo] * (torques[servo]);
+    torque_cmd_[servo] = torques[servo];
+    commands_[servo].position.feedforward_torque = directions_[servo] * (torque_cmd_[servo]);
   }
 }
 
@@ -145,4 +186,13 @@ void MjbotsRobotInterface::SetModeStop() {
 void MjbotsRobotInterface::Shutdown() {
   moteus_interface_->shutdown();
 }
+
+std::vector<float> MjbotsRobotInterface::GetEncoderRawPositions() {
+  return raw_encoder_positions_;
+}
+
+std::vector<float> MjbotsRobotInterface::GetEncoderRawVelocities() {
+  return raw_encoder_velocities_;
+}
+
 } // namespace kodlab::mjbots

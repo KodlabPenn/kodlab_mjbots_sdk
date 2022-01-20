@@ -128,6 +128,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     cycle_mutex_.lock();
     cycle_mutex_.unlock();
   }
+  std::shared_ptr<pi3hat::Pi3Hat> pi3hat_ = nullptr;
 
  private:
 
@@ -233,7 +234,6 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
 
   /// All further variables are only used from within the child thread.
 
-  std::shared_ptr<pi3hat::Pi3Hat> pi3hat_ = nullptr;
 
   // These are kept persistently so that no memory allocation is
   // required in steady state.

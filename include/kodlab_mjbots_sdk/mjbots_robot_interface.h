@@ -40,6 +40,32 @@ struct Motor {
   float offset = 0; /// Offset of the motor in radians
 };
 
+struct ExternalEncoder {
+
+  /*!
+   * @brief constructor for an external encoder which sets the cs
+   * @param cs_ the chip select number on primary spi
+   */
+  ExternalEncoder(int cs_):cs(cs_){}
+
+  /*!
+   * @brief defines an external encoder with full parameters
+   * @param cs_ cs id
+   * @param direction_ direction of encoder
+   * @param offset_  zero offset
+   * @param alpha_ low pass filter gain for position
+   * @param speed_alpha_ low pass filter gain for speed
+   */
+  ExternalEncoder(int cs_, int direction_, float offset_, float alpha_, float speed_alpha_):
+    cs(cs_), direction(direction_), offset(offset_), alpha(alpha_), speed_alpha(speed_alpha_){}
+
+  int cs;                 /// Chip select number
+  int direction = 1;      /// Direction of encoder
+  float offset = 0;       /// Offset in position
+  float alpha = 1;        /// Low pass filter gain for the position
+  float speed_alpha = 1;  /// Low pass filter gain for the encoder speed
+};
+
 /*!
  * @brief struct for setting the realtime params for the robot
  */
@@ -62,6 +88,20 @@ class MjbotsRobotInterface {
    * @param soft_start_duration how long in dt to spend ramping the torque
    */
   MjbotsRobotInterface(const std::vector<Motor> &motor_list,
+                       const RealtimeParams &realtime_params,
+                       float max_torque = 20,
+                       int soft_start_duration = 1);
+
+  /*!
+ * @brief constructs an mjbots_robot_interface to communicate with a collection of moeteusses and external encoders
+ * @param motor_list a list of motors defining the motors in the robot
+ * @param encoder_list a list of external encoders
+ * @param realtime_params the realtime parameters defining cpu and realtime priority
+ * @param max_torque the maximum torque to allow per motor
+ * @param soft_start_duration how long in dt to spend ramping the torque
+ */
+  MjbotsRobotInterface(const std::vector<Motor> &motor_list,
+                       const std::vector<ExternalEncoder> &encoder_list,
                        const RealtimeParams &realtime_params,
                        float max_torque = 20,
                        int soft_start_duration = 1);
@@ -120,16 +160,35 @@ class MjbotsRobotInterface {
    */
   std::vector<::mjbots::moteus::Mode> GetJointModes();
 
+  /*!
+   * @brief returns vector of raw encoder positions
+   * @return encoder positions
+   */
+  std::vector<float> GetEncoderRawPositions();
+
+  /*!
+   * @brief returns vector of raw encoder velocities
+   * @return encoder velocities
+   */
+  std::vector<float> GetEncoderRawVelocities();
+
  private:
   int num_servos_;                         /// The number of motors in the robot
+  int num_external_encoders_ = 0;          /// The number of external encoders in the robot
   std::vector<int> servo_id_list_;         /// Vector of the servo id
   std::vector<int> servo_bus_list_;        /// Vector of the servo bus
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
   std::vector<float> positions_;           /// Vector of the motor positions
+  std::vector<float> raw_encoder_positions_;     /// Vector of the raw external encoder positions
+  std::vector<float> raw_encoder_velocities_;    /// Vector of the raw external encoder positions
   std::vector<float> velocities_;          /// Vector of the motor velocities
   std::vector<float> torque_cmd_;          /// Vector of the torque command sent to motors
   std::vector<float> offsets_;             /// Offset of the motor position
   std::vector<int> directions_;            /// Direction of motors
+  std::vector<int> encoder_cs_list_;       /// Vector of the external encoder cs
+  std::vector<float> encoder_alpha_;       /// Vector of the filter gains for external encoder
+  std::vector<float> encoder_speed_alpha_; /// Vector of the speed filter gains for the external encoder
+
   std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                   /// True if communication has timed out
   std::vector<::mjbots::moteus::Mode> modes_;/// Vector of the motor modes
   u_int64_t cycle_count_ = 0;               /// How many cycles have happened, used for soft Start
