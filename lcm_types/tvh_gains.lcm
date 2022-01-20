@@ -1,0 +1,9 @@
+struct TVHGains
+{
+  float kv;
+  float tail_kp;
+  float tail_kd;
+  float tail_ki;
+  float tail_stance_ffwd;
+  float tail_damping_gain;
+}

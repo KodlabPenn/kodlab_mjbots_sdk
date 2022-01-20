@@ -6,20 +6,14 @@
 
 #include <memory>
 #include <kodlab_mjbots_sdk/mjbots_robot_interface.h>
-#include "physical_params.h"
-
-enum hybrid_mode{
-  UNINITIALIZED = 0,
-  FLIGHT = 1,
-  STANCE = 2,
-  DISABLE = 3
-};
+#include "jerboa_lib/physical_params.h"
+#include "jerboa_lib/detect_mode_transition.h"
 
 class TVH{
  public:
-  void UpdateState(const std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface>& robot);
+  void UpdateState(const std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface>& robot, float t);
 
-  static void SetEffort(const std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface>& robot, const float tail_torque);
+  void SetEffort(const std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface>& robot, const float tail_torque);
 
   /*!
  * @brief accessor for tail angle
@@ -51,8 +45,12 @@ class TVH{
    */
   float GetLegSpeed()const;
 
+  HybridMode GetMode();
 
-  const static PhysicalParams params_;
+  void Disable();
+
+
+  PhysicalParams params_;
  private:
   /*!
    * @brief computes the leg kinematics to get length length, leg comp, and leg vel
@@ -61,7 +59,7 @@ class TVH{
    */
   void legKinematics(float LE, float dLE);
 
-
+  ModeObserver mode_observer_;
   float tail_angle_;
   float leg_encoder_;
   float leg_length_;

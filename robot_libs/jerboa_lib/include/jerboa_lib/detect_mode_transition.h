@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <cstdint>
 enum HybridMode{
   UNINITIALIZED = 0,
   FLIGHT = 1,
@@ -13,10 +14,18 @@ enum HybridMode{
 
 class ModeObserver{
  public:
-  void DetectModeTransition(float leg_comp, float leg_speed);
+  void DetectModeTransition(float leg_comp, float leg_speed, float t);
 
   HybridMode GetMode();
+
+  void Disable();
+
  private:
-  HybridMode mode_ = UNINITIALIZED;
-  float
+  HybridMode hybrid_mode_ = UNINITIALIZED;
+  float last_mode_transition_ = 0;
+
+  const float td_offset_ = 0.003;///< Epsilon for how close to 0 for transition stance to flight in meters
+  const float lo_offset_ = 0.001;///< Epsilon for how close to 0 for transition stance to flight in meters
+  const uint16_t mode_change_wait_ = 10; ///< How long to wait before looking for next transition in milliseconds
+
 };

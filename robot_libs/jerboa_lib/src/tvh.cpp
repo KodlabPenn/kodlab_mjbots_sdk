@@ -6,12 +6,13 @@
 
 #include <cmath>
 
-void TVH::UpdateState(const std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface>& robot) {
+void TVH::UpdateState(const std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface>& robot, float t) {
   tail_angle_ = robot->GetJointPositions()[0] / params_.tail_N;
   tail_speed_ = robot->GetJointVelocities()[0]/ params_.tail_N;
   leg_encoder_ = robot->GetJointPositions()[1];
   leg_encoder_speed_ = robot->GetJointVelocities()[1];
   legKinematics(leg_encoder_,leg_encoder_speed_);
+  mode_observer_.DetectModeTransition(leg_comp_,leg_speed_,t);
 }
 
 void TVH::legKinematics(float LE, float dLE) {
@@ -39,5 +40,11 @@ float TVH::GetLegLength() const {
 }
 float TVH::GetLegSpeed() const {
   return leg_speed_;
+}
+HybridMode TVH::GetMode(){
+  return mode_observer_.GetMode();
+}
+void TVH::Disable() {
+  mode_observer_.Disable();
 }
 
