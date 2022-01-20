@@ -17,6 +17,7 @@ include(${LCM_USE_FILE})
 
 # The compiled library code is here
 add_subdirectory(src)
+add_subdirectory(robot_libs/jerboa_lib/src)
 
 # The executable code is here
 add_subdirectory(examples)

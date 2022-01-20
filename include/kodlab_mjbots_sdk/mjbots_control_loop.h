@@ -20,6 +20,7 @@ namespace kodlab::mjbots {
  */
 struct ControlLoopOptions {
   std::vector<Motor> motor_list;    /// List of motors in robot
+  std::vector<ExternalEncoder> encoder_list;    /// List of external encoders in robot
   RealtimeParams realtime_params;  /// Set of parameters for robot's realtimeness
 
   float max_torque = 20;             /// Maximum torque in Nm
@@ -149,6 +150,7 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
 
   // Create robot object
   robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(options_.motor_list,
+                                                                       options_.encoder_list,
                                                                        options_.realtime_params,
                                                                        options_.max_torque,
                                                                        options_.soft_start_duration));
