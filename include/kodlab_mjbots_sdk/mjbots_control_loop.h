@@ -98,6 +98,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   lcm::LCM lcm_;                          /// LCM object
   LogClass log_data_;                     /// object containing log data
   LcmSubscriber<InputClass> lcm_sub_;    /// LCM subscriber object
+  float time_now_;                       /// Time since start in ms
 };
 
 /******************************************Implementation**************************************************************/
@@ -172,12 +173,13 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
     float sleep_duration = spinner.predict_sleeping_time_micro();
     spinner.spin();
 
+    time_now_ = dt_timer.tac();
     // Calculate torques
     CalcTorques();
     // Prepare log
     PrepareLog();
     // Publish log
-    AddTimingLog(dt_timer.tac(), sleep_duration, prev_msg_duration);
+    AddTimingLog(time_now_, sleep_duration, prev_msg_duration);
     PublishLog();
 
     message_duration_timer.tic();
