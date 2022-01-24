@@ -15,6 +15,7 @@ struct PhysicalParams{
   const float encoder_offset = .789;
   const float femur_length = 0.09028;
   const float toe_length = 0.039;
+  const float tail_length = 0.4;
 };
 
 
