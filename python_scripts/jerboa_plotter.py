@@ -24,6 +24,14 @@ def add_highlight(axis, timestamp_in,hybrid_modes_in):
         except ValueError:
             break
 
+
+def rindex(lst, value):
+    lst.reverse()
+    i = lst.index(value)
+    lst.reverse()
+    return len(lst) - i - 1
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='create plot from log.')
     parser.add_argument('log', metavar='L', type=str, nargs='+',
@@ -62,12 +70,22 @@ if __name__ == "__main__":
     print("Mean margin = ", mean_margin)
     print("std margin = ", np.std(margins))
 
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, sharex=True)
-    ax1.set_title(file_name)
-    ax1.plot(timestamps, hybrid_mode)
+    touchdown_idx = hybrid_mode.index(2)
+    liftoff_idx = rindex(hybrid_mode, 2)
 
-    ax1.set_ylabel('hybrid mode')
+    start_idx = max(touchdown_idx-100, 0)
+    stop_idx = min(liftoff_idx+100, len(timestamps)-1)
 
+    timestamps = timestamps[start_idx:stop_idx]
+    margins = margins[start_idx:stop_idx]
+    hybrid_mode = hybrid_mode[start_idx:stop_idx]
+    tail_angle = tail_angle[start_idx:stop_idx]
+    tail_torque = tail_torque[start_idx:stop_idx]
+    leg_comp = leg_comp[start_idx:stop_idx]
+    leg_speed = leg_speed[start_idx:stop_idx]
+
+
+    fig, ( ax2, ax3, ax4) = plt.subplots(3, 1, sharex=True)
     ax2.plot(timestamps, leg_comp)
     ax2.set_ylabel('leg compression (m)')
 
@@ -77,7 +95,6 @@ if __name__ == "__main__":
     ax4.plot(timestamps, tail_torque)
     ax4.set_ylabel('tail torque (Nm)')
 
-    add_highlight(ax1, timestamps, hybrid_mode)
     add_highlight(ax2, timestamps, hybrid_mode)
     add_highlight(ax3, timestamps, hybrid_mode)
     add_highlight(ax4, timestamps, hybrid_mode)
