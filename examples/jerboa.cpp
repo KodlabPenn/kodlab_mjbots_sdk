@@ -10,6 +10,7 @@
 #include "TVHGains.hpp"
 #include "jerboa_lib/tvh.h"
 #include "kodlab_mjbots_sdk/PID.h"
+#include "kodlab_mjbots_sdk/soft_start.h"
 
 class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
   using MjbotsControlLoop::MjbotsControlLoop;
@@ -36,6 +37,7 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
 
       case HybridMode::FLIGHT:{
         tail_pos_loop_.calc_effort(0, tvh_.GetTailAngle(), tvh_.GetTailSpeed(), tail_effort);
+        kodlab::SoftStart::Constrain(tail_effort, -torque_limit_flight, torque_limit_flight);
         break;
       }
       default:
@@ -53,12 +55,13 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
   void PrepareLog() override {
     log_data_.tail_angle = tvh_.GetTailAngle();
     log_data_.tail_speed = tvh_.GetTailSpeed();
-    log_data_.leg_encoder = robot_->GetJointPositions()[1];
-    log_data_.leg_encoder_speed = robot_->GetJointVelocities()[1];
+    log_data_.leg_comp = tvh_.GetLegCompression();
+    log_data_.leg_speed = tvh_.GetLegSpeed();
     log_data_.leg_length = tvh_.GetLegLength();
     log_data_.leg_velocity = tvh_.GetLegSpeed();
     log_data_.hybrid_mode = tvh_.GetMode();
     log_data_.torque_cmd = robot_->GetJointTorqueCmd()[0];
+    std::cout<<log_data_.tail_angle<<std::endl;
   }
 
   void ProcessInput() override {
@@ -76,6 +79,7 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
   float safety_tail_hard_min_ = -0.94;
   float kv_ = 0;
   float tail_ffwd_gain_ = 1;
+  float torque_limit_flight = 2;
 
   PID tail_pos_loop_ = PID(26, 0.000, 1.5);
 
@@ -84,7 +88,7 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
 int main(int argc, char **argv) {
   kodlab::mjbots::ControlLoopOptions options;
   // Define the motors in the robot
-  options.motor_list.emplace_back(2, 1, 1, 2.89074*19/17);
+  options.motor_list.emplace_back(2, 1, 1, 2.7646);
   options.encoder_list.emplace_back(1, -1, 4.60507, 0.5, 0.5);
 
   options.log_channel_name = "jerboa_data";
@@ -94,7 +98,7 @@ int main(int argc, char **argv) {
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu  = 2;
 
-  options.max_torque = 4;
+  options.max_torque = 0;
   options.soft_start_duration = 4000;
 
   // Create control loop

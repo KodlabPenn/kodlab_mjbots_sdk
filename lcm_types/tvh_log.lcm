@@ -5,8 +5,8 @@ struct TVHLog
   float message_duration;
   float    tail_angle;
   float    tail_speed;
-  float    leg_encoder;
-  float    leg_encoder_speed;
+  float    leg_comp;
+  float    leg_speed;
   float    leg_length;
   float    leg_velocity;
   float    torque_cmd;

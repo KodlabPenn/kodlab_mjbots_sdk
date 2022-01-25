@@ -181,7 +181,7 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
     // Prepare log
     PrepareLog();
     // Publish log
-    AddTimingLog(time_now_, sleep_duration, prev_msg_duration);
+    AddTimingLog(time_now_ / 1000, sleep_duration / 1000, prev_msg_duration / 1000);
     PublishLog();
 
     message_duration_timer.tic();
