@@ -1,4 +1,6 @@
 import lcm
+import matplotlib
+
 from lcm_types.TVHLog import TVHLog
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -11,7 +13,6 @@ def add_highlight(axis, timestamp_in,hybrid_modes_in):
     hybrid_modes = deepcopy(hybrid_modes_in)
     ylim = axis.get_ylim()
 
-    start_idx = 0
     end_idx = 0
     while True:
         try:
@@ -49,6 +50,7 @@ if __name__ == "__main__":
     tail_torque = []
     leg_comp = []
     leg_speed = []
+    tail_speed = []
     for event in log:
         if event.channel == "jerboa_data":
             msg = TVHLog.decode(event.data)
@@ -58,6 +60,8 @@ if __name__ == "__main__":
             tail_angle.append(msg.tail_angle)
             tail_torque.append(msg.torque_cmd)
             leg_comp.append(msg.leg_comp)
+            leg_speed.append(msg.leg_speed)
+            tail_speed.append(msg.tail_speed)
 
     timestamps = np.array(timestamps)
     margins = np.array(margins)
@@ -83,19 +87,59 @@ if __name__ == "__main__":
     tail_torque = tail_torque[start_idx:stop_idx]
     leg_comp = leg_comp[start_idx:stop_idx]
     leg_speed = leg_speed[start_idx:stop_idx]
+    tail_speed = tail_speed[start_idx:stop_idx]
+
+    time_since_td = timestamps/1000-timestamps[0]/1000
+
+    color1 = 'tab:blue'
+    color2 = 'tab:red'
+
+    font = {'family' : 'Dejavu Sans',
+            'weight' : 'normal',
+            'size'   : 14}
+
+    matplotlib.rc('font', **font)
+
+    fig, (ax2, ax3, ax4) = plt.subplots(3, 1, sharex=True)
+
+    ax2.plot(time_since_td, leg_comp, color=color1)
+    ax2.set_ylabel('leg compression (m)', color=color1)
+    ax2.tick_params(axis='y', labelcolor=color1)
+
+    ax2l = ax2.twinx()
+    ax2l.plot(time_since_td, leg_speed, color=color2)
+    ax2l.set_ylabel('leg speed (m/s)', color=color2)
+    ax2l.tick_params(axis='y', labelcolor=color2)
+
+    ax2.set_xlabel('time (s)')
+    ax2.set_zorder(1)  # default zorder is 0 for ax1 and ax2
+    ax2.patch.set_visible(False)  # prevents ax1 from hiding ax2
+
+    ax3.plot(time_since_td, tail_angle, color=color1)
+    ax3.set_ylabel('Tail angle (rad)', color=color1)
+    ax3.tick_params(axis='y', labelcolor=color1)
+
+    ax3l = ax3.twinx()
+    ax3l.plot(time_since_td, tail_speed, color=color2)
+    ax3l.set_ylabel('tail speed (rad/s)', color=color2)
+    ax3l.tick_params(axis='y', labelcolor=color2)
+
+    ax3.set_xlabel('time (s)')
+    ax3.set_zorder(1)  # default zorder is 0 for ax1 and ax2
+    ax3.patch.set_visible(False)  # prevents ax1 from hiding ax2
+
+    ax3.set_zorder(2)  # default zorder is 0 for ax1 and ax2
+    ax3.patch.set_visible(False)  # prevents ax1 from hiding ax2
+
+    ax4.plot(time_since_td, tail_torque, color=color1)
+    ax4.set_ylabel('tail torque (Nm)', color=color1)
+    ax4.tick_params(axis='y', labelcolor=color1)
+    ax4.set_xlabel('time (s)')
+
+    add_highlight(ax2l, time_since_td, hybrid_mode)
+    add_highlight(ax3l, time_since_td, hybrid_mode)
+    add_highlight(ax4, time_since_td, hybrid_mode)
 
 
-    fig, ( ax2, ax3, ax4) = plt.subplots(3, 1, sharex=True)
-    ax2.plot(timestamps, leg_comp)
-    ax2.set_ylabel('leg compression (m)')
-
-    ax3.plot(timestamps, tail_angle)
-    ax3.set_ylabel('Tail angle (rad)')
-
-    ax4.plot(timestamps, tail_torque)
-    ax4.set_ylabel('tail torque (Nm)')
-
-    add_highlight(ax2, timestamps, hybrid_mode)
-    add_highlight(ax3, timestamps, hybrid_mode)
-    add_highlight(ax4, timestamps, hybrid_mode)
+    fig.suptitle(file_name)
     plt.show()
