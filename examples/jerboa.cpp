@@ -36,6 +36,7 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
 
       case HybridMode::FLIGHT:{
         tail_pos_loop_.calc_effort(0, tvh_.GetTailAngle(), tvh_.GetTailSpeed(), tail_effort);
+        tail_effort +=0.3 * 9.81 *tail_ffwd_gain_* tvh_.params_.tail_length * tvh_.params_.tail_mass * std::cos(tvh_.GetTailAngle());
         break;
       }
       default:
@@ -59,6 +60,7 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
     log_data_.leg_velocity = tvh_.GetLegSpeed();
     log_data_.hybrid_mode = tvh_.GetMode();
     log_data_.torque_cmd = robot_->GetJointTorqueCmd()[0];
+//    std::cout<<robot_->GetJointPositions()[0]<<std::endl;
   }
 
   void ProcessInput() override {
@@ -84,8 +86,8 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
 int main(int argc, char **argv) {
   kodlab::mjbots::ControlLoopOptions options;
   // Define the motors in the robot
-  options.motor_list.emplace_back(2, 1, 1, 2.7646);
-  options.encoder_list.emplace_back(1, -1, 4.60507, 0.5, 0.5);
+  options.motor_list.emplace_back(2, 1, 1, 2.67);
+  options.encoder_list.emplace_back(1, -1, 4.62769-0.0340408, 0.2, 0.05);
 
   options.log_channel_name = "jerboa_data";
   options.input_channel_name = "jerboa_gains";
@@ -94,7 +96,7 @@ int main(int argc, char **argv) {
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu  = 2;
 
-  options.max_torque = 4;
+  options.max_torque = 5;
   options.soft_start_duration = 4000;
 
   // Create control loop

@@ -136,6 +136,9 @@ if __name__ == "__main__":
     ax4.tick_params(axis='y', labelcolor=color1)
     ax4.set_xlabel('time (s)')
 
+    ax2.grid()
+    ax3.grid()
+    ax4.grid()
     add_highlight(ax2l, time_since_td, hybrid_mode)
     add_highlight(ax3l, time_since_td, hybrid_mode)
     add_highlight(ax4, time_since_td, hybrid_mode)
