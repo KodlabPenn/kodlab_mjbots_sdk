@@ -94,7 +94,7 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
 int main(int argc, char **argv) {
   kodlab::mjbots::ControlLoopOptions options;
   // Define the motors in the robot
-  options.motor_list.emplace_back(2, 1, 1, 4.09035-0.978288+2.92105-3.1485-0.5-0.15);
+  options.motor_list.emplace_back(2, 1, 1, 2.14498);
   options.encoder_list.emplace_back(1, -1, 5.42973, 0.4, 0.2);
 
   options.log_channel_name = "jerboa_data";
