@@ -4,7 +4,7 @@ from lcm_types.TVHGains import TVHGains
 msg = TVHGains()
 
 # current gains
-msg.kv = 3.3
+msg.kv = 1
 msg.tail_kp = 10
 msg.tail_ki = 0
 msg.tail_kd = 0.3
