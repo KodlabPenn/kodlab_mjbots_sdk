@@ -24,8 +24,8 @@ class ModeObserver{
   HybridMode hybrid_mode_ = UNINITIALIZED;
   float last_mode_transition_ = 0;
 
-  const float td_offset_ = 0.003;///< Epsilon for how close to 0 for transition stance to flight in meters
+  const float td_offset_ = 0.004;///< Epsilon for how close to 0 for transition stance to flight in meters
   const float lo_offset_ = 0.0005;///< Epsilon for how close to 0 for transition stance to flight in meters
-  const uint16_t mode_change_wait_ = 15; ///< How long to wait before looking for next transition in milliseconds
+  const uint16_t mode_change_wait_ = 40; ///< How long to wait before looking for next transition in milliseconds
 
 };

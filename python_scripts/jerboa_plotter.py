@@ -146,6 +146,12 @@ if __name__ == "__main__":
     add_highlight(ax3l, time_since_td, hybrid_mode)
     add_highlight(ax4, time_since_td, hybrid_mode)
 
-
     fig.suptitle(file_name)
+
+    fig, ax = plt.subplots()
+
+    ax.plot(leg_comp, leg_speed)
+    ax.set_xlabel('Leg compression (m)')
+    ax.set_ylabel('Leg speed (m/s)')
+    ax.grid()
     plt.show()
