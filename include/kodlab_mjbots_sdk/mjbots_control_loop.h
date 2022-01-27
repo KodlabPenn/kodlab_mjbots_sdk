@@ -87,6 +87,8 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    */
   virtual void ProcessInput() {};
 
+  virtual void Init() {};
+
   std::shared_ptr<MjbotsRobotInterface>
       robot_;   /// ptr to the robot object, if unique causes many issues, also should be
   /// initialized inside thread
@@ -99,7 +101,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   lcm::LCM lcm_;                          /// LCM object
   LogClass log_data_;                     /// object containing log data
   LcmSubscriber<InputClass> lcm_sub_;    /// LCM subscriber object
-  float time_now_;                       /// Time since start in ms
+  float time_now_ = 0;                       /// Time since start in ms
 };
 
 /******************************************Implementation**************************************************************/
@@ -168,6 +170,7 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
   spinner.initialize();
   spinner.spin();
   spinner.spin();
+  Init();
   dt_timer.tic();
   std::cout<<"Starting main loop"<<std::endl;
   while (!CTRL_C_DETECTED) {

@@ -36,7 +36,6 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
 
       case HybridMode::FLIGHT:{
         tail_pos_loop_.calc_effort(0, tvh_.GetTailAngle(), tvh_.GetTailSpeed(), tail_effort);
-        tail_effort +=0.3 * 9.81 *tail_ffwd_gain_* tvh_.params_.tail_length * tvh_.params_.tail_mass * std::cos(tvh_.GetTailAngle());
         break;
       }
       default:
@@ -62,6 +61,8 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
     log_data_.torque_cmd = robot_->GetJointTorqueCmd()[0];
     log_data_.torque_measured = robot_->GetJointTorqueMeasured()[0];
 //    std::cout<<robot_->GetJointPositions()[0]<<std::endl;
+//    std::cout<<robot_->GetJointPositions()[1]<<std::endl;
+//    std::cout<<tvh_.GetLegLength()<<std::endl;
   }
 
   void ProcessInput() override {
@@ -69,6 +70,12 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
     kv_ = lcm_sub_.data_.kv;
     tail_pos_loop_ = PID(lcm_sub_.data_.tail_kp, lcm_sub_.data_.tail_ki, lcm_sub_.data_.tail_kd);
     tail_ffwd_gain_ = lcm_sub_.data_.tail_stance_ffwd;
+  }
+
+  void Init() override{
+    tvh_.UpdateState(robot_, time_now_);
+    tvh_.params_.r0 = tvh_.GetLegLength();
+    std::cout<< "Leg length = "<<tvh_.params_.r0<<std::endl;
   }
 
   TVH tvh_;
@@ -87,8 +94,8 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
 int main(int argc, char **argv) {
   kodlab::mjbots::ControlLoopOptions options;
   // Define the motors in the robot
-  options.motor_list.emplace_back(2, 1, 1, 2.67);
-  options.encoder_list.emplace_back(1, -1, 4.62769-0.0340408, 0.2, 0.05);
+  options.motor_list.emplace_back(2, 1, 1, 4.09035);
+  options.encoder_list.emplace_back(1, -1, 5.42973, 0.2, 0.05);
 
   options.log_channel_name = "jerboa_data";
   options.input_channel_name = "jerboa_gains";

@@ -69,6 +69,17 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
     raw_encoder_velocities_.push_back(0);
     modes_.push_back(::mjbots::moteus::Mode::kPosition);
   }
+
+  for(int encoder = 0; encoder < num_external_encoders_; encoder++){
+    // Apply offsets and direction
+    float raw_position = directions_[num_servos_ + encoder] *
+        moteus_interface_->pi3hat_->readEncoder(encoder_cs_list_[encoder]) +
+        offsets_[num_servos_ + encoder];
+
+    // Initialize filter
+    positions_[num_servos_ + encoder] = raw_position;
+  }
+
 }
 
 MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
