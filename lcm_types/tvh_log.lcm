@@ -10,6 +10,7 @@ struct TVHLog
   float    leg_length;
   float    leg_velocity;
   float    torque_cmd;
+  float    torque_measured;
   int16_t    modes[1];
   int8_t hybrid_mode;
 }

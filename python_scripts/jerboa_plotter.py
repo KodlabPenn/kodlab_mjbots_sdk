@@ -48,6 +48,7 @@ if __name__ == "__main__":
     hybrid_mode = []
     tail_angle = []
     tail_torque = []
+    tail_torque_measured = []
     leg_comp = []
     leg_speed = []
     tail_speed = []
@@ -62,6 +63,7 @@ if __name__ == "__main__":
             leg_comp.append(msg.leg_comp)
             leg_speed.append(msg.leg_speed)
             tail_speed.append(msg.tail_speed)
+            tail_torque_measured.append(msg.torque_measured)
 
     timestamps = np.array(timestamps)
     margins = np.array(margins)
@@ -88,7 +90,7 @@ if __name__ == "__main__":
     leg_comp = leg_comp[start_idx:stop_idx]
     leg_speed = leg_speed[start_idx:stop_idx]
     tail_speed = tail_speed[start_idx:stop_idx]
-
+    tail_torque_measured = tail_torque_measured[start_idx:stop_idx]
     time_since_td = timestamps/1000-timestamps[0]/1000
 
     color1 = 'tab:blue'
@@ -131,6 +133,7 @@ if __name__ == "__main__":
     ax3.set_zorder(2)  # default zorder is 0 for ax1 and ax2
     ax3.patch.set_visible(False)  # prevents ax1 from hiding ax2
 
+    ax4.plot(time_since_td, tail_torque_measured, color=color2)
     ax4.plot(time_since_td, tail_torque, color=color1)
     ax4.set_ylabel('tail torque (Nm)', color=color1)
     ax4.tick_params(axis='y', labelcolor=color1)

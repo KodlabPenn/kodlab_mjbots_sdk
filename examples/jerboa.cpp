@@ -60,6 +60,7 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
     log_data_.leg_velocity = tvh_.GetLegSpeed();
     log_data_.hybrid_mode = tvh_.GetMode();
     log_data_.torque_cmd = robot_->GetJointTorqueCmd()[0];
+    log_data_.torque_measured = robot_->GetJointTorqueMeasured()[0];
 //    std::cout<<robot_->GetJointPositions()[0]<<std::endl;
   }
 

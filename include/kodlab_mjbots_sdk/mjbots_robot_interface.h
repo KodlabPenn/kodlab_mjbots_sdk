@@ -154,6 +154,8 @@ class MjbotsRobotInterface {
    */
   std::vector<float> GetJointTorqueCmd();
 
+  std::vector<float> GetJointTorqueMeasured();
+
   /*!
    * @brief accessor for the joint modes
    * @return the joint modes
@@ -183,6 +185,7 @@ class MjbotsRobotInterface {
   std::vector<float> raw_encoder_velocities_;    /// Vector of the raw external encoder positions
   std::vector<float> velocities_;          /// Vector of the motor velocities
   std::vector<float> torque_cmd_;          /// Vector of the torque command sent to motors
+  std::vector<float> torque_measured_;     /// Vector of the measured torques
   std::vector<float> offsets_;             /// Offset of the motor position
   std::vector<int> directions_;            /// Direction of motors
   std::vector<int> encoder_cs_list_;       /// Vector of the external encoder cs

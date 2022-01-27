@@ -600,7 +600,7 @@ struct QueryCommand {
   Resolution mode = Resolution::kInt8;
   Resolution position = Resolution::kInt16;
   Resolution velocity = Resolution::kInt16;
-  Resolution torque = Resolution::kIgnore;
+  Resolution torque = Resolution::kInt16;
   Resolution q_current = Resolution::kIgnore;
   Resolution d_current = Resolution::kIgnore;
   Resolution rezero_state = Resolution::kIgnore;

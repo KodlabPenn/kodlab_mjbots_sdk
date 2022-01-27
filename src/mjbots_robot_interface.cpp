@@ -64,6 +64,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
     positions_.push_back(0);
     velocities_.push_back(0);
     torque_cmd_.push_back(0);
+    torque_measured_.push_back(0);
     raw_encoder_positions_.push_back(0);
     raw_encoder_velocities_.push_back(0);
     modes_.push_back(::mjbots::moteus::Mode::kPosition);
@@ -106,6 +107,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
     positions_.push_back(0);
     velocities_.push_back(0);
     torque_cmd_.push_back(0);
+    torque_measured_.push_back(0);
     modes_.push_back(::mjbots::moteus::Mode::kStopped);
   }
   ProcessReply();
@@ -144,6 +146,7 @@ void MjbotsRobotInterface::ProcessReply() {
     positions_[servo] = directions_[servo] * (servo_reply.position * 2 * M_PI) + offsets_[servo];
     velocities_[servo] = directions_[servo] * (servo_reply.velocity * 2 * M_PI);
     modes_[servo] = servo_reply.mode;
+    torque_measured_[servo] = servo_reply.torque * directions_[servo];
   }
 }
 
@@ -193,6 +196,9 @@ std::vector<float> MjbotsRobotInterface::GetEncoderRawPositions() {
 
 std::vector<float> MjbotsRobotInterface::GetEncoderRawVelocities() {
   return raw_encoder_velocities_;
+}
+std::vector<float> MjbotsRobotInterface::GetJointTorqueMeasured() {
+  return torque_measured_;
 }
 
 } // namespace kodlab::mjbots
