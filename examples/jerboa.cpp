@@ -27,10 +27,10 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
 
       case HybridMode::STANCE:{
         tail_pos_loop_.reset();
-
         float av = sqrt(pow(tvh_.GetLegCompression() * tvh_.params_.omega_v, 2) + pow(tvh_.GetLegSpeed(), 2));
         tail_effort = - kv_ * tvh_.GetLegSpeed()/av;
         tail_effort += 9.81 *tail_ffwd_gain_* tvh_.params_.tail_length * tvh_.params_.tail_mass * std::cos(tvh_.GetTailAngle());
+        // Add negative damping here
         break;
       }
 
@@ -94,7 +94,7 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
 int main(int argc, char **argv) {
   kodlab::mjbots::ControlLoopOptions options;
   // Define the motors in the robot
-  options.motor_list.emplace_back(2, 1, 1, 3.21888);
+  options.motor_list.emplace_back(2, 1, 1, 1.91072);
   options.encoder_list.emplace_back(1, -1, 5.42973, 0.4, 0.2);
 
   options.log_channel_name = "jerboa_data";
@@ -104,8 +104,8 @@ int main(int argc, char **argv) {
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu  = 2;
 
-  options.max_torque = 5;
-  options.soft_start_duration = 4000;
+  options.max_torque = 8;
+  options.soft_start_duration = 8000;
 
   // Create control loop
   Hop control_loop(options);
