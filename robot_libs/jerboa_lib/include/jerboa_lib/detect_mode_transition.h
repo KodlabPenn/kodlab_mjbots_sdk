@@ -26,6 +26,6 @@ class ModeObserver{
 
   const float td_offset_ = 0.006;///< Epsilon for how close to 0 for transition stance to flight in meters
   const float lo_offset_ = 0.0005;///< Epsilon for how close to 0 for transition stance to flight in meters
-  const uint16_t mode_change_wait_ = 60; ///< How long to wait before looking for next transition in milliseconds
+  const uint16_t mode_change_wait_ = 90; ///< How long to wait before looking for next transition in milliseconds
 
 };

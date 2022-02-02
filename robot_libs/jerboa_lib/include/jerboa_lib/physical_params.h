@@ -8,8 +8,8 @@
 #pragma once
 struct PhysicalParams{
   float r0 = 0.166183; // leg rest length
-  const float body_mass = 1.835; // body mass
-  const float tail_mass = 0.338-.118; // tail mass
+  const float body_mass = 1.835+0.3; // body mass
+  const float tail_mass = 0.338-.118+0.064+0.055; // tail mass
   const float k = 1607; // spring constant
   const float m = body_mass + tail_mass; // total mass
   const float omega_v = std::sqrt(k/m); // natural frequency

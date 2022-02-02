@@ -51,6 +51,11 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
   }
 
   void PrepareLog() override {
+    log_data_.kv = kv_;
+    log_data_.k = tvh_.params_.k;
+    log_data_.mt = tvh_.params_.tail_mass;
+    log_data_.m = tvh_.params_.m;
+
     log_data_.tail_angle = tvh_.GetTailAngle();
     log_data_.tail_speed = tvh_.GetTailSpeed();
     log_data_.leg_comp = tvh_.GetLegCompression();
@@ -94,7 +99,7 @@ class Hop : public kodlab::mjbots::MjbotsControlLoop<TVHLog, TVHGains> {
 int main(int argc, char **argv) {
   kodlab::mjbots::ControlLoopOptions options;
   // Define the motors in the robot
-  options.motor_list.emplace_back(2, 1, 1, 1.91072);
+  options.motor_list.emplace_back(2, 1, 1, 2.50134);
   options.encoder_list.emplace_back(1, -1, 5.42973, 0.4, 0.2);
 
   options.log_channel_name = "jerboa_data";
@@ -104,7 +109,7 @@ int main(int argc, char **argv) {
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu  = 2;
 
-  options.max_torque = 8;
+  options.max_torque = 10;
   options.soft_start_duration = 8000;
 
   // Create control loop

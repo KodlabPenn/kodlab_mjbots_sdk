@@ -13,4 +13,8 @@ struct TVHLog
   float    torque_measured;
   int16_t    modes[1];
   int8_t hybrid_mode;
+  float kv;
+  float k;
+  float mt;
+  float m;
 }

@@ -1,3 +1,5 @@
+from statistics import mode
+
 import lcm
 import matplotlib
 
@@ -26,6 +28,23 @@ def add_highlight(axis, timestamp_in,hybrid_modes_in):
             break
 
 
+def max_compressions(compression,hybrid_modes):
+    end_idx = 0
+    max_compression_list = []
+    while True:
+        try:
+            start_idx = hybrid_modes.index(2, end_idx + 1)
+            end_idx = hybrid_modes.index(1,start_idx + 1)
+            max_compression_list.append(max(compression[start_idx:stop_idx]))
+        except ValueError:
+            break
+    return max_compression_list
+
+
+def mean_max_compression(compression,hybrid_modes):
+    return np.average(np.array(max_compressions(compression,hybrid_modes)))
+
+
 def rindex(lst, value):
     lst.reverse()
     i = lst.index(value)
@@ -52,6 +71,10 @@ if __name__ == "__main__":
     leg_comp = []
     leg_speed = []
     tail_speed = []
+    mass_tail = []
+    mass = []
+    kv = []
+    k = []
     for event in log:
         if event.channel == "jerboa_data":
             msg = TVHLog.decode(event.data)
@@ -64,6 +87,10 @@ if __name__ == "__main__":
             leg_speed.append(msg.leg_speed)
             tail_speed.append(msg.tail_speed)
             tail_torque_measured.append(msg.torque_measured)
+            k.append(msg.k)
+            kv.append(msg.kv)
+            mass.append(msg.m)
+            mass_tail.append(msg.mt)
 
     timestamps = np.array(timestamps)
     margins = np.array(margins)
@@ -71,10 +98,10 @@ if __name__ == "__main__":
     mean_dt = np.average(np.diff(timestamps))
     mean_margin = np.average(margins)
     print("Mean dt = ", mean_dt)
-    print("stdev dt = ", np.std(np.diff(timestamps)))
+    # print("stdev dt = ", np.std(np.diff(timestamps)))
 
     print("Mean margin = ", mean_margin)
-    print("std margin = ", np.std(margins))
+    # print("std margin = ", np.std(margins))
 
     touchdown_idx = hybrid_mode.index(2)
     liftoff_idx = rindex(hybrid_mode, 2)
@@ -92,6 +119,19 @@ if __name__ == "__main__":
     tail_speed = tail_speed[start_idx:stop_idx]
     tail_torque_measured = tail_torque_measured[start_idx:stop_idx]
     time_since_td = timestamps/1000-timestamps[0]/1000
+
+    mass_tail = mass_tail[start_idx:stop_idx]
+    mass = mass[start_idx:stop_idx]
+    kv = kv[start_idx:stop_idx]
+    k = k[start_idx:stop_idx]
+
+    k = mode(k)
+    kv = mode(kv)
+    mass = mode(mass)
+    mass_tail = mode(mass_tail)
+    mean_bottom = mean_max_compression(leg_comp, hybrid_mode)
+    apex_height = ((1/2 * k * mean_bottom ** 2)/mass/9.81 - mean_bottom) * 100
+    apex_energy = 1/2 * k * mean_bottom ** 2
 
     color1 = 'tab:blue'
     color2 = 'tab:red'
@@ -146,12 +186,13 @@ if __name__ == "__main__":
     add_highlight(ax3l, time_since_td, hybrid_mode)
     add_highlight(ax4, time_since_td, hybrid_mode)
 
-    fig.suptitle(file_name)
+    fig.suptitle("kv = " + str(kv) + ", Height = " + str(np.round(apex_energy, 2)) + "J, k = " + str(np.round(k)) + "N/m, mt = " + str(np.round(mass_tail,3)) + "kg")
 
-    fig, ax = plt.subplots()
 
-    ax.plot(leg_comp, leg_speed)
-    ax.set_xlabel('Leg compression (m)')
-    ax.set_ylabel('Leg speed (m/s)')
-    ax.grid()
+    # fig, ax = plt.subplots()
+    #
+    # ax.plot(leg_comp, leg_speed)
+    # ax.set_xlabel('Leg compression (m)')
+    # ax.set_ylabel('Leg speed (m/s)')
+    # ax.grid()
     plt.show()
