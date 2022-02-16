@@ -145,6 +145,9 @@ To Run code, first scp the binary onto the pi, and then Run it as sudo using:
 
     sudo ./code_binary
 
+# Citation
+To cite this repo please use the information in the CITATION.cff file
+
 # Acknowledgement
 This work was supported by ONR grant #N00014- 16-1-2817, a Vannevar Bush Fellowship held by Daniel Koditschek,
 sponsored by the Basic Research Office of the Assistant Secretary of Defense for Research and Engineering.
