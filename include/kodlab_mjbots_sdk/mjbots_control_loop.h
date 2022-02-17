@@ -27,6 +27,10 @@ struct ControlLoopOptions {
   int frequency = 1000;              /// Frequency of the control loop in Hz
   std::string log_channel_name;          /// LCM channel name for logging data. Leave empty to not log
   std::string input_channel_name;          /// LCM channel name for input data. Leave empty to not use input
+  bool parallelize_control_loop = false;  /// If true the communication with the moteus will happen in parallel with the
+                                          /// torque update loop. If false the communication will happen in series. True
+                                          /// results in a 1 dt delay in your controller, but is necessary for robots with
+                                          /// more motors or more complicated update loops
 };
 
 /*!
@@ -165,31 +169,43 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
 
   spinner.initialize();
   spinner.spin();
+  // If parallelizing loop send a command to process once the loop starts
+  if(options_.parallelize_control_loop)
+    robot_->SendCommand();
   spinner.spin();
   dt_timer.tic();
   std::cout<<"Starting main loop"<<std::endl;
   while (!CTRL_C_DETECTED) {
-    // sleep the correct amount
+    // Sleep and get current time
     float sleep_duration = spinner.predict_sleeping_time_micro();
     spinner.spin();
-
     time_now_ = dt_timer.tac();
-    // Calculate torques
+
+    // If parallel mode, process the previous reply, then send command to keep cycle time up on pi3hat loop
+    if(options_.parallelize_control_loop){
+      robot_->ProcessReply();
+      prev_msg_duration = message_duration_timer.tac();
+      message_duration_timer.tic();
+      robot_->SendCommand();
+    }
+    // Calculate torques and log
     CalcTorques();
-    // Prepare log
     PrepareLog();
-    // Publish log
     AddTimingLog(time_now_, sleep_duration, prev_msg_duration);
     PublishLog();
 
-    message_duration_timer.tic();
-    // Initiate communications cycle
-    robot_->SendCommand();
-    // handle new inputs if available
-    SafeProcessInput();
-    // Wait until reply from motors is ready and then add reply to robot
-    robot_->ProcessReply();
-    prev_msg_duration = message_duration_timer.tac();
+    // If messages were not sent earlier, send the command and process the reply
+    if(!options_.parallelize_control_loop){
+      message_duration_timer.tic();
+      robot_->SendCommand();
+      // Process input since that can be parallelized here
+      SafeProcessInput();
+      robot_->ProcessReply();
+      prev_msg_duration = message_duration_timer.tac();
+    }
+    else
+      // Process input for parallel loop
+      SafeProcessInput();
   }
 
   // Might be related to use of new
