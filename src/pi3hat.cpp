@@ -270,7 +270,8 @@ class Rpi3Gpio {
 
 constexpr uint32_t kSpi0CS0 = 8;
 constexpr uint32_t kSpi0CS1 = 7;
-constexpr uint32_t kSpi0CS[] = {kSpi0CS0, kSpi0CS1};
+constexpr uint32_t kSpi0CS2 = 25;
+constexpr uint32_t kSpi0CS[] = {kSpi0CS0, kSpi0CS1, kSpi0CS2};
 
 constexpr uint32_t SPI_BASE = 0x204000;
 constexpr uint32_t SPI_CS_TA = 1 << 7;
@@ -306,9 +307,12 @@ class PrimarySpi {
 
     gpio_->SetGpioOutput(kSpi0CS0, true);
     gpio_->SetGpioOutput(kSpi0CS1, true);
+    gpio_->SetGpioOutput(kSpi0CS2, true);
 
     gpio_->SetGpioMode(kSpi0CS0, Rpi3Gpio::OUTPUT); // We'll do CS in SW
     gpio_->SetGpioMode(kSpi0CS1, Rpi3Gpio::OUTPUT);
+    gpio_->SetGpioMode(kSpi0CS2, Rpi3Gpio::OUTPUT);
+
     gpio_->SetGpioMode(9, Rpi3Gpio::ALT_0);
     gpio_->SetGpioMode(10, Rpi3Gpio::ALT_0);
     gpio_->SetGpioMode(11, Rpi3Gpio::ALT_0);
