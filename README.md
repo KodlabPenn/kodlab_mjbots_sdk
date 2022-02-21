@@ -103,7 +103,7 @@ Extract the toolchain
 
 Get the libraries
 
-    rsync -vR --progress -rl --delete-after --safe-links pi@192.168.1.PI:/{lib,usr,opt} $HOME/raspberrypi/rootfs
+    rsync -vR --progress -rl --delete-after --safe-links pi@<PI_IP>:/{lib,usr,opt} $HOME/raspberrypi/rootfs
 
 Add the following lines to your `~/.bashrc`
 
@@ -113,19 +113,19 @@ Add the following lines to your `~/.bashrc`
 
 
 ## Laptop LCM
-* Download lcm from git
-* Try to make lcm - java issue can be fixed here: https://github.com/lcm-proj/lcm/issues/241 
-* Install python with
+* Download lcm from git and install using make: https://lcm-proj.github.io/build_instructions.html
+* If you have the java issue, it can be fixed here: https://github.com/lcm-proj/lcm/issues/241 
+* Install lcm python with
     
     
     cd ../lcm-python
     
     sudo python3 setup.py install
-* Add `export PYTHONPATH="${PYTHONPATH}:$HOME/mjbots/kodlab_mjbots_sdk"` to your `~/.bashrc`
-* Run `./scripts/make_lcm.sh` to generate lcm files. You will need to rerun this command each time you change an lcm definition.
+* Add `export PYTHONPATH="${PYTHONPATH}:<path to sdk>/kodlab_mjbots_sdk"` to your `~/.bashrc`
+* From the `kodlab_mjbots_sdk` repo, run `./scripts/make_lcm.sh` to generate lcm files. You will need to rerun this command each time you change an lcm definition.
 * Install libbot2 from `https://github.com/KodlabPenn/libbot2`
 
-* On the host computer to setup the connection Run `bot-lcm-tunnel <PI-IP/hostname>`. From here you can Start logging_ with
+* On the host computer to setup the connection Run `bot-lcm-tunnel <PI-IP or hostname>`. From here you can Start logging_ with
 
 
       lcm-logger
@@ -144,3 +144,10 @@ Normal build is
 To Run code, first scp the binary onto the pi, and then Run it as sudo using:
 
     sudo ./code_binary
+
+# Citation
+To cite this repo please use the information in the CITATION.cff file
+
+# Acknowledgement
+This work was supported by ONR grant #N00014- 16-1-2817, a Vannevar Bush Fellowship held by Daniel Koditschek,
+sponsored by the Basic Research Office of the Assistant Secretary of Defense for Research and Engineering.

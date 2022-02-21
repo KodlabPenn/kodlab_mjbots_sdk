@@ -197,20 +197,33 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
     CalcTorques();
     PrepareLog();
     AddTimingLog(time_now_, sleep_duration, prev_msg_duration);
-    PublishLog();
 
     // If messages were not sent earlier, send the command and process the reply
     if(!options_.parallelize_control_loop){
       message_duration_timer.tic();
       robot_->SendCommand();
+<<<<<<< HEAD
+=======
+      // Publishing log can happen now as well
+      PublishLog();
+>>>>>>> master
       // Process input since that can be parallelized here
       SafeProcessInput();
       robot_->ProcessReply();
       prev_msg_duration = message_duration_timer.tac();
     }
+<<<<<<< HEAD
     else
       // Process input for parallel loop
       SafeProcessInput();
+=======
+    else{
+      // Publish log for parallel loop
+      PublishLog();
+      // Process input for parallel loop
+      SafeProcessInput();
+    }
+>>>>>>> master
   }
 
   // Might be related to use of new

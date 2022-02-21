@@ -1,0 +1,17 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: kod*lab mjbots SDL
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Shane
+    family-names: Rozen-Levy
+    email: srozen01@seas.upenn.edu
+    orcid: 'https://orcid.org/0000-0002-1243-1807'
+  - given-names: J. Diego
+    family-names: Caporale
+    orcid: 'https://orcid.org/0000-0001-5933-3094'
