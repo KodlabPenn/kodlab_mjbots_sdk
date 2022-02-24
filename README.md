@@ -75,15 +75,22 @@ in iterations of the control loop.
 # Setup
 
 ## Setting up your Pi
+The setup instructions are for headless setup. If you are not comfortable with the headless operation
+of a Pi, now is a good time to start. This setup will install the dependencies on the Pi and turn the
+Pi into an access point/hotspot for easy connection to later on.
 * Use a realtime pi kernel and flash sd card `https://github.com/guysoft/RealtimePi`
-* Configure ubuntu local network to share wifi and connect pi over ethernet
+* Configure the ethernet on your laptop to share internet with the pi. 
+    * The goal of this setup is to be able to ssh over ethernet onto the pi, and to give the pi access
+    to the internet without connecting it to a wifi network
 * Use nmap to find pi ipaddress `sudo nmap -sn IP/24`
 * ssh onto pi `ssh pi@IP`, password is raspberry
 * Change the pi password to something that you will remember
 * scp setup script onto pi `scp <path to kodlab_mjbots_sdk>/utils/setup-system.py pi@IP:~/`
 * scp performance governer onto pi `scp <path to kodlab_mjbots_sdk>/utils/performance_governor.sh pi@IP:~/`
-* Run setup script (change password and ssid in setup script) `sudo python3 setup-system.py`
-* Run performance governor script
+* Edit the setup script on the pi with your desired wifi ssid, wifi password, and wifi ip address
+* Run setup script  `sudo python3 setup-system.py`
+    * This will install dependencies, make the operating system even more realtime, and setup the wifi access point
+* Run performance governor script via sudo
 * Reboot pi
 * Add pi to `etc/hosts` to make ssh easier
 * Add ssh key
