@@ -108,6 +108,8 @@ Extract the toolchain
 
     sudo tar xfz raspi-toolchain.tar.gz --strip-components=1 -C /opt
 
+Create the rootfs folder in `$HOME/raspberry/rootfs`
+
 Get the libraries
 
     rsync -vR --progress -rl --delete-after --safe-links pi@<PI_IP>:/{lib,usr,opt} $HOME/raspberrypi/rootfs
