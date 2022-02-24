@@ -139,6 +139,11 @@ Add the following lines to your `~/.bashrc`
 
       lcm-logger
 
+## Submodules
+This repo uses submodules to set them up run the following commands from the repo folder
+  
+    git submodule init
+    git submodule update
 
 # Building
 Current command to build clean is
