@@ -116,7 +116,7 @@ Get the libraries
 
 Add the following lines to your `~/.bashrc`
 
-    export RASPBIAN_ROOTFS=$HOME/raspberry/rootfs
+    export RASPBIAN_ROOTFS=$HOME/raspberrypi/rootfs
     export PATH=/opt/cross-pi-gcc/bin:$PATH
     export RASPBERRY_VERSION=1
 
@@ -144,6 +144,12 @@ This repo uses submodules to set them up run the following commands from the rep
   
     git submodule init
     git submodule update
+
+## Motor Setup
+This section is a work in progress. Currently in order to setup the motors, we set the following parameters on the moteus:
+* kp, kd, ki = 0
+* servo pos max and min = nan
+* id
 
 # Building
 Current command to build clean is
