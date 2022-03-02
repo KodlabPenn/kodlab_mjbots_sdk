@@ -147,9 +147,12 @@ This repo uses submodules to set them up run the following commands from the rep
 
 ## Motor Setup
 This section is a work in progress. Currently in order to setup the motors, we set the following parameters on the moteus:
-* kp, kd, ki = 0
-* servo pos max and min = nan
+* `servo.pid_position.kp`, `servo.pid_position.kd`, `servo.pid_position.ki` = `0`
+* `servopos.position_min`,`servopos.position_max` = `nan`
 * id
+
+The pid gains are set to zero to keep the torque packet size down. Servo pos max and min are disabled since they can 
+potentially cause confusing faults if you don't understand them.
 
 # Building
 Current command to build clean is
