@@ -14,6 +14,13 @@
 class VoidLcm
 {
     public:
+        float      timestamp;
+
+        float      margin;
+
+        float      message_duration;
+
+    public:
         /**
          * Encode a message into binary form.
          *
@@ -105,24 +112,50 @@ const char* VoidLcm::getTypeName()
     return "VoidLcm";
 }
 
-int VoidLcm::_encodeNoHash(void *, int, int) const
+int VoidLcm::_encodeNoHash(void *buf, int offset, int maxlen) const
 {
-    return 0;
+    int pos = 0, tlen;
+
+    tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->timestamp, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->margin, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->message_duration, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    return pos;
 }
 
-int VoidLcm::_decodeNoHash(const void *, int, int)
+int VoidLcm::_decodeNoHash(const void *buf, int offset, int maxlen)
 {
-    return 0;
+    int pos = 0, tlen;
+
+    tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->timestamp, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->margin, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->message_duration, 1);
+    if(tlen < 0) return tlen; else pos += tlen;
+
+    return pos;
 }
 
 int VoidLcm::_getEncodedSizeNoHash() const
 {
-    return 0;
+    int enc_size = 0;
+    enc_size += __float_encoded_array_size(NULL, 1);
+    enc_size += __float_encoded_array_size(NULL, 1);
+    enc_size += __float_encoded_array_size(NULL, 1);
+    return enc_size;
 }
 
 uint64_t VoidLcm::_computeHash(const __lcm_hash_ptr *)
 {
-    uint64_t hash = 0x0000000012345678LL;
+    uint64_t hash = 0x2c03d40a64275aecLL;
     return (hash<<1) + ((hash>>63)&1);
 }
 

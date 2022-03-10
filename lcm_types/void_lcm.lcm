@@ -1,3 +1,6 @@
 struct VoidLcm
 {
+    float  timestamp;
+    float margin;
+    float message_duration;
 }
