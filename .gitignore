@@ -6,3 +6,5 @@ lcm_types/*.py
 __pycache__/
 python_scripts/python_types/*
 python_scripts/logs/*
+*/.vscode/*
+.vscode/*
