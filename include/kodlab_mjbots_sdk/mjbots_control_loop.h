@@ -28,7 +28,7 @@ struct ControlLoopOptions {
   int frequency = 1000;              /// Frequency of the control loop in Hz
   std::string log_channel_name;          /// LCM channel name for logging data. Leave empty to not log
   std::string input_channel_name;          /// LCM channel name for input data. Leave empty to not use input
-  bool parallelize_control_loop = true;  /// If true the communication with the moteus will happen in parallel with the
+  bool parallelize_control_loop = false;  /// If true the communication with the moteus will happen in parallel with the
                                           /// torque update loop. If false the communication will happen in series. True
                                           /// results in a 1 dt delay in your controller, but is necessary for robots with
                                           /// more motors or more complicated update loops

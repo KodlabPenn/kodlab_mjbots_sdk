@@ -135,10 +135,14 @@ void MjbotsRobotInterface::ProcessReply() {
   moteus_interface_->WaitForCycle();
 
   for(int encoder = 0; encoder < num_external_encoders_; encoder++){
+    float measurment = moteus_interface_->pi3hat_->readEncoder(encoder_cs_list_[encoder]);
+
+    if (measurment < 3){
+      measurment += 2 * M_PI;
+    }
     // Apply offsets and direction
-    float raw_position = directions_[num_servos_ + encoder] *
-        moteus_interface_->pi3hat_->readEncoder(encoder_cs_list_[encoder]) +
-        offsets_[num_servos_ + encoder];
+    float raw_position = directions_[num_servos_ + encoder] *measurment
+         + offsets_[num_servos_ + encoder];
 
     // Calculate raw velocity
     raw_encoder_velocities_[encoder] = (raw_position - raw_encoder_positions_[encoder])* 1000;

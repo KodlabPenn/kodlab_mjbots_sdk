@@ -946,7 +946,7 @@ class Pi3Hat::Impl {
       : config_(configuration),
         primary_spi_{[&]() {
           PrimarySpi::Options options;
-          options.speed_hz = configuration.spi_speed_hz;
+          options.speed_hz = configuration.spi_speed_primary_hz;
           return options;
         }()},
         aux_spi_{[&]() {
