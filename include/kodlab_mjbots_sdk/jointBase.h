@@ -1,4 +1,6 @@
 
+#ifndef JOINTBASE_H
+#define JOINTBASE_H
 //
 // Created by kodlab on 02/17/22.
 // J. Diego Caporale
@@ -15,13 +17,6 @@
  */
 #include <limits>
 
-
-
-// struct joint_options{
-    
-// }
-
-
 /**
  * @brief 
  * Abstract Base class for any joint used in the robot class.
@@ -30,7 +25,7 @@ class JointBase {
     protected:
         float gear_ratio_ = 1.0;
         float zero_offset_ = 0;
-        int  direction_ = 1; 
+        int   direction_ = 1; 
         float max_torque_ = std::numeric_limits<float>::infinity();
         float pos_limit_min_ = -std::numeric_limits<float>::infinity();
         float pos_limit_max_ = -std::numeric_limits<float>::infinity();
@@ -50,35 +45,48 @@ class JointBase {
                     pos_limit_min_ = pos_min;
                     pos_limit_max_ = pos_max;
                     direction_ = (direction_ >= 0) - (direction_ < 0); //set to sign of direction (-1 or 1)  (0 is set to 1)
+                    gear_ratio_ = gear_ratio_ == 0 ? 1.0 : gear_ratio_;
                 }
-        
-        //TODO CHANGE THIS VIRTUAL OR REMOVE AND REQUIRE THE CHILDREN TO INTERACT WITH POS AND VEL 
-        // virtual void updateState(float pos, float vel){position_ = pos; velocity_= vel};
+
+        // struct JointParams{
+            
+        // };
+
+        void setPosition(float pos){position_ = pos;}
+        void setVelocity(float vel){velocity_ = vel;}
+        virtual void updateState(float pos, float vel){  
+            position_ = direction_ * (pos / gear_ratio_ + zero_offset_); 
+            velocity_= direction_ * vel / gear_ratio_ ;
+            }
 
         // Get the values 
         virtual float getPosition()  {return position_;} //required
         virtual float getVelocity()  {return velocity_;} //required
         virtual float getTorqueCmd() {return torque_cmd_;}//required
 
-        //REMOVE virtual float setPosition(){} // Can be used with joints that have built in PID
-        //REMOVE virtual float setVelocity(){} // Can be used with joints that have built in PID
-        virtual float setTorque(float torq){
-            //TODO include velocity? probably a bad idea.
+        virtual float setTorque(float torq){// HOW DOES DIRECTION OR GEARRATIO INTERACT WITH TORQUE? //TODO
+            
+            torq =  torq >  max_torque_ ?  max_torque_ : torq;
+            torq =  torq < -max_torque_ ? -max_torque_ : torq;
+            torq = direction_ * torq;
+
             if (!soft_stop_active) {
                 torque_cmd_= torq;} // Can be used with joints that accept torque commands
             else {
                 if (position_ > pos_limit_max_  ){
-                    torque_cmd_= (torq > 0) ? 0 : torq
+                    torq = (torq > 0) ? 0 : torq ;
                 }
                 else if (position_ < pos_limit_min_  ){
-                    torque_cmd_= (torq < 0) ? 0 : torq  
+                    torq = (torq < 0) ? 0 : torq ;
                 }
             }
-        }//TODO OPTIMIZE
-        void setSoftStop(bool active){soft_stop_active = active;}
-        const float& getPositionReference() const {return position_;}
-        const float& getVelocityReference() const {return velocity_;}
-        const float& getTorqueReference()   const {return torque_cmd_;}
+            torque_cmd_ =  torq/gear_ratio_;
+            return torque_cmd_;
+        }//TODO Optimize
 
-        
+        // void setSoftStop(bool active){soft_stop_active = active;}
+        const float& getPositionReference() const {return position_;   }
+        const float& getVelocityReference() const {return velocity_;   }
+        const float& getTorqueReference()   const {return torque_cmd_; }
 };
+#endif//JOINTBASE_H

@@ -19,7 +19,6 @@ namespace kodlab::mjbots {
  * @brief options struct for creating a mjbots behavior
  */
 struct ControlLoopOptions {
-  std::vector<Motor> motor_list;    /// List of motors in robot
   RealtimeParams realtime_params;  /// Set of parameters for robot's realtimeness
 
   float max_torque = 20;             /// Maximum torque in Nm
@@ -47,7 +46,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    * @brief constructs and mjbots behavior based on the options struct. Does not Start the controller.
    * @param options contains options defining the behavior
    */
-  MjbotsControlLoop(const ControlLoopOptions &options);
+  MjbotsControlLoop(std::vector<kodlab::JointMoteus> joints, const ControlLoopOptions &options); //TODO PROPERLY MOVE JOINTS AROUND SO THAT ID AND BUS CAN BE CONST (i.e. not copies?)
 
  protected:
 
@@ -108,7 +107,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
 /******************************************Implementation**************************************************************/
 
 template<class log_type, class input_type>
-MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(const ControlLoopOptions &options) :
+MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::JointMoteus> joints, const ControlLoopOptions &options) :
     AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
     lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) {
   // Extract useful values from options
@@ -116,7 +115,7 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(const ControlLoopOpti
   cpu_ = options.realtime_params.main_cpu;
   realtime_priority_ = options.realtime_params.main_rtp;
   frequency_ = options.frequency;
-  num_motors_ = options.motor_list.size();
+  num_motors_ = joints.size();
   // Setup logging info and confirm template is provided if logging
   logging_channel_name_ = options.log_channel_name;
   logging_ = !logging_channel_name_.empty();
@@ -130,6 +129,11 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(const ControlLoopOpti
     std::cout << "Warning, input_type is default, but input is enabled" << std::endl;
     input_ = false;
   }
+
+  // Create robot object
+  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(joints,
+                                                                       options_.realtime_params,
+                                                                       options_.soft_start_duration));
 }
 
 template<class log_type, class input_type>
@@ -151,11 +155,7 @@ template<class log_type, class input_type>
 void MjbotsControlLoop<log_type, input_type>::Run() {
   EnableCtrlC();
 
-  // Create robot object
-  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(options_.motor_list,
-                                                                       options_.realtime_params,
-                                                                       options_.max_torque,
-                                                                       options_.soft_start_duration));
+  robot_->Init();
 
   float prev_msg_duration = 0;
 
