@@ -41,7 +41,8 @@ class JointBase {
                 float gear_ratio = 1.0, 
                 float pos_min = -std::numeric_limits<float>::infinity(), 
                 float pos_max = std::numeric_limits<float>::infinity())
-                :direction_(direction), zero_offset_(zero_offset), max_torque_(max_torque), gear_ratio_(gear_ratio){
+                :direction_(direction), zero_offset_(zero_offset), 
+                 max_torque_(max_torque), gear_ratio_(gear_ratio){
                     pos_limit_min_ = pos_min;
                     pos_limit_max_ = pos_max;
                     direction_ = (direction_ >= 0) - (direction_ < 0); //set to sign of direction (-1 or 1)  (0 is set to 1)

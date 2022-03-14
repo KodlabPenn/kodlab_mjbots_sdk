@@ -100,8 +100,12 @@ void MjbotsRobotInterface::ProcessReply() {
 
 void MjbotsRobotInterface::SendCommand() {
   cycle_count_++;
-  moteus_interface_->Cycle(
-      moteus_data_);
+  
+  for (int servo=0; servo < num_servos_;servo++) {// TODO: Move to a seperate update method (allow non-ff torque commands)?
+    commands_[servo].position.feedforward_torque = torque_cmd_[servo];
+  }
+
+  moteus_interface_->Cycle(moteus_data_);
 }
 
 void MjbotsRobotInterface::SetTorques(std::vector<float> torques) {
@@ -110,7 +114,6 @@ void MjbotsRobotInterface::SetTorques(std::vector<float> torques) {
   for (int servo = 0; servo < num_servos_; servo++) {
     torque_cmd = joints_[servo].setTorque(torques[servo]);
     
-    commands_[servo].position.feedforward_torque = torque_cmd;
   }
 }
 
