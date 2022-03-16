@@ -56,7 +56,7 @@ class JointBase {
         void setPosition(float pos){position_ = pos;}
         void setVelocity(float vel){velocity_ = vel;}
         virtual void updateState(float pos, float vel){  
-            position_ = direction_ * (pos / gear_ratio_ + zero_offset_); 
+            position_ = direction_ * (pos / gear_ratio_ - zero_offset_); 
             velocity_= direction_ * vel / gear_ratio_ ;
             }
 
@@ -65,7 +65,7 @@ class JointBase {
         virtual float getVelocity()  {return velocity_;} //required
         virtual float getTorqueCmd() {return torque_cmd_;}//required
 
-        virtual float setTorque(float torq){// HOW DOES DIRECTION OR GEARRATIO INTERACT WITH TORQUE? //TODO
+        virtual float setTorque(float torq){
             
             torq =  torq >  max_torque_ ?  max_torque_ : torq;
             torq =  torq < -max_torque_ ? -max_torque_ : torq;

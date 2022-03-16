@@ -83,13 +83,13 @@ class MjbotsRobotInterface {
    * @brief accessor for joint positions, takes into account direction and offset
    * @return the joint positions
    */
-  std::vector<std::reference_wrapper<const float>> GetJointPositions();
+  std::vector<float> GetJointPositions();
 
   /*!
    * @brief accessor for joint velocities, takes into account direction
    * @return the joint velocities
    */
-  std::vector<std::reference_wrapper<const float>> GetJointVelocities();
+  std::vector<float> GetJointVelocities();
 
   /*!
    * @brief accessor for the torque md, takes into account direction

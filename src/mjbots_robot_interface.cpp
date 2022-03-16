@@ -117,12 +117,14 @@ void MjbotsRobotInterface::SetTorques(std::vector<float> torques) {
   }
 }
 
-std::vector<std::reference_wrapper<const float>> MjbotsRobotInterface::GetJointPositions() {
-  return positions_;
+std::vector<float> MjbotsRobotInterface::GetJointPositions() { //Copy of positions
+  std::vector<float>pos(positions_.begin(), positions_.end());
+  return pos;
 }
 
-std::vector<std::reference_wrapper<const float>> MjbotsRobotInterface::GetJointVelocities() {
-  return velocities_;
+std::vector<float> MjbotsRobotInterface::GetJointVelocities() { //Copy of velocities
+  std::vector<float>vel(velocities_.begin(), velocities_.end());
+  return vel;
 }
 
 std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> MjbotsRobotInterface::GetJointModes() {
