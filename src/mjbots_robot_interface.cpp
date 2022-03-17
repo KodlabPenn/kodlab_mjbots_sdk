@@ -137,7 +137,7 @@ void MjbotsRobotInterface::ProcessReply() {
   for(int encoder = 0; encoder < num_external_encoders_; encoder++){
     float measurment = moteus_interface_->pi3hat_->readEncoder(encoder_cs_list_[encoder]);
 
-    if (measurment < 3){
+    if (measurment < 3.5){
       measurment += 2 * M_PI;
     }
     // Apply offsets and direction
