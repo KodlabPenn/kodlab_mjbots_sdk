@@ -52,10 +52,10 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
     soft_start_(100, soft_start_duration) { //TODO ADJUST ROBOT WIDE SOFTSTART TO DEFINE MAXTORQUE RAMP WITH INDIV JOINTS
   joints_ = std::move(joint_list);    
   for( auto & j: joints_){
-    positions_.push_back( j.getPositionReference() );// TODO check that "const"'s are accurate
-    velocities_.push_back( j.getVelocityReference() );
-    torque_cmd_.push_back( j.getTorqueReference()   ); 
-    modes_.push_back(j.getModeReference());
+    positions_.push_back( j.get_position_reference() );// TODO check that "const"'s are accurate
+    velocities_.push_back( j.get_velocity_reference() );
+    torque_cmd_.push_back( j.get_servo_torque_reference()   ); 
+    modes_.push_back(j.get_mode_reference());
   }
   num_servos_ = joint_list.size();
   for (size_t i = 0; i < num_servos_; ++i)
@@ -94,7 +94,7 @@ void MjbotsRobotInterface::ProcessReply() {
   // Copy results to object so controller can use
   for (auto & joint : joints_) {
     const auto servo_reply = Get(replies_, joint.can_id);
-    joint.updateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
+    joint.UpdateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
   }
 }
 
@@ -112,7 +112,7 @@ void MjbotsRobotInterface::SetTorques(std::vector<float> torques) {
   soft_start_.ConstrainTorques(torques, cycle_count_);
   float torque_cmd;
   for (int servo = 0; servo < num_servos_; servo++) {
-    torque_cmd = joints_[servo].setTorque(torques[servo]);
+    torque_cmd = joints_[servo].UpdateTorque(torques[servo]);
     
   }
 }
