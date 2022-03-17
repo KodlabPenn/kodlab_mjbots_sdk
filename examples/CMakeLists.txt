@@ -8,7 +8,6 @@ endmacro(add_example target_name)
 
 
 # add_example(leg_example)
-# add_example(spin_motor_example)
 add_example(spin_joints_example)
 add_example(proprio_example)
 add_example(3DoFTest)

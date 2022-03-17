@@ -7,6 +7,13 @@
  * This example demonstrates how you can use the mjbots_control_loop and the cartesian leg to create a hopping robot
  */
 
+
+//TODO DEPRECATED: NO LONGER WORKS WITH THE JOINT CLASSES
+//TODO DEPRECATED: COMMENTED IN THE CMAKE.
+//TODO DEPRECATED: NEEDS TO BE UPDATED
+//TODO DEPRECATED:
+//TODO DEPRECATED:
+
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 #include "LegGains.hpp"
 #include "LegLog.hpp"

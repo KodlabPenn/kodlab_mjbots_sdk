@@ -3,8 +3,9 @@
 // Authors:
 // J. Diego Caporale <jdcap@seas.upenn.edu>
 
-/* Basic example script demonstrating how to use the mjbots_control_loop to 2 motors. The functions to implement are
- * CalcTorques and PrepareLog. In this example we send a torque cmd of all zeros and log the motor information.
+/* Example script running joints to their mechanical limits before switching direction. The functions to implement are
+ * CalcTorques and PrepareLog. In this example we run the motor forward until its 
+ * position error is large enough to detect a obstacle, then switching directions
  */
 
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
@@ -16,7 +17,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
+class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
   void CalcTorques() override {
 
@@ -28,32 +29,31 @@ class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
 
     static Eigen::VectorXf  phase = positions; //radians
     static Eigen::VectorXf    dir = Eigen::VectorXf::Ones(num_motors_); //radians
-    static Eigen::VectorXf maxPos = Eigen::VectorXf::Ones(num_motors_) * ( -std::numeric_limits<float>::infinity() );
-    static Eigen::VectorXf minPos = Eigen::VectorXf::Ones(num_motors_) * (  std::numeric_limits<float>::infinity() );
+    static Eigen::VectorXf max_pos = Eigen::VectorXf::Ones(num_motors_) * ( -std::numeric_limits<float>::infinity() );
+    static Eigen::VectorXf min_pos = Eigen::VectorXf::Ones(num_motors_) * (  std::numeric_limits<float>::infinity() );
 
     phase.array() += dir.array()*(omega.array() / frequency_) ;
     
-    
-    
-    auto switchBool =  (phase.array()-positions.array()).abs() < 0.1;
-    dir = (switchBool).select(dir,-dir);
-    phase = (switchBool).select(phase,positions);
+    // Detect collision
+    float switch_threshold = 0.1;
+    auto switch_bool =  (phase.array()-positions.array()).abs() < switch_threshold;
+    dir = (switch_bool).select(dir,-dir);
+    phase = (switch_bool).select(phase,positions);
 
-    maxPos = (phase.array() > maxPos.array()).select(phase, maxPos);
-    minPos = (phase.array() < minPos.array()).select(phase, minPos);
+    // Update limits
+    max_pos = (phase.array() > max_pos.array()).select(phase, max_pos);
+    min_pos = (phase.array() < min_pos.array()).select(phase, min_pos);
     
+    //Calculate torques
     std::vector<float> torques(num_motors_, 0);
-
-
-    
     Eigen::VectorXf tau = 100*(phase-positions) + 1*(omega-velocities);
-
-    std::cout<<"*********\n";
-    std::cout<<maxPos.transpose()<<"\n";
-    std::cout<<minPos.transpose()<<"\n";
-    std::cout<<"*********"<<std::endl;
-
     Eigen::VectorXf::Map(&torques[0], num_motors_) = tau;
+
+    // Print limits
+    std::cout<<"*********\n";
+    std::cout<<max_pos.transpose()<<"\n";
+    std::cout<<min_pos.transpose()<<"\n";
+    std::cout<<"*********"<<std::endl;
 
     robot_->SetTorques(torques);   
   }
@@ -75,21 +75,22 @@ class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
 };
 
 int main(int argc, char **argv) {
-  kodlab::mjbots::ControlLoopOptions options;
-  std::vector<kodlab::JointMoteus> joints;
-  // joints.emplace_back(4, 100, 1,  1.7785, 1, 1);
-  // joints.emplace_back(4, 101, 1, -2.966, 1, 5.0/3.0);
-  // joints.emplace_back(4, 108, 1,  -0.4674585, 1, 1);
-  joints.emplace_back(4, 101, 1,  0, 1, 5.0/3.0);
-  // Define the motors in the robot
-  options.log_channel_name = "motor_data";
 
+  //Setup joints
+  std::vector<kodlab::JointMoteus> joints;
+
+  joints.emplace_back(4, 108, 1, -0.4674585, 1, 1);
+
+  // Define robot options
+  kodlab::mjbots::ControlLoopOptions options;
+  options.log_channel_name = "motor_data";
   options.frequency = 1000;
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu  = 2;
-
+  
   // Create control loop
-  Spin_Joint control_loop(joints, options);
+  ProprioJoints control_loop(joints, options);
+
   // Starts the loop, and then join it
   control_loop.Start();
   control_loop.Join();

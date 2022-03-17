@@ -46,18 +46,20 @@ class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
 };
 
 int main(int argc, char **argv) {
-  kodlab::mjbots::ControlLoopOptions options;
+
+  //Setup joints
   std::vector<kodlab::JointMoteus> joints;
   joints.emplace_back(4, 100, 1, -1.3635165, 1, 1);
-  joints.emplace_back(4, 101,-1, 2.688, 1, 5.0/3.0);
+  joints.emplace_back(4, 101,-1,  2.688,     1, 5.0/3.0);
   joints.emplace_back(4, 108, 1, -0.4674585, 1, 1);
-  // Define the motors in the robot
-  options.log_channel_name = "motor_data";
 
+  // Define robot options
+  kodlab::mjbots::ControlLoopOptions options;
+  options.log_channel_name = "motor_data";
   options.frequency = 1000;
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu  = 2;
-
+  
   // Create control loop
   Spin_Joint control_loop(joints, options);
   // Starts the loop, and then join it
