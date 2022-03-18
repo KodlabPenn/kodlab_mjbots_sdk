@@ -48,8 +48,9 @@ void MjbotsRobotInterface::PrepareTorqueCommand() {
 
 MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint_list,
                                            const RealtimeParams &realtime_params,
-                                           int soft_start_duration) :
-    soft_start_(100, soft_start_duration) { //TODO ADJUST ROBOT WIDE SOFTSTART TO DEFINE MAXTORQUE RAMP WITH INDIV JOINTS
+                                           int soft_start_duration,
+                                           float robot_max_torque ) :
+                                            soft_start_(robot_max_torque, soft_start_duration) { 
   joints_ = std::move(joint_list);    
   for( auto & j: joints_){
     positions_.push_back( j.get_position_reference() );// TODO check that "const"'s are accurate
@@ -127,12 +128,14 @@ std::vector<float> MjbotsRobotInterface::GetJointVelocities() { //Copy of veloci
   return vel;
 }
 
-std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> MjbotsRobotInterface::GetJointModes() {
-  return modes_;
+std::vector<::mjbots::moteus::Mode> MjbotsRobotInterface::GetJointModes() {
+  std::vector<::mjbots::moteus::Mode>modes(modes_.begin(), modes_.end());
+  return modes;
 }
 
-std::vector<std::reference_wrapper<const float>> MjbotsRobotInterface::GetJointTorqueCmd() {
-  return torque_cmd_;
+std::vector<float> MjbotsRobotInterface::GetJointTorqueCmd() {
+  std::vector<float>torques(torque_cmd_.begin(), torque_cmd_.end());
+  return torques;
 }
 void MjbotsRobotInterface::SetModeStop() {
   for (auto &cmd : commands_) {

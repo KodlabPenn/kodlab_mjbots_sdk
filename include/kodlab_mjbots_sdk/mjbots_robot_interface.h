@@ -10,7 +10,7 @@
 #include <map>
 #include <future>
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
-#include "kodlab_mjbots_sdk/jointMoteus.h"
+#include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
 
@@ -35,12 +35,13 @@ class MjbotsRobotInterface {
    * @brief constructs an mjbots_robot_interface to communicate with a collection of moeteusses
    * @param joint_list a list of joints defining the motors in the robot
    * @param realtime_params the realtime parameters defining cpu and realtime priority
-   * @param max_torque the maximum torque to allow per motor
    * @param soft_start_duration how long in dt to spend ramping the torque
+   * @param robot_max_torque the maximum torque to allow per motor in the robot
    */
   MjbotsRobotInterface(const std::vector<JointMoteus> &joint_list,
                        const RealtimeParams &realtime_params,
-                       int soft_start_duration = 1);
+                       int soft_start_duration = 1,
+                       float robot_max_torque = 100);
 
   /**
    * @brief Send and recieve initial communications effectively starting the robot
@@ -95,13 +96,13 @@ class MjbotsRobotInterface {
    * @brief accessor for the torque md, takes into account direction
    * @return the torque cmd
    */
-  std::vector<std::reference_wrapper<const float>> GetJointTorqueCmd();
+  std::vector<float> GetJointTorqueCmd();
 
   /*!
    * @brief accessor for the joint modes
    * @return the joint modes
    */
-  std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>>  GetJointModes();
+  std::vector< ::mjbots::moteus::Mode>  GetJointModes();
 
  private:
   int num_servos_;                         /// The number of motors in the robot

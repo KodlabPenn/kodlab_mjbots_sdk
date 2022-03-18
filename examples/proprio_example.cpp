@@ -9,7 +9,7 @@
  */
 
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
-#include "kodlab_mjbots_sdk/jointMoteus.h"
+#include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "ManyMotorLog.hpp"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include <sys/mman.h>
@@ -62,7 +62,7 @@ class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
     for (int servo = 0; servo < num_motors_; servo++) {
       log_data_.positions[servo]  = robot_->GetJointPositions()[servo];
       log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
-      log_data_.modes[servo] = static_cast<int>(robot_->GetJointModes()[servo].get());
+      log_data_.modes[servo] = static_cast<int>(robot_->GetJointModes()[servo]);
       log_data_.torques[servo] = robot_->GetJointTorqueCmd()[servo];
     }
     for (int servo = num_motors_; servo < 13; servo++) {
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
   //Setup joints
   std::vector<kodlab::JointMoteus> joints;
 
-  joints.emplace_back(4, 108, 1, -0.4674585, 1, 1);
+  joints.emplace_back(108, 4, 1, -0.4674585, 1, 1);
 
   // Define robot options
   kodlab::mjbots::ControlLoopOptions options;

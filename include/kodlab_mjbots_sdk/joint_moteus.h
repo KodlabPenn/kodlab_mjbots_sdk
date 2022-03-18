@@ -1,5 +1,5 @@
 /**
- * @file jointMoteus.h
+ * @file joint_moteus.h
  * @author J. Diego Caporale (jdcap@seas.upenn.edu)
  * @brief Moteus powered joint class
  * @version 0.1
@@ -10,7 +10,7 @@
  */
 
 #pragma once
-#include "kodlab_mjbots_sdk/jointBase.h"
+#include "kodlab_mjbots_sdk/joint_base.h"
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
 
 namespace kodlab{
@@ -32,12 +32,14 @@ class JointMoteus: public JointBase{
          * @param can_id_       /// the can id of this joint's moteus [1-127]
          * @param direction     /// 1 or -1, flips positive rotation direction (Default:1)
          * @param zero_offset   /// offset [rad] of joint zero position from servo zero postition (Default:0)
-         * @param max_torque    /// Maximum torque of the joint [N m] (Default:inf)
          * @param gear_ratio    /// Gear ratio joint to servo (ratio>1 means slower joint) (Default:1.0)
+         * @param max_torque    /// Maximum torque of the joint [N m] (Default:inf)
          * @param pos_min       /// Minimum joint limit (Default:inf)
          * @param pos_max       /// Maximum joint limit (Default:-inf)
          */
-        JointMoteus(int can_bus_,int can_id_,
+        JointMoteus(
+            int can_id_, 
+            int can_bus_,
             int direction = 1, 
             float zero_offset = 0,
             float max_torque = std::numeric_limits<float>::infinity(),
@@ -45,7 +47,7 @@ class JointMoteus: public JointBase{
             float pos_min = -std::numeric_limits<float>::infinity(), 
             float pos_max = std::numeric_limits<float>::infinity()
             )
-            :JointBase(direction,zero_offset,max_torque,gear_ratio,pos_min,pos_max),
+            :JointBase(direction,zero_offset,gear_ratio,max_torque,pos_min,pos_max),
             can_bus(can_bus_), can_id(can_id_){}
         
         /**
