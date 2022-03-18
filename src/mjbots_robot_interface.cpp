@@ -12,7 +12,7 @@ namespace kodlab::mjbots {
 void MjbotsRobotInterface::InitializeCommand() {
   for (const auto &joint : joints_) {
     commands_.push_back({});
-    commands_.back().id = joint.can_id; //id
+    commands_.back().id = joint.get_can_id(); //id
   }
 
   ::mjbots::moteus::PositionResolution res; // This is just for the command
@@ -60,7 +60,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
   }
   num_servos_ = joint_list.size();
   for (size_t i = 0; i < num_servos_; ++i)
-    servo_bus_map_[joint_list[i].can_id] = joint_list[i].can_bus;
+    servo_bus_map_[joint_list[i].get_can_id()] = joint_list[i].get_can_bus();
 
   // Create moteus interface
   ::mjbots::moteus::Pi3HatMoteusInterface::Options moteus_options;
@@ -94,7 +94,7 @@ void MjbotsRobotInterface::ProcessReply() {
   moteus_interface_->WaitForCycle();
   // Copy results to object so controller can use
   for (auto & joint : joints_) {
-    const auto servo_reply = Get(replies_, joint.can_id);
+    const auto servo_reply = Get(replies_, joint.get_can_id());
     joint.UpdateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
   }
 }

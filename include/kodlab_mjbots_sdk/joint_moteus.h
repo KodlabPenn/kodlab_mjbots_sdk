@@ -20,16 +20,11 @@ namespace kodlab{
  */
 class JointMoteus: public JointBase{
     public:
-        int can_bus;    /// the can bus the moteus communicates on
-        int can_id;     /// the can id of this joint's moteus
-
-        ::mjbots::moteus::Mode mode_ = ::mjbots::moteus::Mode::kStopped;    /// joint's moteus mode
-
         /**
          * @brief Construct a new Joint Moteus object
          * 
-         * @param can_bus_      /// the can bus the moteus communicates on [1-4]
-         * @param can_id_       /// the can id of this joint's moteus [1-127]
+         * @param can_bus      /// the can bus the moteus communicates on [1-4]
+         * @param can_id       /// the can id of this joint's moteus [1-127]
          * @param direction     /// 1 or -1, flips positive rotation direction (Default:1)
          * @param zero_offset   /// offset [rad] of joint zero position from servo zero postition (Default:0)
          * @param gear_ratio    /// Gear ratio joint to servo (ratio>1 means slower joint) (Default:1.0)
@@ -38,8 +33,8 @@ class JointMoteus: public JointBase{
          * @param pos_max       /// Maximum joint limit (Default:-inf)
          */
         JointMoteus(
-            int can_id_, 
-            int can_bus_,
+            int can_id, 
+            int can_bus,
             int direction = 1, 
             float zero_offset = 0,
             float max_torque = std::numeric_limits<float>::infinity(),
@@ -48,7 +43,7 @@ class JointMoteus: public JointBase{
             float pos_max = std::numeric_limits<float>::infinity()
             )
             :JointBase(direction,zero_offset,gear_ratio,max_torque,pos_min,pos_max),
-            can_bus(can_bus_), can_id(can_id_){}
+            can_bus_(can_bus), can_id_(can_id){}
         
         /**
          * @brief Update the joint of the moteus. Converts rot/s to rad/s and saves mode
@@ -63,10 +58,29 @@ class JointMoteus: public JointBase{
         }
 
         /**
+         * @brief Get the can id 
+         * 
+         * @return int 
+         */
+        int get_can_id() const {return can_id_;}
+
+        /**
+         * @brief Get the can bus object
+         * 
+         * @return int 
+         */
+        int get_can_bus() const {return can_bus_;}
+
+        /**
          * @brief Get the mode reference 
          * 
          * @return const ::mjbots::moteus::Mode& 
          */
         const ::mjbots::moteus::Mode & get_mode_reference()   const {return mode_; }
+
+    private:
+        int can_id_;   /// the can id of this joint's moteus
+        int can_bus_;  /// the can bus the moteus communicates on
+        ::mjbots::moteus::Mode mode_ = ::mjbots::moteus::Mode::kStopped; /// joint's moteus mode
 };
 }//namespace kodlab
