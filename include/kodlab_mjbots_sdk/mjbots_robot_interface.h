@@ -174,6 +174,7 @@ class MjbotsRobotInterface {
    */
   std::vector<float> GetEncoderRawVelocities();
 
+  float time_now_ = 0;
  private:
   int num_servos_;                         /// The number of motors in the robot
   int num_external_encoders_ = 0;          /// The number of external encoders in the robot
