@@ -14,13 +14,17 @@
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
 
 namespace kodlab{
-/**
+/**         
+ * A JointBase child class that encapsulates parameters and functions of 
+ * moteus motor driver powered joint 
  * @brief 
- * Moteus Joint class that includes all the moteus specific vectors. 
+ * Moteus Joint class 
  */
 class JointMoteus: public JointBase{
     public:
         /**
+
+         *
          * @brief Construct a new Joint Moteus object
          * 
          * @param can_bus      /// the can bus the moteus communicates on [1-4]
@@ -28,9 +32,9 @@ class JointMoteus: public JointBase{
          * @param direction     /// 1 or -1, flips positive rotation direction (Default:1)
          * @param zero_offset   /// offset [rad] of joint zero position from servo zero postition (Default:0)
          * @param gear_ratio    /// Gear ratio joint to servo (ratio>1 means slower joint) (Default:1.0)
-         * @param max_torque    /// Maximum torque of the joint [N m] (Default:inf)
-         * @param pos_min       /// Minimum joint limit (Default:inf)
-         * @param pos_max       /// Maximum joint limit (Default:-inf)
+         * @param max_torque    /// Maximum torque limit of the joint [N m] (Default:inf)
+         * @param pos_min       /// Minimum joint pose limit before taking protective measures such as torque limiting or shut off (Default:-inf)
+         * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
          */
         JointMoteus(
             int can_id, 

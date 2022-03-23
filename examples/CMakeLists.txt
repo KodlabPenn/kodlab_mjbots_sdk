@@ -4,7 +4,7 @@ macro(add_example demo_name)
     # dependencies
     target_link_libraries(${demo_name} PRIVATE kodlab_mjbots_sdk)
     target_link_libraries(${demo_name} PRIVATE real_time_tools)
-endmacro(add_example target_name)
+endmacro(add_example demo_name)
 
 
 add_example(leg_2DoF_example)
