@@ -185,7 +185,7 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
     float sleep_duration = spinner.predict_sleeping_time_micro();
     spinner.spin();
     time_now_ = dt_timer.tac();
-    robot_->time_now_ = time_now_;
+    robot_->time_now_ = time_now_ / 1e6;
     // If parallel mode, process the previous reply, then send command to keep cycle time up on pi3hat loop
     if(options_.parallelize_control_loop){
       robot_->ProcessReply();
