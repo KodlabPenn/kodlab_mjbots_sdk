@@ -150,7 +150,7 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
 
 int main(int argc, char **argv) {
   //Setup joints
-  std::vector<kodlab::JointMoteus> joints;
+  std::vector<kodlab::mjbots::JointMoteus> joints;
   joints.emplace_back(1, 1, 1, 0.1949);
   joints.emplace_back(2, 1, -1, 0.0389);
 

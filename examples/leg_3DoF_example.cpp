@@ -59,7 +59,7 @@ class Joints3DoF : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
 int main(int argc, char **argv) {
 
   //Setup joints
-  std::vector<kodlab::JointMoteus> joints;
+  std::vector<kodlab::mjbots::JointMoteus> joints;
   joints.emplace_back(100, 4, 1, -1.3635165,    1,  1);
   joints.emplace_back(101, 4,-1,  2.688,  5.0/3.0), 1;
   joints.emplace_back(108, 4, 1, -0.4674585,    1,  1);

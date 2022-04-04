@@ -77,7 +77,7 @@ class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
 int main(int argc, char **argv) {
 
   //Setup joints
-  std::vector<kodlab::JointMoteus> joints;
+  std::vector<kodlab::mjbots::JointMoteus> joints;
 
   joints.emplace_back(108, 4, 1, -0.4674585, 1, 1);
 

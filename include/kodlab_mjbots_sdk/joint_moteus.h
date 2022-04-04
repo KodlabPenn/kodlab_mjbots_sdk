@@ -14,6 +14,7 @@
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
 
 namespace kodlab{
+namespace mjbots{
 /**         
  * A JointBase child class that encapsulates parameters and functions of 
  * moteus motor driver powered joint 
@@ -87,4 +88,5 @@ class JointMoteus: public JointBase{
         int can_bus_;  /// the can bus the moteus communicates on
         ::mjbots::moteus::Mode mode_ = ::mjbots::moteus::Mode::kStopped; /// joint's moteus mode
 };
+}//namespace mjbots
 }//namespace kodlab

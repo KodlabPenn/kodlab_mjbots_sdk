@@ -46,7 +46,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    * @brief constructs and mjbots behavior based on the options struct. Does not Start the controller.
    * @param options contains options defining the behavior
    */
-  MjbotsControlLoop(std::vector<kodlab::JointMoteus> joints, const ControlLoopOptions &options); //TODO PROPERLY MOVE JOINTS AROUND SO THAT ID AND BUS CAN BE CONST (i.e. not copies?)
+  MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options); //TODO PROPERLY MOVE JOINTS AROUND SO THAT ID AND BUS CAN BE CONST (i.e. not copies?)
 
  protected:
 
@@ -107,7 +107,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
 /******************************************Implementation**************************************************************/
 
 template<class log_type, class input_type>
-MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::JointMoteus> joints, const ControlLoopOptions &options) :
+MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options) :
     AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
     lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) {
   // Extract useful values from options
