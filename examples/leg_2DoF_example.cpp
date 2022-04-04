@@ -8,6 +8,7 @@
  */
 
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
+#include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "LegGains.hpp"
 #include "LegLog.hpp"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
@@ -148,14 +149,21 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
 };
 
 int main(int argc, char **argv) {
+  //Setup joints
+  std::vector<kodlab::mjbots::JointMoteus> joints;
+  joints.emplace_back(1, 1, 1, 0.1949);
+  joints.emplace_back(2, 1, -1, 0.0389);
+
+  // Define robot options
   kodlab::mjbots::ControlLoopOptions options;
-  options.motor_list.emplace_back(1, 1, 1, 0.1949);
-  options.motor_list.emplace_back(2, 1, -1, 0.0389);
   options.log_channel_name = "leg_data";
   options.input_channel_name = "leg_gains";
   options.soft_start_duration = 5000;
-  options.max_torque = 12;
-  Hopping control_loop(options);
+
+  // Create control loop
+  Hopping control_loop(joints, options);
+
+  // Starts the loop, and then join it
   control_loop.Start();
   control_loop.Join();
   return 0;
