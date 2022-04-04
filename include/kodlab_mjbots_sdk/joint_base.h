@@ -125,12 +125,12 @@ class JointBase {
         float zero_offset_ = 0;     /// zero offset [rad]
         int   direction_   = 1;     /// direction [-1 or 1]
 
-        // Joint State/Commands
+        // Joint State/Commands (includes params like gear ratio, direction and offset)
         float position_;    /// position of the joint [rad]
         float velocity_;    /// velocity of the joint [rad/s]
         float torque_ = 0;  /// Constrained torque for the joint [N m]
 
-        // Servo State/Commands
+        // Servo State/Commands (the raw motor values)
         float servo_position_;      /// position of the servo [rad]
         float servo_velocity_;      /// velocity of the servo [rad/s]
         float servo_torque_ = 0;    /// torque command for servo [N m]
