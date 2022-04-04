@@ -53,7 +53,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
                                             soft_start_(robot_max_torque, soft_start_duration) { 
   joints_ = std::move(joint_list);    
   for( auto & j: joints_){
-    positions_.push_back( j.get_position_reference() );// TODO check that "const"'s are accurate
+    positions_.push_back( j.get_position_reference() );
     velocities_.push_back( j.get_velocity_reference() );
     torque_cmd_.push_back( j.get_servo_torque_reference()   ); 
     modes_.push_back(j.get_mode_reference());

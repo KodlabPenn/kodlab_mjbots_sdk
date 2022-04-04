@@ -46,7 +46,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    * @brief constructs and mjbots behavior based on the options struct. Does not Start the controller.
    * @param options contains options defining the behavior
    */
-  MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options); //TODO PROPERLY MOVE JOINTS AROUND SO THAT ID AND BUS CAN BE CONST (i.e. not copies?)
+  MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options);
 
  protected:
 
