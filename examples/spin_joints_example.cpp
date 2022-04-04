@@ -18,7 +18,6 @@
 class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
   void CalcTorques() override {
-    Eigen::VectorXf positions  = Eigen::Map<Eigen::VectorXf,Eigen::Unaligned> ( robot_->GetJointPositions().data(), num_motors_);
     std::vector<float> torques(num_motors_, 0);
     robot_->SetTorques(torques);
   }
