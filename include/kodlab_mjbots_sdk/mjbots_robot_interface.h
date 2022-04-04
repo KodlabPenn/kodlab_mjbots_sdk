@@ -102,11 +102,12 @@ class MjbotsRobotInterface {
    * @brief accessor for the joint modes
    * @return the joint modes
    */
-  std::vector< ::mjbots::moteus::Mode>  GetJointModes();
+  std::vector<::mjbots::moteus::Mode> GetJointModes();
 
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
+
   std::vector<JointMoteus> joints_; /// Joint vector for the robot, owns all state information
   std::vector<std::reference_wrapper<const float>> positions_;  /// Vector of the motor positions (references to the members of joints_)
   std::vector<std::reference_wrapper<const float>> velocities_; /// Vector of the motor velocities (references to the members of joints_)
