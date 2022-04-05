@@ -157,7 +157,7 @@ potentially cause confusing faults if you don't understand them.
 # Building
 Current command to build clean is
 
-    cd .. && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake && make
+    cd .. && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=<path to sdk>/cmake/pi.cmake && make
 
 Normal build is 
 
