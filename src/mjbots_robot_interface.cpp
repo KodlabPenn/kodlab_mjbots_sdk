@@ -137,7 +137,7 @@ void MjbotsRobotInterface::ProcessReply() {
   for(int encoder = 0; encoder < num_external_encoders_; encoder++){
     float measurment = moteus_interface_->pi3hat_->readEncoder(encoder_cs_list_[encoder]);
 
-    if (measurment < 3.5){
+    if (measurment < 5.5){
       measurment += 2 * M_PI;
     }
     // Apply offsets and direction
@@ -163,6 +163,7 @@ void MjbotsRobotInterface::ProcessReply() {
     modes_[servo] = servo_reply.mode;
     torque_measured_[servo] = servo_reply.torque * directions_[servo];
   }
+  attitude_ = *(moteus_data_.attitude);
 }
 
 void MjbotsRobotInterface::SendCommand() {
@@ -214,6 +215,10 @@ std::vector<float> MjbotsRobotInterface::GetEncoderRawVelocities() {
 }
 std::vector<float> MjbotsRobotInterface::GetJointTorqueMeasured() {
   return torque_measured_;
+}
+
+::mjbots::pi3hat::Attitude MjbotsRobotInterface::GetAttitude(){
+  return  attitude_;
 }
 
 } // namespace kodlab::mjbots
