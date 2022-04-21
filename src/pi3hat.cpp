@@ -1246,7 +1246,8 @@ class Pi3Hat::Impl {
 
     const auto& da = device_attitude_;
     auto& o = *output;
-    o.attitude = { da.w, da.x, da.y, da.z };
+    o.quat = { da.w, da.x, da.y, da.z };
+    o.euler = Attitude::ToEulerAngles(o.quat);
     o.rate_dps = { da.x_dps, da.y_dps, da.z_dps };
     o.accel_mps2 = { da.a_x_mps2, da.a_y_mps2, da.a_z_mps2 };
     o.bias_dps = { da.bias_x_dps, da.bias_y_dps, da.bias_z_dps };

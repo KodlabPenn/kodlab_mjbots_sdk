@@ -96,14 +96,39 @@ struct Euler {
       : yaw(yaw_in), pitch(pitch_in), roll(roll_in) {}
 };
 
-struct Attitude {
-  Quaternion attitude;
+template <typename T> int sgn(T val) {
+  return (T(0) < val) - (val < T(0));
+}
+
+class Attitude {
+ public:
+  Quaternion quat;
+  Euler euler;
   Point3D rate_dps;
   Point3D accel_mps2;
 
   Point3D bias_dps;
   Quaternion attitude_uncertainty;
   Point3D bias_uncertainty_dps;
+
+  static Euler ToEulerAngles(Quaternion q) {
+    double R[3][3]  = {{1 - 2 * (powf(q.y,2) + powf(q.z,2)), 2.0 * (q.x * q.y - q.z * q.w), 2 * (q.x * q.z + q.y * q.w)},
+                      {2 * (q.x * q.y + q.z * q.w), 1 - 2 * (powf(q.x,2) + powf(q.z,2)),2.0 * (q.z * q.y - q.x * q.w)},
+                      {2.0 * (q.x * q.z - q.y * q.w), 2 * (q.z * q.y + q.x * q.w), 1 - 2 * (powf(q.x,2) + powf(q.y,2))}};
+    Euler angles;
+
+    // Body z y x
+    int i = 0;
+    int j = 1;
+    int k = 2;
+    double R_sum = sqrt(0.5 * (pow(R[i][i],2) + pow(R[j][i],2) + pow(R[k][j],2) + pow(R[k][k],2)));
+
+    angles.pitch = atan2(R[k][i], R_sum);
+    angles.roll = atan2(-R[k][j], R[k][k]);
+    angles.yaw = atan2(-R[j][i], R[i][i]);
+
+    return angles;
+  }
 };
 
 struct RfSlot {
