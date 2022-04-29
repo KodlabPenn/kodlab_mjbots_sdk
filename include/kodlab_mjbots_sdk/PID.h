@@ -49,5 +49,15 @@ public:
  */
   void calc_effort(const float target, const float sensor, const float dsensor, float &effort);
 
+ /*!
+  * @brief computes the effort based on the pid loop
+  * @param target[in] the target value
+  * @param target_speed[in] the target speed
+  * @param sensor[in] the sensor value
+  * @param dsensor[in] the derivative of the sensor value
+  * @param effort[out] the effort to apply
+  */
+  void calc_effort(const float target, const float target_speed, const float sensor, const float dsensor, float &effort);
+
 };
 #endif //KODLAB_WS_SRC_JERBOA_CONTROL_INCLUDE_JERBOA_CONTROL_PID_H_

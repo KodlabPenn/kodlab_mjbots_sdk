@@ -112,21 +112,24 @@ class Attitude {
   Point3D bias_uncertainty_dps;
 
   static Euler ToEulerAngles(Quaternion q) {
-    double R[3][3]  = {{1 - 2 * (powf(q.y,2) + powf(q.z,2)), 2.0 * (q.x * q.y - q.z * q.w), 2 * (q.x * q.z + q.y * q.w)},
-                      {2 * (q.x * q.y + q.z * q.w), 1 - 2 * (powf(q.x,2) + powf(q.z,2)),2.0 * (q.z * q.y - q.x * q.w)},
-                      {2.0 * (q.x * q.z - q.y * q.w), 2 * (q.z * q.y + q.x * q.w), 1 - 2 * (powf(q.x,2) + powf(q.y,2))}};
     Euler angles;
+    double x=q.x, y=q.y, z=q.z, w=q.w;
 
-    // Body z y x
-    int i = 0;
-    int j = 1;
-    int k = 2;
-    double R_sum = sqrt(0.5 * (pow(R[i][i],2) + pow(R[j][i],2) + pow(R[k][j],2) + pow(R[k][k],2)));
+    double t0 = (x+z)*(x-z);        // x^2-z^2
+    double t1 = (w+y)*(w-y);        // w^2-y^2
+    double xx = 0.5*(t0+t1);        // 1/2 x of x'
+    double xy = x*y+w*z;            // 1/2 y of x'
+    double xz = w*y-x*z;            // 1/2 z of x'
+    double t  = xx*xx+xy*xy;        // cos(theta)^2
+    double yz = 2.0*(y*z+w*x);      // z of y'
 
-    angles.pitch = atan2(R[k][i], R_sum);
-    angles.roll = atan2(-R[k][j], R[k][k]);
-    angles.yaw = atan2(-R[j][i], R[i][i]);
+    angles.yaw = -(float)atan2(xy, xx);    // yaw   (psi)
+    angles.pitch = -(float)atan(xz/sqrt(t)); // pitch (theta)
 
+    if (t != 0)
+        angles.roll = (float)atan2(yz, t1-t0);
+      else
+        angles.roll = (float)(2.0*atan2(x,w) - sgn(xz)*angles.yaw);
     return angles;
   }
 };

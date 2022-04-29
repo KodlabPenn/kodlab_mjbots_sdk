@@ -157,11 +157,14 @@ void MjbotsRobotInterface::ProcessReply() {
   // Copy results to object so controller can use
   for (int servo = 0; servo < num_servos_; servo++) {
     const auto servo_reply = Get(replies_, servo_id_list_[servo]);
-
-    positions_[servo] = directions_[servo] * (servo_reply.position * 2 * M_PI) + offsets_[servo];
-    velocities_[servo] = directions_[servo] * (servo_reply.velocity * 2 * M_PI);
-    modes_[servo] = servo_reply.mode;
-    torque_measured_[servo] = servo_reply.torque * directions_[servo];
+    if(std::isnan(servo_reply.position)){
+      std::cout<<"Missing can frame for servo: " << servo_id_list_[servo]<< std::endl;
+    }else {
+      positions_[servo] = directions_[servo] * (servo_reply.position * 2 * M_PI) + offsets_[servo];
+      velocities_[servo] = directions_[servo] * (servo_reply.velocity * 2 * M_PI);
+      modes_[servo] = servo_reply.mode;
+      torque_measured_[servo] = servo_reply.torque * directions_[servo];
+    }
   }
   attitude_ = *(moteus_data_.attitude);
 }

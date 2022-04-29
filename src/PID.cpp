@@ -1,12 +1,14 @@
 // Created by Shane Rozen-Levy on 9/21/19.
 
 #include "kodlab_mjbots_sdk/PID.h"
-
+#include <iostream>
+#include <math.h>
 PID::PID()
 {
   m_kp=0;
   m_ki=0;
   m_kd=0;
+  m_cum_error = 0;
 
   reset();
 }
@@ -40,9 +42,19 @@ void PID::calc_effort(const float target, const float sensor, float &effort)
 void PID::calc_effort(const float target, const float sensor, const float dsensor, float &effort)
 {
   float error = target-sensor;
-  m_cum_error = m_cum_error + error;
+  m_cum_error = m_cum_error + m_ki * error;
 
-  effort = m_kp*error + m_ki*m_cum_error - m_kd*dsensor;
+  effort = m_kp*error + m_ki * m_cum_error - m_kd*dsensor;
+
+  m_prev_sensor_val = sensor;
+}
+
+void PID::calc_effort(const float target, const float target_speed, const float sensor, const float dsensor, float &effort){
+  float error = target-sensor;
+  float speed_error = target_speed - dsensor;
+  m_cum_error = m_cum_error + m_ki * error;
+
+  effort = m_kp*error + m_ki * m_cum_error + m_kd*speed_error;
 
   m_prev_sensor_val = sensor;
 }
