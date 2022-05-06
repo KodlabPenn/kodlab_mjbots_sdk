@@ -126,6 +126,12 @@ class MjbotsRobotInterface {
    */
   void SetTorques(std::vector<float> torques);
 
+  void SetPDGains(std::vector<float> kp, std::vector<float> kd);
+
+  void SetPDTarget(std::vector<float> position, std::vector<float> velocity);
+
+  void SetJointTorqueLimit(std::vector<float> torque);
+
   /*!
    * @brief sets the moteus message to be stop, Run this followed by send command to stop the motors
    */
@@ -185,6 +191,12 @@ class MjbotsRobotInterface {
   std::vector<int> servo_bus_list_;        /// Vector of the servo bus
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
   std::vector<float> positions_;           /// Vector of the motor positions
+  std::vector<float> positions_target_;           /// Vector of the motor target positions
+  std::vector<float> velocity_target_;           /// Vector of the motor target velocities positions
+  std::vector<float> kp_;           /// Vector of the motor position control gain
+  std::vector<float> kd_;           /// Vector of the velocity control gain
+  std::vector<float> max_torques_;           /// Vector of the motor max torques allowed
+
   std::vector<float> raw_encoder_positions_;     /// Vector of the raw external encoder positions
   std::vector<float> raw_encoder_velocities_;    /// Vector of the raw external encoder positions
   std::vector<float> velocities_;          /// Vector of the motor velocities

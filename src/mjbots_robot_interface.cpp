@@ -16,12 +16,12 @@ void MjbotsRobotInterface::InitializeCommand() {
   }
 
   ::mjbots::moteus::PositionResolution res; // This is just for the command
-  res.position = ::mjbots::moteus::Resolution::kIgnore;
-  res.velocity = ::mjbots::moteus::Resolution::kIgnore;
+  res.position = ::mjbots::moteus::Resolution::kInt16;
+  res.velocity = ::mjbots::moteus::Resolution::kInt16;
   res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
-  res.kp_scale = ::mjbots::moteus::Resolution::kIgnore;
-  res.kd_scale = ::mjbots::moteus::Resolution::kIgnore;
-  res.maximum_torque = ::mjbots::moteus::Resolution::kIgnore;
+  res.kp_scale = ::mjbots::moteus::Resolution::kInt16;
+  res.kd_scale = ::mjbots::moteus::Resolution::kInt16;
+  res.maximum_torque = ::mjbots::moteus::Resolution::kInt8;
   res.stop_position = ::mjbots::moteus::Resolution::kIgnore;
   res.watchdog_timeout = ::mjbots::moteus::Resolution::kIgnore;
   for (auto &cmd : commands_) {
@@ -35,6 +35,7 @@ void MjbotsRobotInterface::PrepareTorqueCommand() {
     cmd.mode = ::mjbots::moteus::Mode::kPosition;
     cmd.position.kd_scale = 0;
     cmd.position.kp_scale = 0;
+    cmd.position.maximum_torque = 100;
   }
 }
 
@@ -68,6 +69,12 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
     raw_encoder_positions_.push_back(0);
     raw_encoder_velocities_.push_back(0);
     modes_.push_back(::mjbots::moteus::Mode::kPosition);
+
+    positions_target_.push_back(0);
+    velocity_target_.push_back(0);
+    kp_.push_back(0);
+    kd_.push_back(0);
+    max_torques_.push_back(max_torque);
   }
 
   for(int encoder = 0; encoder < num_external_encoders_; encoder++){
@@ -120,6 +127,11 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
     torque_cmd_.push_back(0);
     torque_measured_.push_back(0);
     modes_.push_back(::mjbots::moteus::Mode::kStopped);
+    positions_target_.push_back(0);
+    velocity_target_.push_back(0);
+    kp_.push_back(0);
+    kd_.push_back(0);
+    max_torques_.push_back(max_torque);
   }
   ProcessReply();
 
@@ -223,5 +235,30 @@ std::vector<float> MjbotsRobotInterface::GetJointTorqueMeasured() {
 ::mjbots::pi3hat::Attitude MjbotsRobotInterface::GetAttitude(){
   return  attitude_;
 }
+void MjbotsRobotInterface::SetPDGains(std::vector<float> kp, std::vector<float> kd) {
+  for (int servo = 0; servo < num_servos_; servo++) {
+    kp_[servo] = kp[servo];
+    kd_[servo] = kd[servo];
 
+    commands_[servo].position.kp_scale = kp_[servo]; // Converting between rad and cycles
+    commands_[servo].position.kd_scale = kd_[servo]; // Converting between Hz and rad/s
+  }
+}
+void MjbotsRobotInterface::SetPDTarget(std::vector<float> position, std::vector<float> velocity) {
+  for (int servo = 0; servo < num_servos_; servo++) {
+    positions_target_[servo] = position[servo];
+    velocity_target_[servo] = velocity[servo];
+
+    commands_[servo].position.position = (position[servo] - offsets_[servo])/directions_[servo]/2/M_PI;
+    commands_[servo].position.velocity = velocity[servo]/directions_[servo]/2/M_PI;
+  }
+
+}
+void MjbotsRobotInterface::SetJointTorqueLimit(std::vector<float> torque) {
+  for (int servo = 0; servo < num_servos_; servo++) {
+    max_torques_[servo] = torque[servo];
+
+    commands_[servo].position.maximum_torque = torque[servo];
+  }
+}
 } // namespace kodlab::mjbots
