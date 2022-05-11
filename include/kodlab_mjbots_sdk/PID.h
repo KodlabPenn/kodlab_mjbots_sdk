@@ -12,6 +12,7 @@ private:
 
   float m_prev_sensor_val = 0; ///< the previous sensor value, used in derivative
   float m_cum_error  = 0;      ///< the cumulation of the error, used in integral
+  bool m_first_update = true;
 
 public:
   /*!

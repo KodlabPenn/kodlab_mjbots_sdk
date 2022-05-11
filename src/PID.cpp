@@ -26,6 +26,7 @@ void PID::reset()
 {
   m_prev_sensor_val = 0;
   m_cum_error = 0;
+  m_first_update = true;
 }
 
 void PID::calc_effort(const float target, const float sensor, float &effort)
@@ -34,7 +35,13 @@ void PID::calc_effort(const float target, const float sensor, float &effort)
   m_cum_error = m_cum_error + error;
   float diff_error= sensor-m_prev_sensor_val;
 
-  effort = m_kp*error + m_ki*m_cum_error - m_kd*diff_error;
+  if(m_first_update){
+    effort = m_kp*error + m_ki*m_cum_error;
+    m_first_update = false;
+  }
+  else {
+    effort = m_kp*error + m_ki*m_cum_error - m_kd*diff_error;
+  }
 
   m_prev_sensor_val = sensor;
 }
