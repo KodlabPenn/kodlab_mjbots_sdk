@@ -42,8 +42,8 @@ class JointMoteus: public JointBase{
             int can_bus,
             int direction = 1, 
             float zero_offset = 0,
-            float max_torque = std::numeric_limits<float>::infinity(),
             float gear_ratio = 1.0, 
+            float max_torque = std::numeric_limits<float>::infinity(),
             float pos_min = -std::numeric_limits<float>::infinity(), 
             float pos_max = std::numeric_limits<float>::infinity()
             )
