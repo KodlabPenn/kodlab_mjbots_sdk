@@ -49,7 +49,7 @@ float JointBase::UpdateTorque(float joint_torque){
 void JointBase::UpdateState(float servo_pos, float servo_vel){  
     servo_position_ = servo_pos;
     servo_velocity_ = servo_vel;
-    position_ = direction_ * (servo_pos / gear_ratio_ - zero_offset_); 
+    position_ = direction_ * servo_pos / gear_ratio_ - zero_offset_ ; 
     velocity_= direction_ * servo_vel / gear_ratio_ ;
 }
 
