@@ -133,6 +133,11 @@ std::vector<::mjbots::moteus::Mode> MjbotsRobotInterface::GetJointModes() {
   return modes;
 }
 
+const std::vector<::kodlab::mjbots::JointMoteus> MjbotsRobotInterface::GetJoints() {
+  return joints_;
+}
+
+
 std::vector<float> MjbotsRobotInterface::GetJointTorqueCmd() {
   std::vector<float>torques(torque_cmd_.begin(), torque_cmd_.end());
   return torques;

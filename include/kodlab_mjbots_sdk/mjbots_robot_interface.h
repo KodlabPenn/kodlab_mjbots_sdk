@@ -104,6 +104,13 @@ class MjbotsRobotInterface {
    */
   std::vector<::mjbots::moteus::Mode> GetJointModes();
 
+  /*!
+   * @brief accessor for the joints (const)
+   * @return the joints
+   */
+  const std::vector<::kodlab::mjbots::JointMoteus> GetJoints();
+ 
+
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
