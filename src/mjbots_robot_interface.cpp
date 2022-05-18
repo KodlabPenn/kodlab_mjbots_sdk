@@ -75,6 +75,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
     kp_.push_back(0);
     kd_.push_back(0);
     max_torques_.push_back(max_torque);
+    encoder_wrap_.push_back(0);
   }
 
   for(int encoder = 0; encoder < num_external_encoders_; encoder++){
@@ -149,16 +150,39 @@ void MjbotsRobotInterface::ProcessReply() {
   for(int encoder = 0; encoder < num_external_encoders_; encoder++){
     float measurment = moteus_interface_->pi3hat_->readEncoder(encoder_cs_list_[encoder]);
 
-    if (measurment < 5.5){
-      measurment += 2 * M_PI;
-    }
-    // Apply offsets and direction
-    float raw_position = directions_[num_servos_ + encoder] *measurment
-         + offsets_[num_servos_ + encoder];
+    if (measurment == 0 && encoder == 1){
+      std::cout<<"Catching zero"<<std::endl;
+      raw_encoder_positions_[encoder] += raw_encoder_velocities_[encoder] /1000;
+    } else{
+      // Apply offsets and direction
+      float raw_position = directions_[num_servos_ + encoder] *measurment
+          + offsets_[num_servos_ + encoder] + encoder_wrap_[encoder];
 
-    // Calculate raw velocity
-    raw_encoder_velocities_[encoder] = (raw_position - raw_encoder_positions_[encoder])* 1000;
-    raw_encoder_positions_[encoder] = raw_position;
+      // Calculate raw velocity
+      if (raw_position - raw_encoder_positions_[encoder] > 1){
+        if (encoder == 1){
+          std::cout<<"Wrapping. Prev = "<<raw_encoder_positions_[encoder] << " new = "<< raw_position;
+        }
+        raw_position-=M_PI * 2;
+        encoder_wrap_[encoder]-=M_PI*2;
+        if (encoder == 1) {
+          std::cout << " Update = " << raw_position << std::endl;
+          std::cout << "Measurment" << measurment << std::endl;
+        }
+      }else if (raw_encoder_positions_[encoder]-raw_position > 1){
+        if (encoder == 1){
+          std::cout<<"Wrapping. Prev = "<<raw_encoder_positions_[encoder] << " new = "<< raw_position;
+        }
+        raw_position+=M_PI * 2;
+        encoder_wrap_[encoder]+=M_PI*2;
+        if (encoder == 1) {
+          std::cout << " Update = " << raw_position << std::endl;
+          std::cout << "Measurment" << measurment << std::endl;
+        }
+      }
+      raw_encoder_velocities_[encoder] = (raw_position - raw_encoder_positions_[encoder])* 1000;
+      raw_encoder_positions_[encoder] = raw_position;
+    }
     // Filter position and velocity
     positions_[num_servos_ + encoder] = (1 - encoder_alpha_[encoder]) * positions_[num_servos_ + encoder] +
         encoder_alpha_[encoder] * raw_encoder_positions_[encoder];

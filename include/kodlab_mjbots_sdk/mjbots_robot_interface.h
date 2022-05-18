@@ -207,6 +207,7 @@ class MjbotsRobotInterface {
   std::vector<int> encoder_cs_list_;       /// Vector of the external encoder cs
   std::vector<float> encoder_alpha_;       /// Vector of the filter gains for external encoder
   std::vector<float> encoder_speed_alpha_; /// Vector of the speed filter gains for the external encoder
+  std::vector<float> encoder_wrap_;
 
   std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                   /// True if communication has timed out
   std::vector<::mjbots::moteus::Mode> modes_;/// Vector of the motor modes
