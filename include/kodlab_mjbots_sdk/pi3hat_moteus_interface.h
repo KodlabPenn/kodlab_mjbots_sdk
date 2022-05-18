@@ -141,6 +141,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     config.mounting_deg.roll = 0;
     config.mounting_deg.pitch = 180;
     config.attitude_rate_hz = 1000;
+    config.spi_speed_primary_hz = 2500000;
     pi3hat_ = std::make_shared<pi3hat::Pi3Hat>(config);
 
     pi3hat::Pi3Hat::Input input;

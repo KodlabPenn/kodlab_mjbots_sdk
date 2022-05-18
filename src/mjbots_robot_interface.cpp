@@ -6,6 +6,8 @@
 
 #include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
 
+#include <cmath>
+
 #include "iostream"
 
 namespace kodlab::mjbots {
@@ -76,6 +78,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<Motor> &motor_list,
     kd_.push_back(0);
     max_torques_.push_back(max_torque);
     encoder_wrap_.push_back(0);
+    encoder_repeat_drop_count_.push_back(0);
   }
 
   for(int encoder = 0; encoder < num_external_encoders_; encoder++){
@@ -150,38 +153,37 @@ void MjbotsRobotInterface::ProcessReply() {
   for(int encoder = 0; encoder < num_external_encoders_; encoder++){
     float measurment = moteus_interface_->pi3hat_->readEncoder(encoder_cs_list_[encoder]);
 
-    if (measurment == 0 && encoder == 1){
-      std::cout<<"Catching zero"<<std::endl;
-      raw_encoder_positions_[encoder] += raw_encoder_velocities_[encoder] /1000;
+    if ( encoder == 1 and (std::fabs(measurment)<1e-4  or fabs(measurment - 2* M_PI) < 1e-4)){
+//      std::cout<<"Catching zero or pi"<<std::endl;
+      raw_encoder_positions_[encoder] += velocities_[num_servos_ + encoder] /1000;
+      encoder_repeat_drop_count_[encoder]++;
     } else{
       // Apply offsets and direction
       float raw_position = directions_[num_servos_ + encoder] *measurment
           + offsets_[num_servos_ + encoder] + encoder_wrap_[encoder];
 
       // Calculate raw velocity
-      if (raw_position - raw_encoder_positions_[encoder] > 1){
-        if (encoder == 1){
-          std::cout<<"Wrapping. Prev = "<<raw_encoder_positions_[encoder] << " new = "<< raw_position;
-        }
+      if (raw_position - raw_encoder_positions_[encoder] > 1 && not first_update_){
         raw_position-=M_PI * 2;
         encoder_wrap_[encoder]-=M_PI*2;
-        if (encoder == 1) {
-          std::cout << " Update = " << raw_position << std::endl;
-          std::cout << "Measurment" << measurment << std::endl;
-        }
-      }else if (raw_encoder_positions_[encoder]-raw_position > 1){
-        if (encoder == 1){
-          std::cout<<"Wrapping. Prev = "<<raw_encoder_positions_[encoder] << " new = "<< raw_position;
-        }
+      }else if (raw_encoder_positions_[encoder]-raw_position > 1 && not first_update_){
         raw_position+=M_PI * 2;
         encoder_wrap_[encoder]+=M_PI*2;
-        if (encoder == 1) {
-          std::cout << " Update = " << raw_position << std::endl;
-          std::cout << "Measurment" << measurment << std::endl;
-        }
       }
-      raw_encoder_velocities_[encoder] = (raw_position - raw_encoder_positions_[encoder])* 1000;
-      raw_encoder_positions_[encoder] = raw_position;
+      float vel = (raw_position - raw_encoder_positions_[encoder])* 1000;
+      if((vel > 100 or vel < -100) && not first_update_ and encoder_repeat_drop_count_[encoder] < 1) {
+//        std::cout<<"Woops, something funky is up with encode "<< encoder  <<std::endl;
+//        std::cout<<"Old pos "<<raw_encoder_positions_[encoder]<< " New Pos " << raw_position <<" Measurment" << measurment << std::endl;
+//        std::cout<<vel<<std::endl;
+//        std::cout<<encoder_repeat_drop_count_[encoder]<<std::endl;
+//        std::cout<< velocities_[num_servos_ + encoder] /1000<<std::endl;
+        raw_encoder_positions_[encoder] += velocities_[num_servos_ + encoder] /1000;
+        encoder_repeat_drop_count_[encoder]++;
+      } else{
+        raw_encoder_velocities_[encoder] = vel;
+        raw_encoder_positions_[encoder] = raw_position;
+        encoder_repeat_drop_count_[encoder] = 0;
+      }
     }
     // Filter position and velocity
     positions_[num_servos_ + encoder] = (1 - encoder_alpha_[encoder]) * positions_[num_servos_ + encoder] +
@@ -203,6 +205,9 @@ void MjbotsRobotInterface::ProcessReply() {
     }
   }
   attitude_ = *(moteus_data_.attitude);
+  if(cycle_count_ > 10){
+    first_update_ = false;
+  }
 }
 
 void MjbotsRobotInterface::SendCommand() {

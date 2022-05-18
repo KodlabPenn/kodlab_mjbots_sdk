@@ -220,7 +220,8 @@ class MjbotsRobotInterface {
   std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
   /// response is ready
   SoftStart soft_start_;                                                      /// Soft Start object
-
+  bool first_update_ = true;
+  std::vector<int> encoder_repeat_drop_count_;
   ::mjbots::pi3hat::Attitude attitude_;
   /*!
    * @brief initialize the command with resolutions
