@@ -101,6 +101,7 @@ void MjbotsRobotInterface::ProcessReply() {
       joint.UpdateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
     }
   }
+  attitude_ = *(moteus_data_.attitude);
 }
 
 void MjbotsRobotInterface::SendCommand() {
@@ -149,5 +150,8 @@ void MjbotsRobotInterface::SetModeStop() {
 
 void MjbotsRobotInterface::Shutdown() {
   moteus_interface_->shutdown();
+}
+::mjbots::pi3hat::Attitude MjbotsRobotInterface::GetAttitude() {
+  return  attitude_;
 }
 } // namespace kodlab::mjbots

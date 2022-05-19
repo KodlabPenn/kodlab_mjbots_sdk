@@ -104,6 +104,12 @@ class MjbotsRobotInterface {
    */
   std::vector<::mjbots::moteus::Mode> GetJointModes();
 
+  /*!
+   * @brief accessor for the attitude of the robot
+   * @return the attitude object for the robot
+   */
+  ::mjbots::pi3hat::Attitude GetAttitude();
+
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
@@ -124,6 +130,7 @@ class MjbotsRobotInterface {
   std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
   /// response is ready
   SoftStart soft_start_;                                                      /// Soft Start object
+  ::mjbots::pi3hat::Attitude attitude_;                                       /// Robot attitude
 
   /*!
    * @brief initialize the command with resolutions

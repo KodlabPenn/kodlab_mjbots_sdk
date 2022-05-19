@@ -98,6 +98,8 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     pi3hat::Span<ServoReply> replies;
 
     std::shared_ptr<bool> timeout;
+
+    std::shared_ptr<pi3hat::Attitude> attitude = std::make_shared<pi3hat::Attitude>();
   };
 
   struct Output {
@@ -120,6 +122,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
 
     active_ = true;
     data_ = data;
+    attitude_ = data.attitude;
     condition_.notify_all();
   }
 
@@ -133,6 +136,12 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
 
   void Run( ) override{
     pi3hat::Pi3Hat::Configuration config;
+    //TODO Make not hard coded
+    config.mounting_deg.yaw = 0;
+    config.mounting_deg.roll = 0;
+    config.mounting_deg.pitch = 180;
+    config.attitude_rate_hz = 1000;
+
     pi3hat_ = std::make_shared<pi3hat::Pi3Hat>(config);
 
     pi3hat::Pi3Hat::Input input;
@@ -203,7 +212,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     input.tx_can = { tx_can_.data(), tx_can_.size() };
     input.rx_can = { rx_can_.data(), rx_can_.size() };
     input.request_attitude = true;
-    input.attitude = &attitude_;
+    input.attitude = attitude_.get();
     Output result;
     const auto output = pi3hat_->Cycle(input);
     *data_.timeout = output.timeout;
@@ -241,7 +250,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   std::vector<pi3hat::CanFrame> rx_can_;
 
   std::mutex cycle_mutex_;
-  pi3hat::Attitude attitude_;
+  std::shared_ptr<pi3hat::Attitude> attitude_;
 };
 
 
