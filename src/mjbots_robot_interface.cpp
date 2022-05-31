@@ -49,7 +49,9 @@ void MjbotsRobotInterface::PrepareTorqueCommand() {
 MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint_list,
                                            const RealtimeParams &realtime_params,
                                            int soft_start_duration,
-                                           float robot_max_torque ) :
+                                           float robot_max_torque,
+                                           ::mjbots::pi3hat::Euler imu_mounting_deg,
+                                           int imu_rate_hz) :
                                             soft_start_(robot_max_torque, soft_start_duration) { 
   joints_ = std::move(joint_list);    
   for( auto & j: joints_){
@@ -67,6 +69,8 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
   moteus_options.cpu = realtime_params.can_cpu;
   moteus_options.realtime_priority = realtime_params.can_rtp;
   moteus_options.servo_bus_map = servo_bus_map_;
+  moteus_options.attitude_rate_hz = imu_rate_hz;
+  moteus_options.imu_mounting_deg = imu_mounting_deg;
   moteus_interface_ = std::make_shared<::mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
 
   // Initialize and send basic command

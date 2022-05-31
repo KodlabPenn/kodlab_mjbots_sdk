@@ -43,6 +43,8 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   struct Options {
     int cpu = -1;
     int realtime_priority = -1;
+    mjbots::pi3hat::Euler imu_mounting_deg;
+    int attitude_rate_hz = 1000;
 
     // If a servo is not present, it is assumed to be on bus 1.
     std::map<int, int> servo_bus_map;
@@ -136,11 +138,8 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
 
   void Run( ) override{
     pi3hat::Pi3Hat::Configuration config;
-    //TODO Make not hard coded
-    config.mounting_deg.yaw = 0;
-    config.mounting_deg.roll = 0;
-    config.mounting_deg.pitch = 180;
-    config.attitude_rate_hz = 1000;
+    config.mounting_deg = options_.imu_mounting_deg;
+    config.attitude_rate_hz = options_.attitude_rate_hz;
 
     pi3hat_ = std::make_shared<pi3hat::Pi3Hat>(config);
 
