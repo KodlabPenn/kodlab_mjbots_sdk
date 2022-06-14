@@ -104,6 +104,25 @@ class MjbotsRobotInterface {
    */
   std::vector<::mjbots::moteus::Mode> GetJointModes();
 
+
+  /**
+   * @brief Get vector of shared_ptr to joint objects
+   * 
+   * @param joint_indices 
+   * @return std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> 
+   */
+  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(std::vector<int> joint_indices);
+    /**
+   * \overload
+   */
+  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(std::initializer_list<int> joint_indices);
+    /**
+   * \overload
+   */
+  template <size_t N>
+  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(std::array<int,N> joint_indices);
+ 
+
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
