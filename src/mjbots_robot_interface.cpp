@@ -6,13 +6,14 @@
 
 #include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
 
-#include "iostream"
+#include <iostream>
+#include <algorithm>
 
 namespace kodlab::mjbots {
 void MjbotsRobotInterface::InitializeCommand() {
   for (const auto &joint : joints_) {
     commands_.push_back({});
-    commands_.back().id = joint.get_can_id(); //id
+    commands_.back().id = joint->get_can_id(); //id
   }
 
   ::mjbots::moteus::PositionResolution res; // This is just for the command
@@ -51,16 +52,22 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
                                            int soft_start_duration,
                                            float robot_max_torque ) :
                                             soft_start_(robot_max_torque, soft_start_duration) { 
-  joints_ = std::move(joint_list);    
-  for( auto & j: joints_){
-    positions_.push_back( j.get_position_reference() );
-    velocities_.push_back( j.get_velocity_reference() );
-    torque_cmd_.push_back( j.get_servo_torque_reference()   ); 
-    modes_.push_back(j.get_mode_reference());
+
+  for (JointMoteus joint: joint_list){
+    // Make vector of shared_pointer objects using joint copy constructer 
+    // (original list will be descoped)
+    joints_.push_back(std::make_shared<JointMoteus>(joint)); 
   }
-  num_servos_ = joint_list.size();
+
+  for( auto & j: joints_){
+    positions_.push_back( j->get_position_reference() );
+    velocities_.push_back( j->get_velocity_reference() );
+    torque_cmd_.push_back( j->get_servo_torque_reference()   ); 
+    modes_.push_back(j->get_mode_reference());
+  }
+  num_servos_ = joints_.size();
   for (size_t i = 0; i < num_servos_; ++i)
-    servo_bus_map_[joint_list[i].get_can_id()] = joint_list[i].get_can_bus();
+    servo_bus_map_[joints_[i]->get_can_id()] = joints_[i]->get_can_bus();
 
   // Create moteus interface
   ::mjbots::moteus::Pi3HatMoteusInterface::Options moteus_options;
@@ -94,11 +101,11 @@ void MjbotsRobotInterface::ProcessReply() {
   moteus_interface_->WaitForCycle();
   // Copy results to object so controller can use
   for (auto & joint : joints_) {
-    const auto servo_reply = Get(replies_, joint.get_can_id());
+    const auto servo_reply = Get(replies_, joint->get_can_id());
     if(std::isnan(servo_reply.position)){
-      std::cout<<"Missing can frame for servo: " << joint.get_can_id()<< std::endl;
+      std::cout<<"Missing can frame for servo: " << joint->get_can_id()<< std::endl;
     } else{
-      joint.UpdateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
+      joint->UpdateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
     }
   }
 }
@@ -117,7 +124,7 @@ void MjbotsRobotInterface::SetTorques(std::vector<float> torques) {
   soft_start_.ConstrainTorques(torques, cycle_count_);
   float torque_cmd;
   for (int servo = 0; servo < num_servos_; servo++) {
-    torque_cmd = joints_[servo].UpdateTorque(torques[servo]);
+    torque_cmd = joints_[servo]->UpdateTorque(torques[servo]);
     
   }
 }
