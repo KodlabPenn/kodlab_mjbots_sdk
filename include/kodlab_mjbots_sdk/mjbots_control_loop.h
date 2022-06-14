@@ -101,7 +101,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   lcm::LCM lcm_;                          /// LCM object
   LogClass log_data_;                     /// object containing log data
   LcmSubscriber<InputClass> lcm_sub_;    /// LCM subscriber object
-  float time_now_ = 0;                       /// Time since start in ms
+  float time_now_ = 0;                       /// Time since start in micro seconds
 };
 
 /******************************************Implementation**************************************************************/
