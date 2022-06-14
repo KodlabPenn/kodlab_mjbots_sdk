@@ -1,5 +1,6 @@
 from xml.etree.ElementTree import PI
 import lcm
+from matplotlib import animation
 from lcm_types.ManyMotorLog import ManyMotorLog
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,12 +9,20 @@ from matplotlib.animation import FuncAnimation
 import collections
 import time
 
-timestamps = collections.deque(np.zeros(1000))
-margins = collections.deque(np.zeros(1000))
-message_duration = collections.deque(np.zeros(1000))
-positions = collections.deque(np.zeros((1000,13)))
-velocities = collections.deque(np.zeros((1000,13)))
-torques = collections.deque(np.zeros((1000,13)))
+# Constants
+TLIM = 0.01
+WINDOWLENGTH = 2000
+PLOTPERIOD = 1000
+
+
+# Queues
+timestamps = collections.deque(np.zeros(WINDOWLENGTH))
+margins = collections.deque(np.zeros(WINDOWLENGTH))
+message_duration = collections.deque(np.zeros(WINDOWLENGTH))
+positions = collections.deque(np.zeros((WINDOWLENGTH,13)))
+velocities = collections.deque(np.zeros((WINDOWLENGTH,13)))
+torques = collections.deque(np.zeros((WINDOWLENGTH,13)))
+velo_filt = collections.deque(np.zeros((WINDOWLENGTH,13)))
 
 class BlitManager:
     def __init__(self, canvas, animated_artists=()):
@@ -106,7 +115,7 @@ def init_plot():
     axs[4].set_ylabel("Spine")
     axs[4].set_ylim(-np.pi,np.pi)
     axs[5].set_ylabel("dt")
-    axs[5].set_ylim(0,.01)
+    axs[5].set_ylim(0, TLIM)
 
     times = np.array(timestamps)/1e6
     pos = np.array(positions)
@@ -115,10 +124,8 @@ def init_plot():
     tor = np.array(torques)
     dur = np.array(message_duration)
     lns=[]
-    lns.extend( axs[0].plot(times, pos[:,0:3], animated=True))
-    lns.extend( axs[1].plot(times, pos[:,3:6], animated=True))
-    lns.extend( axs[2].plot(times, pos[:,6:9], animated=True))
-    lns.extend( axs[3].plot(times, pos[:,9:12], animated=True))
+    for i in range(4):
+        lns.extend( axs[i].plot(times, pos[:, 3*i:3*(i+1)], animated=True) )
     lns.extend( axs[4].plot(times, pos[:,12], animated=True))
     lns.extend( axs[5].plot(times,np.concatenate(([0],np.diff(times))), animated=True))
 
@@ -136,20 +143,11 @@ def update_plot_lines(lns):
     for ln in lns:
         ln.set_xdata(times)
     
-    lns[0].set_ydata(pos[:,0])
-    lns[1].set_ydata(pos[:,1])
-    lns[2].set_ydata(pos[:,2])
-    lns[3].set_ydata(pos[:,3])
-    lns[4].set_ydata(pos[:,4])
-    lns[5].set_ydata(pos[:,5])
-    lns[6].set_ydata(pos[:,6])
-    lns[7].set_ydata(pos[:,7])
-    lns[8].set_ydata(pos[:,8])
-    lns[9].set_ydata(pos[:,9])
-    lns[10].set_ydata(pos[:,10])
-    lns[11].set_ydata(pos[:,11])
-    lns[12].set_ydata(pos[:,12])
-    lns[13].set_ydata(np.concatenate(([0],np.diff(times))))
+    for i in range(13):
+        lns[i].set_ydata(pos[:, i])
+
+    i += 1
+    lns[i].set_ydata(np.concatenate(([0],np.diff(times))))
     
     min_x = np.min(times)
     max_x = np.max(times)
@@ -195,7 +193,7 @@ if __name__ == '__main__':
                 lc.handle_timeout(500)
             count += 1
             currTime = int(time.clock_gettime_ns(time.CLOCK_MONOTONIC_RAW)/1e6) #millis
-            if currTime - lastTime > 500:
+            if currTime - lastTime > PLOTPERIOD:
                 
                 update_plot_lines(lns)
 
