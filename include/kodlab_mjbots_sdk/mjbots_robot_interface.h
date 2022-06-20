@@ -104,22 +104,35 @@ class MjbotsRobotInterface {
    */
   std::vector<::mjbots::moteus::Mode> GetJointModes();
 
-  /*!
-   * @brief accessor for the joints (const)
-   * @return the joints
+
+  /**
+   * @brief Get vector of shared_ptr to joint objects
+   * 
+   * @param joint_indices 
+   * @return std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> 
    */
-  const std::vector<::kodlab::mjbots::JointMoteus> GetJoints();
+  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(std::vector<int> joint_indices);
+    /**
+   * \overload
+   */
+  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(std::initializer_list<int> joint_indices);
+    /**
+   * \overload
+   */
+  template <size_t N>
+  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(std::array<int,N> joint_indices);
  
 
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
 
-  std::vector<JointMoteus> joints_; /// Joint vector for the robot, owns all state information
+  // std::vector<JointMoteus> joints_; /// Joint vector for the robot, owns all state information
+  std::vector< std::shared_ptr<JointMoteus>> joints_;
   std::vector<std::reference_wrapper<const float>> positions_;  /// Vector of the motor positions (references to the members of joints_)
   std::vector<std::reference_wrapper<const float>> velocities_; /// Vector of the motor velocities (references to the members of joints_)
   std::vector<std::reference_wrapper<const float>> torque_cmd_; /// Vector of the torque command sent to motors (references to the members of joints_)
-  std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> modes_; /// Vector of the torque command sent to motors (references to the members of joints_)
+  std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> modes_; /// Vector of current moteus modes (references to the members of joints_)
   
   std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                   /// True if communication has timed out
   u_int64_t cycle_count_ = 0;               /// How many cycles have happened, used for soft Start
