@@ -9,7 +9,9 @@
 #include "iostream"
 
 namespace kodlab::mjbots {
-void MjbotsRobotInterface::InitializeCommand() {
+
+template<class AttitudeClass>
+void MjbotsRobotInterface<AttitudeClass>::InitializeCommand() {
   for (const auto &joint : joints_) {
     commands_.push_back({});
     commands_.back().id = joint.get_can_id(); //id
@@ -30,7 +32,8 @@ void MjbotsRobotInterface::InitializeCommand() {
   }
 }
 
-void MjbotsRobotInterface::PrepareTorqueCommand() {
+template<class AttitudeClass>
+void MjbotsRobotInterface<AttitudeClass>::PrepareTorqueCommand() {
   for (auto &cmd : commands_) {
     cmd.mode = ::mjbots::moteus::Mode::kPosition;
     cmd.position.kd_scale = 0;
@@ -38,22 +41,25 @@ void MjbotsRobotInterface::PrepareTorqueCommand() {
   }
 }
 
-::mjbots::moteus::QueryResult MjbotsRobotInterface::Get(const std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> &replies,
-                                                      int id) {
+template <class AttitudeClass>
+::mjbots::moteus::QueryResult MjbotsRobotInterface<AttitudeClass>::Get(
+    const std::vector<typename ::mjbots::moteus::Pi3HatMoteusInterface<AttitudeClass>::ServoReply> &replies,
+    int id) {
   for (const auto &item : replies) {
     if (item.id == id) { return item.result; }
   }
   return {};
 }
 
-MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint_list,
-                                           const RealtimeParams &realtime_params,
-                                           int soft_start_duration,
-                                           float robot_max_torque,
-                                           ::mjbots::pi3hat::Euler imu_mounting_deg,
-                                           int imu_rate_hz) :
-                                            soft_start_(robot_max_torque, soft_start_duration) { 
-  joints_ = std::move(joint_list);    
+template <class AttitudeClass>
+MjbotsRobotInterface<AttitudeClass>::MjbotsRobotInterface(
+    const std::vector<JointMoteus> &joint_list,
+    const RealtimeParams &realtime_params,
+    int soft_start_duration,
+    float robot_max_torque,
+    ::kodlab::rotations::EulerAngles<float> imu_mounting_deg,
+    int imu_rate_hz) : soft_start_(robot_max_torque, soft_start_duration) {
+  joints_ = std::move(joint_list);
   for( auto & j: joints_){
     positions_.push_back( j.get_position_reference() );
     velocities_.push_back( j.get_velocity_reference() );
@@ -65,25 +71,24 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
     servo_bus_map_[joint_list[i].get_can_id()] = joint_list[i].get_can_bus();
 
   // Create moteus interface
-  ::mjbots::moteus::Pi3HatMoteusInterface::Options moteus_options;
+  typename ::mjbots::moteus::Pi3HatMoteusInterface<AttitudeClass>::Options moteus_options;
   moteus_options.cpu = realtime_params.can_cpu;
   moteus_options.realtime_priority = realtime_params.can_rtp;
   moteus_options.servo_bus_map = servo_bus_map_;
   moteus_options.attitude_rate_hz = imu_rate_hz;
   moteus_options.imu_mounting_deg = imu_mounting_deg;
-  moteus_interface_ = std::make_shared<::mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
+  moteus_interface_ = std::make_shared<::mjbots::moteus::Pi3HatMoteusInterface<AttitudeClass>>(moteus_options);
 
   // Initialize and send basic command
   InitializeCommand();
-  replies_ = std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply>{commands_.size()};
+  replies_ = std::vector<typename ::mjbots::moteus::Pi3HatMoteusInterface<AttitudeClass>::ServoReply>{commands_.size()};
   moteus_data_.commands = {commands_.data(), commands_.size()};
   moteus_data_.replies = {replies_.data(), replies_.size()};
   moteus_data_.timeout = timeout_;
-
 }
 
-
-void MjbotsRobotInterface::Init() {
+template <class AttitudeClass>
+void MjbotsRobotInterface<AttitudeClass>::Init() {
     SendCommand();
     ProcessReply();
     // Setup message for basic torque commands
@@ -92,7 +97,8 @@ void MjbotsRobotInterface::Init() {
     ProcessReply();
 }
 
-void MjbotsRobotInterface::ProcessReply() {
+template <class AttitudeClass>
+void MjbotsRobotInterface<AttitudeClass>::ProcessReply() {
 
   // Make sure the m_can_result is valid before waiting otherwise undefined behavior
   moteus_interface_->WaitForCycle();
@@ -108,7 +114,8 @@ void MjbotsRobotInterface::ProcessReply() {
   attitude_ = *(moteus_data_.attitude);
 }
 
-void MjbotsRobotInterface::SendCommand() {
+template <class AttitudeClass>
+void MjbotsRobotInterface<AttitudeClass>::SendCommand() {
   cycle_count_++;
   
   for (int servo=0; servo < num_servos_;servo++) {// TODO: Move to a seperate update method (allow non-ff torque commands)?
@@ -118,7 +125,8 @@ void MjbotsRobotInterface::SendCommand() {
   moteus_interface_->Cycle(moteus_data_);
 }
 
-void MjbotsRobotInterface::SetTorques(std::vector<float> torques) {
+template <class AttitudeClass>
+void MjbotsRobotInterface<AttitudeClass>::SetTorques(std::vector<float> torques) {
   soft_start_.ConstrainTorques(torques, cycle_count_);
   float torque_cmd;
   for (int servo = 0; servo < num_servos_; servo++) {
@@ -127,35 +135,47 @@ void MjbotsRobotInterface::SetTorques(std::vector<float> torques) {
   }
 }
 
-std::vector<float> MjbotsRobotInterface::GetJointPositions() { //Copy of positions
+template <class AttitudeClass>
+std::vector<float> MjbotsRobotInterface<AttitudeClass>::GetJointPositions() { //Copy of positions
   std::vector<float>pos(positions_.begin(), positions_.end());
   return pos;
 }
 
-std::vector<float> MjbotsRobotInterface::GetJointVelocities() { //Copy of velocities
+template <class AttitudeClass>
+std::vector<float> MjbotsRobotInterface<AttitudeClass>::GetJointVelocities() { //Copy of velocities
   std::vector<float>vel(velocities_.begin(), velocities_.end());
   return vel;
 }
 
-std::vector<::mjbots::moteus::Mode> MjbotsRobotInterface::GetJointModes() {
+template <class AttitudeClass>
+std::vector<::mjbots::moteus::Mode> MjbotsRobotInterface<AttitudeClass>::GetJointModes() {
   std::vector<::mjbots::moteus::Mode>modes(modes_.begin(), modes_.end());
   return modes;
 }
 
-std::vector<float> MjbotsRobotInterface::GetJointTorqueCmd() {
+template <class AttitudeClass>
+std::vector<float> MjbotsRobotInterface<AttitudeClass>::GetJointTorqueCmd() {
   std::vector<float>torques(torque_cmd_.begin(), torque_cmd_.end());
   return torques;
 }
-void MjbotsRobotInterface::SetModeStop() {
+
+template <class AttitudeClass>
+void MjbotsRobotInterface<AttitudeClass>::SetModeStop() {
   for (auto &cmd : commands_) {
     cmd.mode = ::mjbots::moteus::Mode::kStopped;
   }
 }
 
-void MjbotsRobotInterface::Shutdown() {
+template <class AttitudeClass>
+void MjbotsRobotInterface<AttitudeClass>::Shutdown() {
   moteus_interface_->shutdown();
 }
-::mjbots::pi3hat::Attitude MjbotsRobotInterface::GetAttitude() {
-  return  attitude_;
-}
+
+/**
+ * Explicit Template Instantiation
+ */
+template class MjbotsRobotInterface<kodlab::Attitude<float>>;
+template class MjbotsRobotInterface<kodlab::AttitudeWithEulerAng<float>>;
+template class MjbotsRobotInterface<kodlab::AttitudeWithRotMat<float>>;
+
 } // namespace kodlab::mjbots

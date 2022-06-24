@@ -13,6 +13,8 @@
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
+#include "kodlab_mjbots_sdk/rotations.h"
+#include "kodlab_mjbots_sdk/attitude.h"
 
 namespace kodlab::mjbots {
 
@@ -29,6 +31,7 @@ struct RealtimeParams {
   int lcm_cpu = 0;
 };
 
+template<class AttitudeClass = ::kodlab::Attitude<float>>
 class MjbotsRobotInterface {
  public:
   /*!
@@ -44,7 +47,7 @@ class MjbotsRobotInterface {
                        const RealtimeParams &realtime_params,
                        int soft_start_duration = 1,
                        float robot_max_torque = 100,
-                       ::mjbots::pi3hat::Euler imu_mounting_deg = ::mjbots::pi3hat::Euler(),
+                       ::kodlab::rotations::EulerAngles<float> imu_mounting_deg = ::kodlab::rotations::EulerAngles<float>(),
                        int imu_rate_hz = 1000);
 
   /**
@@ -112,7 +115,7 @@ class MjbotsRobotInterface {
    * @brief accessor for the attitude of the robot
    * @return the attitude object for the robot
    */
-  ::mjbots::pi3hat::Attitude GetAttitude();
+  inline AttitudeClass GetAttitude() { return attitude_; }
 
  private:
   int num_servos_;                         /// The number of motors in the robot
@@ -127,14 +130,14 @@ class MjbotsRobotInterface {
   std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                   /// True if communication has timed out
   u_int64_t cycle_count_ = 0;               /// How many cycles have happened, used for soft Start
 
-  std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> commands_;  /// Vector of servo commands
-  std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> replies_;     /// Vector of replies
-  std::shared_ptr<::mjbots::moteus::Pi3HatMoteusInterface> moteus_interface_;    /// pi3hat interface
-  ::mjbots::moteus::Pi3HatMoteusInterface::Data moteus_data_;                    /// Data
-  std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
+  std::vector<typename ::mjbots::moteus::Pi3HatMoteusInterface<AttitudeClass>::ServoCommand> commands_;  /// Vector of servo commands
+  std::vector<typename ::mjbots::moteus::Pi3HatMoteusInterface<AttitudeClass>::ServoReply> replies_;     /// Vector of replies
+  std::shared_ptr<typename ::mjbots::moteus::Pi3HatMoteusInterface<AttitudeClass>> moteus_interface_;    /// pi3hat interface
+  typename ::mjbots::moteus::Pi3HatMoteusInterface<AttitudeClass>::Data moteus_data_;                    /// Data
+  std::future<typename ::mjbots::moteus::Pi3HatMoteusInterface<AttitudeClass>::Output> can_result_;      /// future can result, used to check if
   /// response is ready
   SoftStart soft_start_;                                                      /// Soft Start object
-  ::mjbots::pi3hat::Attitude attitude_;                                       /// Robot attitude
+  AttitudeClass attitude_;                                       /// Robot attitude
 
   /*!
    * @brief initialize the command with resolutions
@@ -152,7 +155,8 @@ class MjbotsRobotInterface {
    * @param id servo id
    * @return the result from servo of id id
    */
-  static ::mjbots::moteus::QueryResult Get(const std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> &replies,
-                                         int id);
+  static ::mjbots::moteus::QueryResult Get(
+      const std::vector<typename ::mjbots::moteus::Pi3HatMoteusInterface<AttitudeClass>::ServoReply> &replies,
+      int id);
 };
 } // namespace kodlab::mjbots

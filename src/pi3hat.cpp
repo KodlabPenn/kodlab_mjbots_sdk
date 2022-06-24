@@ -1142,7 +1142,7 @@ class Pi3Hat::Impl {
     }
   }
 
-  bool GetAttitude(Attitude* output, bool wait, bool detail) {
+  bool GetAttitude(kodlab::Attitude<float>* output, bool wait, bool detail) {
     device_attitude_ = {};
 
     // Busy loop until we get something.
@@ -1170,18 +1170,17 @@ class Pi3Hat::Impl {
 
     const auto& da = device_attitude_;
     auto& o = *output;
-    o.quat = { da.w, da.x, da.y, da.z };
-    o.euler = Attitude::ToEulerAngles(o.quat);
-    o.rate_dps = { da.x_dps, da.y_dps, da.z_dps };
-    o.accel_mps2 = { da.a_x_mps2, da.a_y_mps2, da.a_z_mps2 };
-    o.bias_dps = { da.bias_x_dps, da.bias_y_dps, da.bias_z_dps };
+    o.SetAttitude({ da.w, da.x, da.y, da.z });
+    o.ang_rate = { da.x_dps, da.y_dps, da.z_dps };
+    o.accel = { da.a_x_mps2, da.a_y_mps2, da.a_z_mps2 };
+    o.ang_rate_bias = { da.bias_x_dps, da.bias_y_dps, da.bias_z_dps };
     o.attitude_uncertainty = {
         da.uncertainty_w,
         da.uncertainty_x,
         da.uncertainty_y,
         da.uncertainty_z,
     };
-    o.bias_uncertainty_dps = {
+    o.ang_bias_uncertainty = {
         da.uncertainty_bias_x_dps,
         da.uncertainty_bias_y_dps,
         da.uncertainty_bias_z_dps,

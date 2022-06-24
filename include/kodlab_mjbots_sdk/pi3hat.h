@@ -23,6 +23,8 @@
 #include <cstdlib>
 #include <stdexcept>
 #include "real_time_tools/timer.hpp"
+#include "kodlab_mjbots_sdk/rotations.h"
+#include "kodlab_mjbots_sdk/attitude.h"
 
 namespace mjbots {
 namespace pi3hat {
@@ -63,76 +65,6 @@ struct CanFrame {
   /// If true, then a reply will be expected for this frame on the
   /// same bus.
   bool expect_reply = false;
-};
-
-struct Quaternion {
-  double w = 0.0;
-  double x = 0.0;
-  double y = 0.0;
-  double z = 0.0;
-
-  Quaternion() {}
-  Quaternion(double w_in, double x_in, double y_in, double z_in)
-      : w(w_in), x(x_in), y(y_in), z(z_in) {}
-};
-
-struct Point3D {
-  double x = 0.0;
-  double y = 0.0;
-  double z = 0.0;
-
-  Point3D() {}
-  Point3D(double x_in, double y_in, double z_in)
-      : x(x_in), y(y_in), z(z_in) {}
-};
-
-struct Euler {
-  double yaw = 0.0;
-  double pitch = 0.0;
-  double roll = 0.0;
-
-  Euler() {}
-  Euler(double yaw_in, double pitch_in, double roll_in)
-      : yaw(yaw_in), pitch(pitch_in), roll(roll_in) {}
-};
-
-// Todo place in the correct spot
-template <typename T> int sgn(T val) {
-  return (T(0) < val) - (val < T(0));
-}
-
-class Attitude {
- public:
-  Quaternion quat;
-  Euler euler;
-  Point3D rate_dps;
-  Point3D accel_mps2;
-
-  Point3D bias_dps;
-  Quaternion attitude_uncertainty;
-  Point3D bias_uncertainty_dps;
-
-  static Euler ToEulerAngles(Quaternion q) {
-    Euler angles;
-    double x=q.x, y=q.y, z=q.z, w=q.w;
-
-    double t0 = (x+z)*(x-z);        // x^2-z^2
-    double t1 = (w+y)*(w-y);        // w^2-y^2
-    double xx = 0.5*(t0+t1);        // 1/2 x of x'
-    double xy = x*y+w*z;            // 1/2 y of x'
-    double xz = w*y-x*z;            // 1/2 z of x'
-    double t  = xx*xx+xy*xy;        // cos(theta)^2
-    double yz = 2.0*(y*z+w*x);      // z of y'
-
-    angles.yaw = -(float)atan2(xy, xx);    // yaw   (psi)
-    angles.pitch = -(float)atan(xz/sqrt(t)); // pitch (theta)
-
-    if (t != 0)
-      angles.roll = (float)atan2(yz, t1-t0);
-    else
-      angles.roll = (float)(2.0*atan2(x,w) - sgn(xz)*angles.yaw);
-    return angles;
-  }
 };
 
 struct RfSlot {
@@ -188,7 +120,7 @@ class Pi3Hat {
     int spi_speed_hz = 10000000;
 
     // All attitude data will be transformed by this mounting angle.
-    Euler mounting_deg;
+    kodlab::rotations::EulerAngles<float> mounting_deg;
 
     // Only a fixed set of rates are achievable.  Valid values are
     // 100, 200, 400, 1000.  Selecting a higher rate than you need to
@@ -259,7 +191,7 @@ class Pi3Hat {
     // These are data to store results in.
     Span<CanFrame> rx_can;
     Span<RfSlot> rx_rf;
-    Attitude* attitude = nullptr;
+    kodlab::Attitude<float>* attitude = nullptr;
   };
 
   struct Output {

@@ -8,6 +8,7 @@
 #include <type_traits>
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 #include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
+#include "kodlab_mjbots_sdk/rotations.h"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/timer.hpp"
@@ -30,7 +31,7 @@ struct ControlLoopOptions {
                                           /// torque update loop. If false the communication will happen in series. True
                                           /// results in a 1 dt delay in your controller, but is necessary for robots with
                                           /// more motors or more complicated update loops
-  ::mjbots::pi3hat::Euler imu_mounting_deg; /// Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
+  ::kodlab::rotations::EulerAngles<float> imu_mounting_deg; /// Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
   int attitude_rate_hz = 1000;              /// Frequency of the imu updates from the pi3hat. Options are limited to 1000
                                             /// 400, 200, 100.
 };
@@ -41,8 +42,9 @@ struct ControlLoopOptions {
  *        the robot object. The behavior runs in its own thread. To Start the thread Run Start()
  * @tparam LogClass[optional] data type for logging
  * @tparam InputClass[optional] class for input data 
+ * @tparam AttitudeClass[optional] class for IMU data
  */
-template<class LogClass = VoidLcm, class InputClass = VoidLcm>
+template<class LogClass = VoidLcm, class InputClass = VoidLcm, class AttitudeClass = ::kodlab::Attitude<float>>
 class MjbotsControlLoop : public AbstractRealtimeObject {
  public:
   /*!
@@ -92,7 +94,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    */
   virtual void ProcessInput() {};
 
-  std::shared_ptr<MjbotsRobotInterface>
+  std::shared_ptr<MjbotsRobotInterface<AttitudeClass>>
       robot_;   /// ptr to the robot object, if unique causes many issues, also should be
   /// initialized inside thread
   int frequency_;                         /// frequency of the controller in Hz
@@ -109,8 +111,8 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
 
 /******************************************Implementation**************************************************************/
 
-template<class log_type, class input_type>
-MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options) :
+template<class log_type, class input_type, class attitude_class>
+MjbotsControlLoop<log_type, input_type, attitude_class>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options) :
     AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
     lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) {
   // Extract useful values from options
@@ -134,16 +136,17 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::m
   }
 
   // Create robot object
-  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(joints,
-                                                                       options_.realtime_params,
-                                                                       options_.soft_start_duration,
-                                                                       options_.max_torque,
-                                                                       options_.imu_mounting_deg,
-                                                                       options_.attitude_rate_hz));
+  robot_ = std::make_shared<MjbotsRobotInterface<attitude_class>>(
+      MjbotsRobotInterface<attitude_class>(joints,
+                                           options_.realtime_params,
+                                           options_.soft_start_duration,
+                                           options_.max_torque,
+                                           options_.imu_mounting_deg,
+                                           options_.attitude_rate_hz));
 }
 
-template<class log_type, class input_type>
-void MjbotsControlLoop<log_type, input_type>::AddTimingLog(float t, float margin, float message_duration) {
+template<class log_type, class input_type, class attitude_class>
+void MjbotsControlLoop<log_type, input_type, attitude_class>::AddTimingLog(float t, float margin, float message_duration) {
   if (logging_) {
     log_data_.timestamp = t;
     log_data_.margin = margin;
@@ -151,14 +154,14 @@ void MjbotsControlLoop<log_type, input_type>::AddTimingLog(float t, float margin
   }
 }
 
-template<class log_type, class input_type>
-void MjbotsControlLoop<log_type, input_type>::PublishLog() {
+template<class log_type, class input_type, class attitude_class>
+void MjbotsControlLoop<log_type, input_type, attitude_class>::PublishLog() {
   if (logging_)
     lcm_.publish(logging_channel_name_, &log_data_);
 }
 
-template<class log_type, class input_type>
-void MjbotsControlLoop<log_type, input_type>::Run() {
+template<class log_type, class input_type, class attitude_class>
+void MjbotsControlLoop<log_type, input_type, attitude_class>::Run() {
   EnableCtrlC();
 
   robot_->Init();
@@ -237,8 +240,8 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
   }
 }
 
-template<class log_type, class input_type>
-void MjbotsControlLoop<log_type, input_type>::SafeProcessInput() {
+template<class log_type, class input_type, class attitude_class>
+void MjbotsControlLoop<log_type, input_type, attitude_class>::SafeProcessInput() {
   // Check to make sure using input
   if (input_) {
     // Try to unlock mutex, if you can't don't worry and try next time

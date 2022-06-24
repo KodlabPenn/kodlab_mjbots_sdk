@@ -31,6 +31,8 @@
 #include <unistd.h>
 #include "kodlab_mjbots_sdk/common_header.h"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
+#include "kodlab_mjbots_sdk/attitude.h"
+
 namespace mjbots {
 namespace moteus {
 
@@ -38,12 +40,13 @@ namespace moteus {
 /// Internally it uses a background thread to operate the pi3hat,
 /// enabling the main thread to perform work while servo communication
 /// is taking place.
+template<class AttitudeClass = ::kodlab::Attitude<float>>
 class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
  public:
   struct Options {
     int cpu = -1;
     int realtime_priority = -1;
-    mjbots::pi3hat::Euler imu_mounting_deg;
+    kodlab::rotations::EulerAngles<float> imu_mounting_deg;
     int attitude_rate_hz = 1000;
 
     // If a servo is not present, it is assumed to be on bus 1.
@@ -101,7 +104,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
 
     std::shared_ptr<bool> timeout;
 
-    std::shared_ptr<pi3hat::Attitude> attitude = std::make_shared<pi3hat::Attitude>();
+    std::shared_ptr<AttitudeClass> attitude = std::make_shared<AttitudeClass>();
   };
 
   struct Output {
@@ -249,7 +252,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   std::vector<pi3hat::CanFrame> rx_can_;
 
   std::mutex cycle_mutex_;
-  std::shared_ptr<pi3hat::Attitude> attitude_;
+  std::shared_ptr<AttitudeClass> attitude_;
 };
 
 
