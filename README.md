@@ -114,11 +114,11 @@ Get the libraries
 
     rsync -vR --progress -rl --delete-after --safe-links pi@<PI_IP>:/{lib,usr,opt} $HOME/raspberrypi/rootfs
 
-Add the following lines to your `~/.bashrc` on your laptop
+Add the following lines to your `~/.bashrc` on your laptop, making sure your raspberry pi version is correct.
 
     export RASPBIAN_ROOTFS=$HOME/raspberrypi/rootfs
     export PATH=/opt/cross-pi-gcc/bin:$PATH
-    export RASPBERRY_VERSION=1
+    export RASPBERRY_VERSION=4
 
 
 ## Laptop LCM
