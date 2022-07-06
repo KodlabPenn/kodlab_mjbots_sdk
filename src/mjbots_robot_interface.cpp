@@ -152,17 +152,16 @@ std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> MjbotsRobotInterface
   return joint_list;
 }
 
-template <size_t N>
-std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> MjbotsRobotInterface::GetJoints(std::array<int,N> joint_indices){
-  std::vector<int> joint_vect (joint_indices.begin(), joint_indices.end()); 
-  return MjbotsRobotInterface::GetJoints(joint_vect);
-}
-
 std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> MjbotsRobotInterface::GetJoints(std::initializer_list<int> joint_indices){
   std::vector<int> joint_vect (joint_indices); 
   return MjbotsRobotInterface::GetJoints(joint_vect);
 }
 
+template <size_t N>
+std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> MjbotsRobotInterface::GetJoints(std::array<int,N> joint_indices){
+  std::vector<int> joint_vect (joint_indices.begin(), joint_indices.end()); 
+  return MjbotsRobotInterface::GetJoints(joint_vect);
+}
 
 std::vector<float> MjbotsRobotInterface::GetJointTorqueCmd() {
   std::vector<float>torques(torque_cmd_.begin(), torque_cmd_.end());

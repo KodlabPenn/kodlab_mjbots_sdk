@@ -32,6 +32,9 @@ struct RealtimeParams {
 
 class MjbotsRobotInterface {
  public:
+
+  std::vector< std::shared_ptr<JointMoteus>> joints; /// Joint vector for the robot, shares state information
+
   /*!
    * @brief constructs an mjbots_robot_interface to communicate with a collection of moeteusses
    * @param joint_list a list of joints defining the motors in the robot
@@ -123,13 +126,10 @@ class MjbotsRobotInterface {
   template <size_t N>
   std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(std::array<int,N> joint_indices);
  
-
-  std::vector< std::shared_ptr<JointMoteus>> joints;
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
 
-  // std::vector<JointMoteus> joints_; /// Joint vector for the robot, owns all state information
   std::vector<std::reference_wrapper<const float>> positions_;  /// Vector of the motor positions (references to the members of joints_)
   std::vector<std::reference_wrapper<const float>> velocities_; /// Vector of the motor velocities (references to the members of joints_)
   std::vector<std::reference_wrapper<const float>> torque_cmd_; /// Vector of the torque command sent to motors (references to the members of joints_)
