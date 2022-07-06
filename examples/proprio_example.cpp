@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
   options.realtime_params.can_cpu  = 2;
   
   // Create control loop
-  ProprioJoints control_loop(joints, options);
+  ProprioJoints control_loop(std::move(joints), options);
 
   // Starts the loop, and then join it
   control_loop.Start();
