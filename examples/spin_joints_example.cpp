@@ -39,7 +39,6 @@ class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
 };
 
 int main(int argc, char **argv) {
-
   //Setup joints
   std::vector<kodlab::mjbots::JointMoteus> joints;
   joints.emplace_back(100, 4, 1, -1.3635165,   1, 1);
@@ -59,7 +58,7 @@ int main(int argc, char **argv) {
   options.attitude_rate_hz = 1000;
 
   // Create control loop
-  Spin_Joint control_loop(joints, options);
+  Spin_Joint control_loop(std::move(joints), options);
   // Starts the loop, and then join it
   control_loop.Start();
   control_loop.Join();

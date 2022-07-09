@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
   options.soft_start_duration = 5000;
 
   // Create control loop
-  Hopping control_loop(joints, options);
+  Hopping control_loop(std::move(joints), options);
 
   // Starts the loop, and then join it
   control_loop.Start();

@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <future>
+#include <memory>
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
@@ -31,6 +32,9 @@ struct RealtimeParams {
 
 class MjbotsRobotInterface {
  public:
+
+  std::vector< std::shared_ptr<JointMoteus>> joints; /// Vector of shared pointers to joints for the robot, shares state information
+
   /*!
    * @brief constructs an mjbots_robot_interface to communicate with a collection of moeteusses
    * @param joint_list a list of joints defining the motors in the robot
@@ -109,6 +113,36 @@ class MjbotsRobotInterface {
   std::vector<::mjbots::moteus::Mode> GetJointModes();
 
   /*!
+   * @brief Get sub-vector of shared_ptr to joint objects via a set of indices
+   * @param joint_indices set of desired joint indices as std::vector of ints
+   * @return a vector shared pointers to the desired joints
+   */
+  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(std::vector<int> joint_indices);
+
+  /*!
+   * @brief Get sub-vector of shared_ptr to joint objects via a set of indices
+   * @param joint_indices set of desired joint indices std::initializer_list of ints
+   * @return a vector shared pointers to the desired joints
+   */
+  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(std::initializer_list<int> joint_indices);
+
+  /*!
+   * @brief Get sub-vector of shared_ptr to joint objects via a set of indices
+   * @param joint_indices set of desired joint indices std::array of ints
+   * @return a vector shared pointers to the desired joints
+   */
+  template <size_t N>
+  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(std::array<int,N> joint_indices);
+
+  /*!
+   * @brief Get the vector of shared_ptrs to joints 
+   * @note Added getter to public member for interface consistency with subvector getters
+   * @param joint_indices set of desired joint indices std::initializer_list of ints
+   * @return a vector shared pointers to the desired joints
+   */
+  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(){return joints;}
+  
+  /*!
    * @brief accessor for the attitude of the robot
    * @return the attitude object for the robot
    */
@@ -118,11 +152,10 @@ class MjbotsRobotInterface {
   int num_servos_;                         /// The number of motors in the robot
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
 
-  std::vector<JointMoteus> joints_; /// Joint vector for the robot, owns all state information
   std::vector<std::reference_wrapper<const float>> positions_;  /// Vector of the motor positions (references to the members of joints_)
   std::vector<std::reference_wrapper<const float>> velocities_; /// Vector of the motor velocities (references to the members of joints_)
   std::vector<std::reference_wrapper<const float>> torque_cmd_; /// Vector of the torque command sent to motors (references to the members of joints_)
-  std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> modes_; /// Vector of the torque command sent to motors (references to the members of joints_)
+  std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> modes_; /// Vector of current moteus modes (references to the members of joints_)
   
   std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                   /// True if communication has timed out
   u_int64_t cycle_count_ = 0;               /// How many cycles have happened, used for soft Start
