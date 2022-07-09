@@ -134,7 +134,7 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::m
   }
 
   // Create robot object
-  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(joints,
+  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(std::move(joints),
                                                                        options_.realtime_params,
                                                                        options_.soft_start_duration,
                                                                        options_.max_torque,
