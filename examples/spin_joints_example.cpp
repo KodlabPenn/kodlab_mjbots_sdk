@@ -53,6 +53,11 @@ int main(int argc, char **argv) {
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu  = 2;
 
+  options.imu_mounting_deg.yaw = 0;
+  options.imu_mounting_deg.roll = 0;
+  options.imu_mounting_deg.pitch = 180;
+  options.attitude_rate_hz = 1000;
+
   // Create control loop
   Spin_Joint control_loop(joints, options);
   // Starts the loop, and then join it

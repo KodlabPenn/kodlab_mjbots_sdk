@@ -37,11 +37,15 @@ class MjbotsRobotInterface {
    * @param realtime_params the realtime parameters defining cpu and realtime priority
    * @param soft_start_duration how long in dt to spend ramping the torque
    * @param robot_max_torque the maximum torque to allow per motor in the robot
+   * @param imu_mounting_deg Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
+   * @param imu_rate_hz Frequency of the imu updates from the pi3hat
    */
   MjbotsRobotInterface(const std::vector<JointMoteus> &joint_list,
                        const RealtimeParams &realtime_params,
                        int soft_start_duration = 1,
-                       float robot_max_torque = 100);
+                       float robot_max_torque = 100,
+                       ::mjbots::pi3hat::Euler imu_mounting_deg = ::mjbots::pi3hat::Euler(),
+                       int imu_rate_hz = 1000);
 
   /**
    * @brief Send and recieve initial communications effectively starting the robot
@@ -104,6 +108,12 @@ class MjbotsRobotInterface {
    */
   std::vector<::mjbots::moteus::Mode> GetJointModes();
 
+  /*!
+   * @brief accessor for the attitude of the robot
+   * @return the attitude object for the robot
+   */
+  ::mjbots::pi3hat::Attitude GetAttitude();
+
  private:
   int num_servos_;                         /// The number of motors in the robot
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
@@ -124,6 +134,7 @@ class MjbotsRobotInterface {
   std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
   /// response is ready
   SoftStart soft_start_;                                                      /// Soft Start object
+  ::mjbots::pi3hat::Attitude attitude_;                                       /// Robot attitude
 
   /*!
    * @brief initialize the command with resolutions
