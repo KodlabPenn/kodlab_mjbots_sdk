@@ -30,6 +30,9 @@ struct ControlLoopOptions {
                                           /// torque update loop. If false the communication will happen in series. True
                                           /// results in a 1 dt delay in your controller, but is necessary for robots with
                                           /// more motors or more complicated update loops
+  ::mjbots::pi3hat::Euler imu_mounting_deg; /// Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
+  int attitude_rate_hz = 1000;              /// Frequency of the imu updates from the pi3hat. Options are limited to 1000
+                                            /// 400, 200, 100.
 };
 
 /*!
@@ -133,7 +136,10 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::m
   // Create robot object
   robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(std::move(joints),
                                                                        options_.realtime_params,
-                                                                       options_.soft_start_duration));
+                                                                       options_.soft_start_duration,
+                                                                       options_.max_torque,
+                                                                       options_.imu_mounting_deg,
+                                                                       options_.attitude_rate_hz));
 }
 
 template<class log_type, class input_type>

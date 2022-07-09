@@ -26,14 +26,16 @@
 # https://github.com/Pro/raspi-toolchain/blob/master/Toolchain-rpi.cmake
 
 if("$ENV{RASPBERRY_VERSION}" STREQUAL "")
+	message(WARNING "No Raspberry Pi version in environment, defaulting to Pi Version 1. May cause slow downs")
 	set(RASPBERRY_VERSION 1)
 else()
-	if($ENV{RASPBERRY_VERSION} VERSION_GREATER 3)
-		set(RASPBERRY_VERSION 3)
+	if($ENV{RASPBERRY_VERSION} VERSION_GREATER 4)
+		set(RASPBERRY_VERSION 4)
 	else()
 		set(RASPBERRY_VERSION $ENV{RASPBERRY_VERSION})
 	endif()
 endif()
+message(STATUS "Using Pi Version: ${RASPBERRY_VERSION}")
 
 # RASPBIAN_ROOTFS should point to the local directory which contains all the libraries and includes from the target raspi.
 # Get them with:
@@ -62,7 +64,9 @@ set(CMAKE_SYSROOT "${SYSROOT_PATH}")
 
 # Define name of the target system
 set(CMAKE_SYSTEM_NAME "Linux")
-if(RASPBERRY_VERSION VERSION_GREATER 1)
+if(RASPBERRY_VERSION VERSION_GREATER 2)
+	set(CMAKE_SYSTEM_PROCESSOR "armv8")
+elseif(RASPBERRY_VERSION VERSION_GREATER 1)
 	set(CMAKE_SYSTEM_PROCESSOR "armv7")
 else()
 	set(CMAKE_SYSTEM_PROCESSOR "arm")
@@ -92,8 +96,11 @@ ENDFOREACH()
 
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${SYSROOT_PATH}/usr/lib/${TOOLCHAIN_HOST}")
 
-if(RASPBERRY_VERSION VERSION_GREATER 2)
-	set(CMAKE_C_FLAGS "-mcpu=cortex-a53 -mfpu=neon-vfpv4 -mfloat-abi=hard ${COMMON_FLAGS}" CACHE STRING "Flags for Raspberry PI 3")
+if(RASPBERRY_VERSION VERSION_GREATER 3)
+	set(CMAKE_C_FLAGS "-mcpu=cortex-a72 -mfloat-abi=hard -mfpu=neon-fp-armv8  -O3  ${COMMON_FLAGS}" CACHE STRING "Flags for Raspberry PI 4")
+	set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING "Flags for Raspberry PI 4")
+elseif(RASPBERRY_VERSION VERSION_GREATER 2)
+	set(CMAKE_C_FLAGS "-mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8  -O3  ${COMMON_FLAGS}" CACHE STRING "Flags for Raspberry PI 3")
 	set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING "Flags for Raspberry PI 3")
 elseif(RASPBERRY_VERSION VERSION_GREATER 1)
 	set(CMAKE_C_FLAGS "-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard ${COMMON_FLAGS}" CACHE STRING "Flags for Raspberry PI 2")

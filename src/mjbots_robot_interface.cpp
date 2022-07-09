@@ -50,7 +50,9 @@ void MjbotsRobotInterface::PrepareTorqueCommand() {
 MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint_list,
                                            const RealtimeParams &realtime_params,
                                            int soft_start_duration,
-                                           float robot_max_torque ) :
+                                           float robot_max_torque,
+                                           ::mjbots::pi3hat::Euler imu_mounting_deg,
+                                           int imu_rate_hz) :
                                             soft_start_(robot_max_torque, soft_start_duration) { 
 
   for (JointMoteus joint: joint_list){
@@ -74,6 +76,8 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
   moteus_options.cpu = realtime_params.can_cpu;
   moteus_options.realtime_priority = realtime_params.can_rtp;
   moteus_options.servo_bus_map = servo_bus_map_;
+  moteus_options.attitude_rate_hz = imu_rate_hz;
+  moteus_options.imu_mounting_deg = imu_mounting_deg;
   moteus_interface_ = std::make_shared<::mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
 
   // Initialize and send basic command
@@ -108,6 +112,7 @@ void MjbotsRobotInterface::ProcessReply() {
       joint->UpdateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
     }
   }
+  attitude_ = *(moteus_data_.attitude);
 }
 
 void MjbotsRobotInterface::SendCommand() {
@@ -175,5 +180,8 @@ void MjbotsRobotInterface::SetModeStop() {
 
 void MjbotsRobotInterface::Shutdown() {
   moteus_interface_->shutdown();
+}
+::mjbots::pi3hat::Attitude MjbotsRobotInterface::GetAttitude() {
+  return  attitude_;
 }
 } // namespace kodlab::mjbots
