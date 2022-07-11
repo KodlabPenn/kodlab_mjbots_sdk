@@ -3,9 +3,11 @@
 #pragma once
 #include <atomic>
 #include <signal.h>  // manage the ctrl+c signal
+#include <type_traits>
+#include <iostream>
 
 namespace kodlab {
-/**
+/*
  * @brief This boolean is here to kill cleanly the application upon ctrl+c
  */
 static std::atomic_bool CTRL_C_DETECTED(false);
@@ -31,4 +33,84 @@ static void EnableCtrlC() {
   sigaction(SIGINT, &sigIntHandler, NULL);
   CTRL_C_DETECTED = false;
 }
+
+/**
+ * @brief Simple object wrapper that caches the latest value until invalidated
+ * @tparam T typename
+ */
+template<typename T>
+class ValidatedCache
+{
+
+private:
+  /**
+   * @brief Validation status of \c data_
+   */
+  bool valid_;
+
+  /**
+   * @brief Data being stored
+   */
+  T data_;
+
+public:
+  /**
+   * @brief Invalid data constructor
+   */
+  ValidatedCache() : valid_(false) {}
+
+  /**
+   * @brief Valid data constructor
+   */
+  explicit ValidatedCache(const T &data) : data_(data), valid_(true) {}
+
+  /**
+   * @brief Returns the data status
+   * @return \c true if data is valid, \c false otherwise
+   */
+  bool valid() const { return valid_; }
+
+  /**
+   * @brief Marks the class invalid so that future calls will change the cached
+   * value
+   */
+  void invalidate() { valid_ = false; }
+
+  /**
+   * @brief Sets the class data and marks it valid
+   * @param data valid data
+   */
+  void set(const T &data)
+  {
+    data_ = data;
+    valid_ = true;
+  }
+
+  /**
+   * @brief Accessor for data (<b>does not check validity</b>)
+   * @return data
+   */
+  T get()
+  {
+    if (!valid_)
+    {
+      std::cerr << "[WARN] Returning invalid data." << std::endl;
+    }
+    return data_;
+  }
+
+  /**
+   * @brief Implicitly converts to the class template type \c T
+   * @return data
+   */
+  operator T() { return get(); }
+
+  /**
+   * @brief Implicitly converts to the class template type \c T
+   * @return data
+   */
+  operator T() const { return get(); }
+
+};
+
 }  // namespace kodlab
