@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include "real_time_tools/timer.hpp"
+#include "kodlab_mjbots_sdk/math.h"
 
 namespace mjbots {
 namespace pi3hat {
@@ -96,11 +97,6 @@ struct Euler {
       : yaw(yaw_in), pitch(pitch_in), roll(roll_in) {}
 };
 
-// Todo place in the correct spot
-template <typename T> int sgn(T val) {
-  return (T(0) < val) - (val < T(0));
-}
-
 class Attitude {
  public:
   Quaternion quat;
@@ -130,7 +126,7 @@ class Attitude {
     if (t != 0)
       angles.roll = (float)atan2(yz, t1-t0);
     else
-      angles.roll = (float)(2.0*atan2(x,w) - sgn(xz)*angles.yaw);
+      angles.roll = (float)(2.0*atan2(x,w) - kodlab::math::sgn(xz)*angles.yaw);
     return angles;
   }
 };
