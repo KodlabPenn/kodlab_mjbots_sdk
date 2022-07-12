@@ -13,6 +13,7 @@
 #include "real_time_tools/timer.hpp"
 #include "real_time_tools/hard_spinner.hpp"
 #include "VoidLcm.hpp"
+#include "common_header.h"
 
 namespace kodlab::mjbots {
 /*!
@@ -47,9 +48,14 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
  public:
   /*!
    * @brief constructs and mjbots behavior based on the options struct. Does not Start the controller.
+   * @param joints a std::vector of JointMoteus's (or std::shared_ptr to the same)
    * @param options contains options defining the behavior
    */
   MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options);
+  /*!
+   * \overload 
+   */
+  MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joints, const ControlLoopOptions &options);
 
  protected:
 
@@ -110,7 +116,12 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
 /******************************************Implementation**************************************************************/
 
 template<class log_type, class input_type>
-MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options) :
+MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options)
+  : MjbotsControlLoop( make_share_vector(joints), options){}
+
+template<class log_type, class input_type>
+MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
+ :
     AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
     lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) {
   // Extract useful values from options
@@ -118,7 +129,7 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::m
   cpu_ = options.realtime_params.main_cpu;
   realtime_priority_ = options.realtime_params.main_rtp;
   frequency_ = options.frequency;
-  num_motors_ = joints.size();
+  num_motors_ = joint_ptrs.size();
   // Setup logging info and confirm template is provided if logging
   logging_channel_name_ = options.log_channel_name;
   logging_ = !logging_channel_name_.empty();
@@ -134,7 +145,7 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::m
   }
 
   // Create robot object
-  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(std::move(joints),
+  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(joint_ptrs,
                                                                        options_.realtime_params,
                                                                        options_.soft_start_duration,
                                                                        options_.max_torque,
