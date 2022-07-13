@@ -25,7 +25,7 @@ class JointBase {
          * @brief Construct a new Joint Base object
          * 
          * @param direction     /// 1 or -1, flips positive rotation direction (Default:1)
-         * @param zero_offset   /// offset [rad] of joint zero position from servo zero postition (Default:0)
+         * @param zero_offset   /// offset [rad] of joint zero position (Default:0) 
          * @param gear_ratio    /// Gear ratio joint to servo (ratio>1 means slower joint) (Default:1.0)
          * @param max_torque    /// Maximum torque of the joint [N m] (Default:inf)
          * @param pos_min       /// Minimum joint limit before taking protective measures such as torque limiting or shut off (Default:inf)
