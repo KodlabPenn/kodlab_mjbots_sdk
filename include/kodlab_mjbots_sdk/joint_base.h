@@ -75,21 +75,28 @@ class JointBase {
          * 
          * @return float 
          */
-        virtual float get_position()  {return position_;}
+        virtual float get_position() const {return position_;}
+
+        /**
+         * @brief Get the raw servo position
+         * 
+         * @return float 
+         */
+        virtual float get_raw_position() const {return servo_position_;}
 
         /**
          * @brief Get the velocity
          * 
          * @return float 
          */
-        virtual float get_velocity()  {return velocity_;}
+        virtual float get_velocity() const {return velocity_;}
 
         /**
          * @brief Get the torque command
          * 
          * @return float 
          */
-        virtual float get_servo_torque() {return servo_torque_;}
+        virtual float get_servo_torque() const {return servo_torque_;}
 
         /**
          * @brief Set the soft stop flag
@@ -117,7 +124,7 @@ class JointBase {
          * 
          * @return const float& 
          */
-        const float& get_servo_torque_reference()   const {return servo_torque_; }
+        const float& get_servo_torque_reference() const {return servo_torque_; }
 
     protected:
         // Joint Params
