@@ -126,6 +126,20 @@ class JointBase {
          */
         const float& get_servo_torque_reference() const {return servo_torque_; }
 
+        /**
+         * @brief Get the minimum position limit
+         * 
+         * @return minimum position limit
+         */
+        const float get_pos_limit_min() const {return pos_limit_min_; }
+
+        /**
+         * @brief Get the maximum position limit
+         * 
+         * @return maximum position limit
+         */
+        const float get_pos_limit_max() const {return pos_limit_max_; }
+
     protected:
         // Joint Params
         float gear_ratio_  = 1.0;   /// external joint gear ratio
