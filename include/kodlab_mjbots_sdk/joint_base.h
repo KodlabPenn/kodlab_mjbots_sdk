@@ -25,7 +25,7 @@ class JointBase {
          * @brief Construct a new Joint Base object
          * 
          * @param direction     /// 1 or -1, flips positive rotation direction (Default:1)
-         * @param zero_offset   /// offset [rad] of joint zero position from servo zero postition (Default:0)
+         * @param zero_offset   /// offset [rad] of joint zero position (Default:0) 
          * @param gear_ratio    /// Gear ratio joint to servo (ratio>1 means slower joint) (Default:1.0)
          * @param max_torque    /// Maximum torque of the joint [N m] (Default:inf)
          * @param pos_min       /// Minimum joint limit before taking protective measures such as torque limiting or shut off (Default:inf)
@@ -75,21 +75,28 @@ class JointBase {
          * 
          * @return float 
          */
-        virtual float get_position()  {return position_;}
+        virtual float get_position() const {return position_;}
+
+        /**
+         * @brief Get the raw servo position
+         * 
+         * @return float 
+         */
+        virtual float get_raw_position() const {return servo_position_;}
 
         /**
          * @brief Get the velocity
          * 
          * @return float 
          */
-        virtual float get_velocity()  {return velocity_;}
+        virtual float get_velocity() const {return velocity_;}
 
         /**
          * @brief Get the torque command
          * 
          * @return float 
          */
-        virtual float get_servo_torque() {return servo_torque_;}
+        virtual float get_servo_torque() const {return servo_torque_;}
 
         /**
          * @brief Set the soft stop flag
@@ -117,7 +124,21 @@ class JointBase {
          * 
          * @return const float& 
          */
-        const float& get_servo_torque_reference()   const {return servo_torque_; }
+        const float& get_servo_torque_reference() const {return servo_torque_; }
+
+        /**
+         * @brief Get the minimum position limit
+         * 
+         * @return minimum position limit
+         */
+        const float get_pos_limit_min() const {return pos_limit_min_; }
+
+        /**
+         * @brief Get the maximum position limit
+         * 
+         * @return maximum position limit
+         */
+        const float get_pos_limit_max() const {return pos_limit_max_; }
 
     protected:
         // Joint Params
