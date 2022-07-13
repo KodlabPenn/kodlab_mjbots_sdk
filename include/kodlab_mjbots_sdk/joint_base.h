@@ -75,7 +75,7 @@ class JointBase {
          * 
          * @return float 
          */
-        virtual float get_position() const  {return position_;}
+        virtual float get_position() const {return position_;}
 
         /**
          * @brief Get the raw servo position
