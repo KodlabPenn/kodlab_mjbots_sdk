@@ -43,6 +43,8 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   struct Options {
     int cpu = -1;
     int realtime_priority = -1;
+    mjbots::pi3hat::Euler imu_mounting_deg;
+    int attitude_rate_hz = 1000;
 
     // If a servo is not present, it is assumed to be on bus 1.
     std::map<int, int> servo_bus_map;
@@ -98,6 +100,8 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     pi3hat::Span<ServoReply> replies;
 
     std::shared_ptr<bool> timeout;
+
+    std::shared_ptr<pi3hat::Attitude> attitude = std::make_shared<pi3hat::Attitude>();
   };
 
   struct Output {
@@ -120,6 +124,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
 
     active_ = true;
     data_ = data;
+    attitude_ = data.attitude;
     condition_.notify_all();
   }
 
@@ -133,6 +138,9 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
 
   void Run( ) override{
     pi3hat::Pi3Hat::Configuration config;
+    config.mounting_deg = options_.imu_mounting_deg;
+    config.attitude_rate_hz = options_.attitude_rate_hz;
+
     pi3hat_ = std::make_shared<pi3hat::Pi3Hat>(config);
 
     pi3hat::Pi3Hat::Input input;
@@ -203,7 +211,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
     input.tx_can = { tx_can_.data(), tx_can_.size() };
     input.rx_can = { rx_can_.data(), rx_can_.size() };
     input.request_attitude = true;
-    input.attitude = &attitude_;
+    input.attitude = attitude_.get();
     Output result;
     const auto output = pi3hat_->Cycle(input);
     *data_.timeout = output.timeout;
@@ -241,7 +249,7 @@ class Pi3HatMoteusInterface : public kodlab::AbstractRealtimeObject{
   std::vector<pi3hat::CanFrame> rx_can_;
 
   std::mutex cycle_mutex_;
-  pi3hat::Attitude attitude_;
+  std::shared_ptr<pi3hat::Attitude> attitude_;
 };
 
 

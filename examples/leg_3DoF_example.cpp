@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
   options.parallelize_control_loop = true; 
 
   // Create control loop
-  Joints3DoF control_loop(joints, options);
+  Joints3DoF control_loop(std::move(joints), options);
 
   // Starts the loop, and then join it
   control_loop.Start();
