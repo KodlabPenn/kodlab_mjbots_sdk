@@ -236,12 +236,7 @@ void MjbotsControlLoop<log_type, input_type>::Run() {
   std::cout << "TODO: Don't segfault" << std::endl;
 
   // Send a few stop commands
-  robot_->ProcessReply();
-  robot_->SetModeStop();
-  robot_->SendCommand();
-  robot_->ProcessReply();
-  robot_->SendCommand();
-  robot_->ProcessReply();
+  robot_->Stop();
 
   // try to Shutdown, but fail
   robot_->Shutdown();

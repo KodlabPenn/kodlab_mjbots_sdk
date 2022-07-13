@@ -11,7 +11,7 @@
 
 namespace kodlab::mjbots {
 void MjbotsRobotInterface::InitializeCommand() {
-  for (const auto &joint : joints) {
+  for (const auto &joint : joints_moteus_) {
     commands_.push_back({});
     commands_.back().id = joint->get_can_id(); //id
   }
@@ -63,20 +63,16 @@ MjbotsRobotInterface::MjbotsRobotInterface(std::vector<std::shared_ptr<JointMote
                                            ::mjbots::pi3hat::Euler imu_mounting_deg,
                                            int imu_rate_hz,
                                            ::mjbots::pi3hat::Euler imu_world_offset_deg)
-    : soft_start_(robot_max_torque, soft_start_duration)
-{
-    joints = joint_ptrs;
+    : kodlab::RobotInterface(joint_ptrs, robot_max_torque, soft_start_duration)
+{ 
+  joints_moteus_ = joint_ptrs;
 
-  for (auto &j : joints)
-  {
-    positions_.push_back( j->get_position_reference() );
-    velocities_.push_back( j->get_velocity_reference() );
-    torque_cmd_.push_back( j->get_servo_torque_reference()   ); 
+  for( auto & j: joints_moteus_){
     modes_.push_back(j->get_mode_reference());
   }
-  num_servos_ = joints.size();
-  for (size_t i = 0; i < num_servos_; ++i)
-    servo_bus_map_[joints[i]->get_can_id()] = joints[i]->get_can_bus();
+  
+  for (size_t i = 0; i < num_joints_; ++i)
+    servo_bus_map_[joints_moteus_[i]->get_can_id()] = joints_moteus_[i]->get_can_bus();
 
   // Create moteus interface
   ::mjbots::moteus::Pi3HatMoteusInterface::Options moteus_options;
@@ -117,7 +113,7 @@ void MjbotsRobotInterface::ProcessReply() {
   // Make sure the m_can_result is valid before waiting otherwise undefined behavior
   moteus_interface_->WaitForCycle();
   // Copy results to object so controller can use
-  for (auto & joint : joints) {
+  for (auto & joint : joints_moteus_) {
     const auto servo_reply = Get(replies_, joint->get_can_id());
     if(std::isnan(servo_reply.position)){
       std::cout<<"Missing can frame for servo: " << joint->get_can_id()<< std::endl;
@@ -131,30 +127,11 @@ void MjbotsRobotInterface::ProcessReply() {
 void MjbotsRobotInterface::SendCommand() {
   cycle_count_++;
   
-  for (int servo=0; servo < num_servos_;servo++) {// TODO: Move to a seperate update method (allow non-ff torque commands)?
+  for (int servo=0; servo < num_joints_;servo++) {// TODO: Move to a seperate update method (allow non-ff torque commands)?
     commands_[servo].position.feedforward_torque = torque_cmd_[servo];
   }
 
   moteus_interface_->Cycle(moteus_data_);
-}
-
-void MjbotsRobotInterface::SetTorques(std::vector<float> torques) {
-  soft_start_.ConstrainTorques(torques, cycle_count_);
-  float torque_cmd;
-  for (int servo = 0; servo < num_servos_; servo++) {
-    torque_cmd = joints[servo]->UpdateTorque(torques[servo]);
-    
-  }
-}
-
-std::vector<float> MjbotsRobotInterface::GetJointPositions() { //Copy of positions
-  std::vector<float>pos(positions_.begin(), positions_.end());
-  return pos;
-}
-
-std::vector<float> MjbotsRobotInterface::GetJointVelocities() { //Copy of velocities
-  std::vector<float>vel(velocities_.begin(), velocities_.end());
-  return vel;
 }
 
 std::vector<::mjbots::moteus::Mode> MjbotsRobotInterface::GetJointModes() {
@@ -162,33 +139,20 @@ std::vector<::mjbots::moteus::Mode> MjbotsRobotInterface::GetJointModes() {
   return modes;
 }
 
-std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> MjbotsRobotInterface::GetJoints(std::vector<int> joint_indices){
-  std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> joint_list;
-  for (int ind: joint_indices){
-    joint_list.emplace_back(joints[ind]);
-  }
-  return joint_list;
-}
-
-std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> MjbotsRobotInterface::GetJoints(std::initializer_list<int> joint_indices){
-  std::vector<int> joint_vect (joint_indices); 
-  return MjbotsRobotInterface::GetJoints(joint_vect);
-}
-
-template <size_t N>
-std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> MjbotsRobotInterface::GetJoints(std::array<int,N> joint_indices){
-  std::vector<int> joint_vect (joint_indices.begin(), joint_indices.end()); 
-  return MjbotsRobotInterface::GetJoints(joint_vect);
-}
-
-std::vector<float> MjbotsRobotInterface::GetJointTorqueCmd() {
-  std::vector<float>torques(torque_cmd_.begin(), torque_cmd_.end());
-  return torques;
-}
 void MjbotsRobotInterface::SetModeStop() {
   for (auto &cmd : commands_) {
     cmd.mode = ::mjbots::moteus::Mode::kStopped;
   }
+}
+
+void MjbotsRobotInterface::Stop() {
+  // Send a few stop commands
+  ProcessReply();
+  SetModeStop();
+  SendCommand();
+  ProcessReply();
+  SendCommand();
+  ProcessReply();
 }
 
 void MjbotsRobotInterface::Shutdown() {
