@@ -31,7 +31,7 @@ struct RealtimeParams {
   int lcm_cpu = 0;
 };
 
-class MjbotsRobotInterface : public kodlab::RobotInterface {
+class MjbotsRobotInterface : virtual public kodlab::RobotInterface {
  public:
 
   /*!
