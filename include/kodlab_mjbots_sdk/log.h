@@ -6,7 +6,39 @@
  *
  * @copyright 2022 The Trustees of the University of Pennsylvania. All rights reserved.
  *
- * @note Define \c NO_COLOR to disable colored terminal output.
+ * This header provides a set of debug logging macros with adjustable
+ * logging severity levels.  In order of increasing severity, the levels are
+ *  - 'DEBUG' (0)
+ *  - 'INFO' (1)
+ *  - 'WARN' (2)
+ *  - 'ERROR' (3)
+ *  - 'FATAL' (4)
+ *  - 'NONE' (5)
+ *  .
+ * The minimum level for console output is set by defining `LOG_MIN_SEVERITY`
+ * (default is `DEBUG`).
+ *
+ * Usage of the `LOG_XXXX` logging macros (where `XXXX` is `DEBUG`, `INFO`,
+ * etc.) is akin to using [`std::fprintf`](https://en.cppreference.com/w/cpp/io/c/fprintf).
+ * For example,
+ *
+ * ```cpp
+ * LOG_WARN("This is a warning message.");
+ * LOG_ERROR("%s", "This is an error message.");
+ * ```
+ *
+ * Conditional logging macros are also provided, which take a leading
+ * conditional argument before the standard `std::fprintf` input.  For example
+ *
+ * ```cpp
+ * LOG_IF_INFO(false, "%s", "This info message will not be logged.");
+ * LOG_IF_FATAL(true, "This fatal message will be logged.");
+ * ```
+ *
+ * Colored terminal output is provided by default via
+ * [ANSI escape codes](https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797).
+ * This can be disabled by defining the `NO_COLOR` macro.
+ *
  */
 
 #pragma once
