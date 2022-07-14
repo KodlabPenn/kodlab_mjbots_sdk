@@ -7,7 +7,8 @@ macro(add_example demo_name)
 endmacro(add_example demo_name)
 
 
-add_example(leg_2DoF_example)
-add_example(leg_3DoF_example)
+# add_example(leg_2DoF_example)
+# add_example(leg_3DoF_example)
 add_example(spin_joints_example)
-add_example(proprio_example)
+# add_example(proprio_example)
+add_example(robot_example)
