@@ -14,6 +14,8 @@
 #include "kodlab_mjbots_sdk/pi3hat.h"
 #include "kodlab_mjbots_sdk/common_header.h"
 #include "kodlab_mjbots_sdk/rotations.h"
+#include <iostream>
+#include <iomanip>
 
 namespace kodlab
 {
@@ -229,6 +231,30 @@ public:
   }
 
   /**
+   * @brief Prints attitude, angular velocity, and linear acceleration in
+   * various representations
+   */
+  void PrintAttitude()
+  {
+    std::cout << std::fixed << std::setprecision(2)
+              << "=================================================\n"
+              << "quat_raw:\t" << get_att_quat_raw() << "\n"
+              << "    quat:\t" << get_att_quat() << "\n"
+              << "-------------------------------------------------\n"
+              << "  euler (r, p, y):\t" << get_att_euler().roll << ",\t"
+              << get_att_euler().pitch << ",\t" << get_att_euler().yaw << "\n"
+              << "ang_vel (x, y, z):\t" << get_ang_rate()(0) << ",\t"
+              << get_ang_rate()(1) << ",\t" << get_ang_rate()(2) << "\n"
+              << "lin_acc (x, y, z):\t" << get_accel()(0) << ",\t"
+              << get_accel()(1) << ",\t" << get_accel()(2) << "\n"
+              << "-------------------------------------------------\n"
+              << "rot_mat:\n" << get_att_rot_mat() << "\n"
+              << "================================================="
+              << std::endl;
+
+  }
+
+  /**
    * @param world_offset_in world offset rotation
    */
   void set_world_offset(Eigen::Quaternion<Scalar> world_offset_in)
@@ -240,7 +266,7 @@ public:
    * @return attitude quaternion in the unmodified world frame (i.e., not yet
    *         offset)
    */
-  Eigen::Quaternion<Scalar> get_att_quat_raw_() const { return att_quat_raw_; }
+  Eigen::Quaternion<Scalar> get_att_quat_raw() const { return att_quat_raw_; }
 
   /**
    * @return attitude quaternion in world frame

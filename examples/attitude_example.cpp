@@ -47,22 +47,7 @@ private:
     Eigen::Matrix3f rot_mat = att_.get_att_rot_mat();
 
     // Print Attitude Representations to Terminal
-    std::cout << std::fixed << std::setprecision(2)
-              << "=================================================\n"
-              << "quat_raw:\t" << att_.get_att_quat_raw_() << "\n"
-              << "    quat:\t" << quat << "\n"
-              << "-------------------------------------------------\n"
-              << "  euler (r, p, y):\t" << euler.roll << ",\t" << euler.pitch
-              << ",\t" << euler.yaw << "\n"
-              << "ang_vel (x, y, z):\t" << att_.get_ang_rate()(0) << ",\t"
-              << att_.get_ang_rate()(1) << ",\t" << att_.get_ang_rate()(2)
-              << "\n"
-              << "lin_acc (x, y, z):\t" << att_.get_accel()(0) << ",\t"
-              << att_.get_accel()(1) << ",\t" << att_.get_accel()(2) << "\n"
-              << "-------------------------------------------------\n"
-              << "rot_mat:\n" << rot_mat << "\n"
-              << "================================================="
-              << std::endl;
+    att_.PrintAttitude();
 
     // Set Torques to Zero
     std::vector<float> torques(num_motors_, 0);
