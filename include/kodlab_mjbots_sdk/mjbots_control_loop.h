@@ -25,12 +25,12 @@ struct ControlLoopOptions {
   float max_torque = 20;             /// Maximum torque in Nm
   int soft_start_duration = 1000;    /// Duration of the soft Start in cycles
   int frequency = 1000;              /// Frequency of the control loop in Hz
-  std::string log_channel_name;          /// LCM channel name for logging data. Leave empty to not log
-  std::string input_channel_name;          /// LCM channel name for input data. Leave empty to not use input
-  bool parallelize_control_loop = false;  /// If true the communication with the moteus will happen in parallel with the
-                                          /// torque update loop. If false the communication will happen in series. True
-                                          /// results in a 1 dt delay in your controller, but is necessary for robots with
-                                          /// more motors or more complicated update loops
+  std::string log_channel_name;         /// LCM channel name for logging data. Leave empty to not log
+  std::string input_channel_name;       /// LCM channel name for input data. Leave empty to not use input
+  bool parallelize_control_loop = false;   /// If true the communication with the moteus will happen in parallel with the
+                                           /// torque update loop. If false the communication will happen in series. True
+                                           /// results in a 1 dt delay in your controller, but is necessary for robots with
+                                           /// more motors or more complicated update loops
   ::mjbots::pi3hat::Euler imu_mounting_deg; /// Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
   ::mjbots::pi3hat::Euler imu_world_offset_deg; /// IMU orientation offset. Useful for re-orienting gravity, etc.
   int attitude_rate_hz = 1000;              /// Frequency of the imu updates from the pi3hat. Options are limited to 1000
@@ -57,6 +57,10 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    * \overload 
    */
   MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joints, const ControlLoopOptions &options);
+  /*!
+   * \overload 
+   */
+  MjbotsControlLoop(std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface>robot_in, const ControlLoopOptions &options);
 
  protected:
 
@@ -99,6 +103,13 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    */
   virtual void ProcessInput() {};
 
+  /*!
+   * @brief Construct a new Setup Options object
+   * 
+   * @param options 
+   */
+  void SetupOptions(const ControlLoopOptions &options);
+
   std::shared_ptr<MjbotsRobotInterface>
       robot_;   /// ptr to the robot object, if unique causes many issues, also should be
   /// initialized inside thread
@@ -120,17 +131,47 @@ template<class log_type, class input_type>
 MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options)
   : MjbotsControlLoop( make_share_vector(joints), options){}
 
+// template<class log_type, class input_type>
+// MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
+//   : MjbotsControlLoop( kodlab::mjbots::MjbotsRobotInterface( joint_ptrs,
+//                                                                         options.realtime_params,
+//                                                                         options.soft_start_duration,
+//                                                                         options.max_torque,
+//                                                                         options.imu_mounting_deg,
+//                                                                         options.attitude_rate_hz),
+//                        options){}template<class log_type, class input_type>
+
 template<class log_type, class input_type>
 MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
- :
-    AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
+  : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
+    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) 
+{
+  robot_ = std::make_shared<kodlab::mjbots::MjbotsRobotInterface>( joint_ptrs,
+                                                                   options.realtime_params,
+                                                                   options.soft_start_duration,
+                                                                   options.max_torque,
+                                                                   options.imu_mounting_deg,
+                                                                   options.attitude_rate_hz);
+  num_motors_ = robot_->joints.size();
+  SetupOptions(options);
+}
+template<class log_type, class input_type>
+MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface>robot_in, const ControlLoopOptions &options)
+  : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
     lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) {
+  // Create robot object
+  robot_ = robot_in;
+  num_motors_ = robot_->joints.size();
+  SetupOptions(options);
+}
+
+template<class log_type, class input_type>
+void MjbotsControlLoop<log_type, input_type>::SetupOptions(const ControlLoopOptions &options){
   // Extract useful values from options
   options_ = options;
   cpu_ = options.realtime_params.main_cpu;
   realtime_priority_ = options.realtime_params.main_rtp;
   frequency_ = options.frequency;
-  num_motors_ = joint_ptrs.size();
   // Setup logging info and confirm template is provided if logging
   logging_channel_name_ = options.log_channel_name;
   logging_ = !logging_channel_name_.empty();
@@ -144,16 +185,8 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<std::shar
     std::cout << "Warning, input_type is default, but input is enabled" << std::endl;
     input_ = false;
   }
-
-  // Create robot object
-  robot_ = std::make_shared<MjbotsRobotInterface>(MjbotsRobotInterface(joint_ptrs,
-                                                                       options_.realtime_params,
-                                                                       options_.soft_start_duration,
-                                                                       options_.max_torque,
-                                                                       options_.imu_mounting_deg,
-                                                                       options_.attitude_rate_hz,
-                                                                       options_.imu_world_offset_deg));
 }
+
 
 template<class log_type, class input_type>
 void MjbotsControlLoop<log_type, input_type>::AddTimingLog(float t, float margin, float message_duration) {

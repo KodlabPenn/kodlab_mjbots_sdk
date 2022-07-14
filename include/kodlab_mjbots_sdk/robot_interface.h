@@ -75,15 +75,15 @@ namespace kodlab
         virtual void ProcessReply()=0;
         
         /*!
+        * @brief shuts down the running robot code
+        */
+        virtual void Shutdown()=0;
+
+        /*!
          * @brief Stop the robot by setting torques to zero. Can be overridden
          *        if other features are available e.g. mehanical or regen braking
          */
         virtual void Stop(){SetTorques(std::vector<float>(num_joints_, 0));}
-
-        /*!
-        * @brief shuts down the running robot code
-        */
-        virtual void Shutdown()=0;
 
         /*!
          * @brief accessor for joint positions, takes into account direction and offset
