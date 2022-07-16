@@ -23,7 +23,7 @@ namespace kodlab
      */
     class RobotInterface {
     public:
-
+        static const int KILL_ROBOT = -1;
         std::vector< std::shared_ptr<JointBase> > joints;
         u_int64_t cycle_count_; //TODO Make this time based not cycle based for when the system fails to keep up (i.e. time_us_)
         
@@ -78,6 +78,11 @@ namespace kodlab
         * @brief shuts down the running robot code
         */
         virtual void Shutdown()=0;
+
+        /*!
+         * @brief Update the robot state and torque command. 
+         */
+        virtual void Update(){};
 
         /*!
          * @brief Stop the robot by setting torques to zero. Can be overridden
