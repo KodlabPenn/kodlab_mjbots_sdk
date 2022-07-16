@@ -132,16 +132,6 @@ template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options)
   : MjbotsControlLoop<log_type, input_type,robot_type>( make_share_vector(joints), options){}
 
-// template<class log_type, class input_type>
-// MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
-//   : MjbotsControlLoop( kodlab::mjbots::MjbotsRobotInterface( joint_ptrs,
-//                                                                         options.realtime_params,
-//                                                                         options.soft_start_duration,
-//                                                                         options.max_torque,
-//                                                                         options.imu_mounting_deg,
-//                                                                         options.attitude_rate_hz),
-//                        options){}template<class log_type, class input_type>
-
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
   : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
@@ -156,6 +146,7 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
   num_motors_ = robot_->joints.size();
   SetupOptions(options);
 }
+
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shared_ptr<robot_type>robot_in, const ControlLoopOptions &options)
   : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),

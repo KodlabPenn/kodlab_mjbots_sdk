@@ -54,7 +54,12 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
                                            ::mjbots::pi3hat::Euler imu_mounting_deg,
                                            int imu_rate_hz,
                                            ::mjbots::pi3hat::Euler imu_world_offset_deg)
-    : MjbotsRobotInterface(make_share_vector(joint_list), realtime_params, soft_start_duration, robot_max_torque, imu_mounting_deg, imu_rate_hz) {}
+    : MjbotsRobotInterface(make_share_vector(joint_list),
+                           realtime_params,
+                           soft_start_duration,
+                           robot_max_torque,
+                           imu_mounting_deg,
+                           imu_rate_hz) {}
 
 MjbotsRobotInterface::MjbotsRobotInterface(std::vector<std::shared_ptr<JointMoteus>> joint_ptrs,
                                            const RealtimeParams &realtime_params,
