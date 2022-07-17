@@ -11,7 +11,7 @@
 
 namespace kodlab::mjbots {
 void MjbotsRobotInterface::InitializeCommand() {
-  for (const auto &joint : joints_moteus_) {
+  for (const auto &joint : joints) {
     commands_.push_back({});
     commands_.back().id = joint->get_can_id(); //id
   }
@@ -47,38 +47,20 @@ void MjbotsRobotInterface::PrepareTorqueCommand() {
   return {};
 }
 
-
-MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint_list,
-                                           const RealtimeParams &realtime_params,
-                                           int soft_start_duration,
-                                           float robot_max_torque,
-                                           ::mjbots::pi3hat::Euler imu_mounting_deg,
-                                           int imu_rate_hz)
-                                           : MjbotsRobotInterface(  make_share_vector(joint_list),
-                                                                    realtime_params,
-                                                                    soft_start_duration,
-                                                                    robot_max_torque,
-                                                                    imu_mounting_deg,
-                                                                    imu_rate_hz){}
-
 MjbotsRobotInterface::MjbotsRobotInterface(std::vector<std::shared_ptr<JointMoteus>> joint_ptrs,
                                            const RealtimeParams &realtime_params,
-                                           int soft_start_duration,
-                                           float robot_max_torque,
                                            ::mjbots::pi3hat::Euler imu_mounting_deg,
                                            int imu_rate_hz) 
-                                           :  kodlab::RobotInterface( joint_ptrs, 
-                                                                      robot_max_torque,
-                                                                      soft_start_duration)
   { 
-  joints_moteus_ = joint_ptrs;
+  joints = joint_ptrs;
+  num_joints_ = joints.size();
 
-  for( auto & j: joints_moteus_){
+  for( auto & j: joints){
     modes_.push_back(j->get_mode_reference());
   }
   
   for (size_t i = 0; i < num_joints_; ++i)
-    servo_bus_map_[joints_moteus_[i]->get_can_id()] = joints_moteus_[i]->get_can_bus();
+    servo_bus_map_[joints[i]->get_can_id()] = joints[i]->get_can_bus();
 
   // Create moteus interface
   ::mjbots::moteus::Pi3HatMoteusInterface::Options moteus_options;
@@ -113,7 +95,7 @@ void MjbotsRobotInterface::ProcessReply() {
   // Make sure the m_can_result is valid before waiting otherwise undefined behavior
   moteus_interface_->WaitForCycle();
   // Copy results to object so controller can use
-  for (auto & joint : joints_moteus_) {
+  for (auto & joint : joints) {
     const auto servo_reply = Get(replies_, joint->get_can_id());
     if(std::isnan(servo_reply.position)){
       std::cout<<"Missing can frame for servo: " << joint->get_can_id()<< std::endl;
@@ -127,8 +109,8 @@ void MjbotsRobotInterface::ProcessReply() {
 void MjbotsRobotInterface::SendCommand() {
   cycle_count_++;
   
-  for (int servo=0; servo < num_joints_;servo++) {// TODO: Move to a seperate update method (allow non-ff torque commands)?
-    commands_[servo].position.feedforward_torque = torque_cmd_[servo];
+  for (int servo=0; servo < num_joints_;servo++) {// TODO Move to a seperate update method (allow non-ff torque commands)?
+    commands_[servo].position.feedforward_torque = joints[servo]->get_servo_torque();
   }
 
   moteus_interface_->Cycle(moteus_data_);

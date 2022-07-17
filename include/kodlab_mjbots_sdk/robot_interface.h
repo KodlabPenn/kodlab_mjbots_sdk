@@ -62,27 +62,12 @@ namespace kodlab
         /*!
          * @brief Initialize the robot (e.g. communication or states etc.)
          */
-        virtual void Init()=0;
-
-        /*!
-         * @brief Send prepared torque command
-         */
-        virtual void SendCommand()=0;
-
-        /*!
-         * @brief Process reply from communications system
-         */
-        virtual void ProcessReply()=0;
-        
-        /*!
-        * @brief shuts down the running robot code
-        */
-        virtual void Shutdown()=0;
+        virtual void Init(){};
 
         /*!
          * @brief Update the robot state and torque command. 
          */
-        virtual void Update(){};
+        virtual void Update(){cycle_count_++;}; //TODO remove cycle_count and use time or more intelligently set cycle_count or properly handle softstart
 
         /*!
          * @brief Stop the robot by setting torques to zero. Can be overridden
