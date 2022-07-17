@@ -26,7 +26,7 @@ class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
     for (int servo = 0; servo < num_motors_; servo++) {
       log_data_.positions[servo] = robot_->GetJointPositions()[servo];
       log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
-      log_data_.modes[servo] = static_cast<int>(robot_->GetJointModes()[servo]);
+      log_data_.modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
       log_data_.torques[servo] = robot_->GetJointTorqueCmd()[servo];
     }
     for (int servo = num_motors_; servo < 13; servo++) {
