@@ -5,6 +5,8 @@
 #include <signal.h>  // manage the ctrl+c signal
 #include <type_traits>
 #include <iostream>
+#include <memory>
+#include <vector>
 
 namespace kodlab {
 /*
