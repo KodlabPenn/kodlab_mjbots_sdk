@@ -2,6 +2,7 @@
 // Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
 // Authors:
 // Shane Rozen-Levy <srozen01@seas.upenn.edu>
+// J. Diego Caporale <jdcap@seas.upenn.edu>
 
 
 #pragma once
@@ -43,22 +44,29 @@ struct ControlLoopOptions {
  *        the robot object. The behavior runs in its own thread. To Start the thread Run Start()
  * @tparam LogClass[optional] data type for logging
  * @tparam InputClass[optional] class for input data 
+ * @tparam RobotClass[optional] RobotInterfaceDerived class that contains state and control calculations 
  */
 template<class LogClass = VoidLcm, class InputClass = VoidLcm, class RobotClass = kodlab::RobotInterface>
 class MjbotsControlLoop : public AbstractRealtimeObject {
  static_assert(std::is_base_of<kodlab::RobotInterface,RobotClass>::value);
  public:
   /*!
-   * @brief constructs and mjbots behavior based on the options struct. Does not Start the controller.
-   * @param joints a std::vector of JointMoteus's (or std::shared_ptr to the same)
+   * @brief constructs an mjbots control loop based on the options struct. Does not Start the controller.
+   * @param joints a std::vector of JointMoteus's
    * @param options contains options defining the behavior
    */
   MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options);
   /*!
+   * @brief constructs an mjbots control loop based on the options struct. Does not Start the controller.
+   * @param joints a std::vector of std::shared_ptrs of JointMoteus
+   * @param options contains options defining the behavior
    * \overload 
    */
   MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joints, const ControlLoopOptions &options);
   /*!
+   * @brief constructs an mjbots control loop based on the options struct. Does not Start the controller.
+   * @param robot_in an instance of a derived RobotInterface
+   * @param options contains options defining the behavior
    * \overload 
    */
   MjbotsControlLoop(std::shared_ptr<RobotClass>robot_in, const ControlLoopOptions &options);
@@ -111,18 +119,18 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    */
   void SetupOptions(const ControlLoopOptions &options);
 
-  std::shared_ptr<RobotClass> robot_;   /// ptr to the robot object
+  std::shared_ptr<RobotClass> robot_;     /// ptr to the robot object
   std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface> mjbots_interface_;   ///ptr to mjbots_interface object, if unique causes issues, also should be initialized inside thread
   int frequency_;                         /// frequency of the controller in Hz
   int num_motors_;                        /// Number of motors
-  ControlLoopOptions options_;              /// Options struct
+  ControlLoopOptions options_;            /// Options struct
   bool logging_ = false;                  /// Boolean to determine if logging is in use
-  bool input_ = false;
-  std::string logging_channel_name_;              /// Channel name to publish logs to, leave empty if not publishing
+  bool input_ = false;                    /// Boolean to determine if input is in use
+  std::string logging_channel_name_;      /// Channel name to publish logs to, leave empty if not publishing
   lcm::LCM lcm_;                          /// LCM object
   LogClass log_data_;                     /// object containing log data
-  LcmSubscriber<InputClass> lcm_sub_;    /// LCM subscriber object
-  float time_now_ = 0;                       /// Time since start in micro seconds
+  LcmSubscriber<InputClass> lcm_sub_;     /// LCM subscriber object
+  float time_now_ = 0;                    /// Time since start in micro seconds
 };
 
 /******************************************Implementation**************************************************************/

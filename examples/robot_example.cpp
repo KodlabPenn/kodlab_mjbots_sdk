@@ -1,7 +1,14 @@
-
-// #include "kodlab_mjbots_sdk/robot_control_loop.h"
-// #include "kodlab_mjbots_sdk/behavior.h"
-// #include "kodlab_mjbots_sdk/robot_super.h"
+/*!
+ * @file robot_example.cpp
+ * @author J. Diego Caporale <jdcap@seas.upenn.edu>
+ * @brief Example that uses SimpleRobot(a RobotInterfaceDerived class defined in a seperate header file) separating the 
+ *        controller, state update, and state machine from the lower lever control loop. 
+ * @date 2022-07-17
+ * 
+ * @copyright Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+ *            BSD 3-Clause License
+ * 
+ */
 #include <vector>
 #include <iostream>
 #include <memory>
@@ -51,29 +58,47 @@ class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMoto
     }
 };
 
+/*!
+ * @brief Helper class to wrap the vector of shared pointers of JointBaseDerived
+ * 
+ * @tparam joint_type must be JointBaseDerived type
+ */
 template <class joint_type>
 class JointSharedVector
 {
-    static_assert(std::is_base_of<JointBase, joint_type>::value);
-    std::vector<std::shared_ptr<joint_type>> v_;
+    static_assert(std::is_base_of<JointBase, joint_type>::value); // check that the joint_type is derived from JointBase
+    std::vector<std::shared_ptr<joint_type>> v_;  // internal vector of shared pointers 
 
 public:
+    /*!
+     * @brief constructs a shared_ptr joint_type and appends it to the internal vector
+     * 
+     * @tparam Args parameter pack for passing through the joint constructor
+     * @param args a set of args that match the joint_type constructor
+     */
     template <typename... Args>
     void addJoint(Args... args)
     {
         v_.push_back(std::make_shared<joint_type>(args...));
     }
+
+    /*!
+     * @brief implicit conversion to vector that returns a copy of the shared_ptr's
+     * 
+     * @return std::vector<std::shared_ptr<joint_type>> 
+     */
     operator std::vector<std::shared_ptr<joint_type>>() { return v_; }
 };
 
 int main(int argc, char **argv)
 {
 
-    // Setup joints
+    // Setup joints with a std::vector
     // std::vector<kodlab::mjbots::JointMoteus> joints;
     // joints.emplace_back(100, 4, 1, 0,   1, 0);
     // joints.emplace_back(101, 4,-1, 0, 5.0/3.0, 0);
 
+    // Setup joints with JointSharedVector
     JointSharedVector<kodlab::mjbots::JointMoteus> joints;
     joints.addJoint(100, 4, 1, 0, 1, 0);
     joints.addJoint(101, 4, -1, 0, 5.0 / 3.0, 0);
@@ -84,7 +109,6 @@ int main(int argc, char **argv)
     options.frequency = 1000;
     options.realtime_params.main_cpu = 3;
     options.realtime_params.can_cpu = 2;
-    // MjbotsSimpleRobot rob(joints, options);
 
     // Create control loop
     // Starts the loop, and then join it

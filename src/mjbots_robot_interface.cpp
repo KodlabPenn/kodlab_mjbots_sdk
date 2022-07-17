@@ -80,7 +80,6 @@ MjbotsRobotInterface::MjbotsRobotInterface(std::vector<std::shared_ptr<JointMote
 
 }
 
-
 void MjbotsRobotInterface::Init() {
     SendCommand();
     ProcessReply();
@@ -140,6 +139,7 @@ void MjbotsRobotInterface::Stop() {
 void MjbotsRobotInterface::Shutdown() {
   moteus_interface_->shutdown();
 }
+
 ::mjbots::pi3hat::Attitude MjbotsRobotInterface::GetAttitude() {
   return  attitude_;
 }
