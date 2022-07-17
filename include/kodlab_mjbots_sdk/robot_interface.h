@@ -4,7 +4,8 @@
  * @brief Robot Interface Class 
  * @date 2022-07-12
  * 
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+ *            BSD 3-Clause License
  * 
  */
 #pragma once 
@@ -24,7 +25,7 @@ namespace kodlab
     class RobotInterface {
     public:
         static const int KILL_ROBOT = -1;
-        std::vector< std::shared_ptr<JointBase> > joints;
+        std::vector< std::shared_ptr<JointBase> > joints; ///the vector of shared_ptrs to joints 
         u_int64_t cycle_count_; //TODO Make this time based not cycle based for when the system fails to keep up (i.e. time_us_)
         
         /*!

@@ -1,4 +1,14 @@
-
+/*!
+ * @file robot_example.cpp
+ * @author J. Diego Caporale <jdcap@seas.upenn.edu>
+ * @brief Example that uses SimpleRobot(a RobotInterfaceDerived class defined in a seperate header file) separating the 
+ *        controller, state update, and state machine from the lower lever control loop. 
+ * @date 2022-07-17
+ * 
+ * @copyright Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+ *            BSD 3-Clause License
+ * 
+ */
 #include <vector>
 #include <iostream>
 #include "kodlab_mjbots_sdk/common_header.h"

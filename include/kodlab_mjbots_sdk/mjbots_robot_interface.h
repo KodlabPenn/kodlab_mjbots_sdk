@@ -31,26 +31,20 @@ struct RealtimeParams {
   int lcm_cpu = 0;
 };
 
+/*!
+ * @brief A class that allows interaction with the Mjbots Moteus Motor Controllers
+ * 
+ */
 class MjbotsRobotInterface  {
  public:
 
   /*!
    * @brief constructs an mjbots_robot_interface to communicate with a collection of moeteusses
-   * @param joint_list a list of joints (or shared pointers to joints) defining the motors in the robot
+   * @param joint_list a list of shared pointers to joints defining the motors in the robot
    * @param realtime_params the realtime parameters defining cpu and realtime priority
-   * @param soft_start_duration how long in dt to spend ramping the torque
-   * @param robot_max_torque the maximum torque to allow per motor in the robot
    * @param imu_mounting_deg Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
    * @param imu_rate_hz Frequency of the imu updates from the pi3hat
    * @param imu_world_offset_deg IMU orientation offset. Useful for re-orienting gravity, etc.
-   */
-  MjbotsRobotInterface(const std::vector<JointMoteus> &joint_list,
-                       const RealtimeParams &realtime_params,
-                       ::mjbots::pi3hat::Euler imu_mounting_deg = ::mjbots::pi3hat::Euler(),
-                       int imu_rate_hz = 1000,
-                       ::mjbots::pi3hat::Euler imu_world_offset_deg = ::mjbots::pi3hat::Euler());
-  /*!
-   * \overload
    */
   MjbotsRobotInterface(std::vector<std::shared_ptr<JointMoteus>> joint_list,
                        const RealtimeParams &realtime_params,
@@ -62,7 +56,6 @@ class MjbotsRobotInterface  {
    * @brief Send and recieve initial communications effectively starting the robot
    * 
    */
-
   void Init();
 
   /*!
@@ -114,14 +107,14 @@ class MjbotsRobotInterface  {
 
  private:
   std::vector< std::shared_ptr<JointMoteus>> joints; /// Vector of shared pointers to joints for the robot, shares state information
-  int num_joints_ = 0;                                       /// Number of joints
-  u_int64_t cycle_count_ = 0;                                /// Number of cycles/commands sent
+  int num_joints_ = 0;                               /// Number of joints
+  u_int64_t cycle_count_ = 0;                        /// Number of cycles/commands sent
 
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
 
   std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> modes_; /// Vector of current moteus modes (references to the members of joints_)
   
-  std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                   /// True if communication has timed out
+  std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                /// True if communication has timed out
 
   std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> commands_;  /// Vector of servo commands
   std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> replies_;     /// Vector of replies
