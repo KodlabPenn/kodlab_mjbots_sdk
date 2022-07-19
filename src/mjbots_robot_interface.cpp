@@ -80,6 +80,9 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
   moteus_options.imu_mounting_deg = imu_mounting_deg;
   moteus_interface_ = std::make_shared<::mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
 
+  // Initialize attitude shared pointer
+  attitude_ = std::make_shared<::kodlab::Attitude<float>>();
+
   // Initialize and send basic command
   InitializeCommand();
   replies_ = std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply>{commands_.size()};
@@ -112,7 +115,7 @@ void MjbotsRobotInterface::ProcessReply() {
       joint->UpdateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
     }
   }
-  attitude_ = *(moteus_data_.attitude);
+  attitude_->Update(*(moteus_data_.attitude));
 }
 
 void MjbotsRobotInterface::SendCommand() {
@@ -181,7 +184,9 @@ void MjbotsRobotInterface::SetModeStop() {
 void MjbotsRobotInterface::Shutdown() {
   moteus_interface_->shutdown();
 }
-::mjbots::pi3hat::Attitude MjbotsRobotInterface::GetAttitude() {
+
+std::shared_ptr<::kodlab::Attitude<float>> MjbotsRobotInterface::GetAttitude() {
   return  attitude_;
 }
+
 } // namespace kodlab::mjbots

@@ -14,6 +14,7 @@
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
+#include "kodlab_mjbots_sdk/attitude.h"
 
 namespace kodlab::mjbots {
 
@@ -146,7 +147,7 @@ class MjbotsRobotInterface {
    * @brief accessor for the attitude of the robot
    * @return the attitude object for the robot
    */
-  ::mjbots::pi3hat::Attitude GetAttitude();
+  std::shared_ptr<::kodlab::Attitude<float>> GetAttitude();
 
  private:
   int num_servos_;                         /// The number of motors in the robot
@@ -167,7 +168,7 @@ class MjbotsRobotInterface {
   std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
   /// response is ready
   SoftStart soft_start_;                                                      /// Soft Start object
-  ::mjbots::pi3hat::Attitude attitude_;                                       /// Robot attitude
+  std::shared_ptr<::kodlab::Attitude<float>> attitude_;                       /// Robot attitude
 
   /*!
    * @brief initialize the command with resolutions

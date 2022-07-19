@@ -32,12 +32,12 @@ private:
   /**
    * @brief Inputted attitude quaternion before world offset rotation
    */
-  Eigen::Quaternion<Scalar> att_quat_raw_;
+  Eigen::Quaternion<Scalar> att_quat_raw_ = {1, 0, 0, 0};
 
   /**
    * @brief Attitude quaternion in world frame
    */
-  Eigen::Quaternion<Scalar> att_quat_;
+  Eigen::Quaternion<Scalar> att_quat_ = {1, 0, 0, 0};
 
   /**
    * @brief Attitude euler angles in world frame
@@ -53,29 +53,29 @@ private:
   /**
    * @brief Angular velocity about <code>[x, y, z]</code> axes (default deg/s)
    */
-  Eigen::Vector3<Scalar> ang_rate_;
+  Eigen::Vector3<Scalar> ang_rate_ = {0, 0, 0};
 
   /**
    * @brief Linear acceleration along <code>[x, y, z]</code> axes (default
    *        m/s^2)
    */
-  Eigen::Vector3<Scalar> accel_;
+  Eigen::Vector3<Scalar> accel_ = {0, 0, 0};
 
   /**
    * @brief Gyroscope bias about <code>[x, y, z]</code> axes (default deg/s)
    */
-  Eigen::Vector3<Scalar> ang_rate_bias_;
+  Eigen::Vector3<Scalar> ang_rate_bias_ = {0, 0, 0};
 
   /**
    * @brief Attitude uncertainty about the raw attitude
    */
-  Eigen::Quaternion<Scalar> att_uncertainty_;
+  Eigen::Quaternion<Scalar> att_uncertainty_ = {1, 0, 0, 0};
 
   /**
    * @brief Gyroscope bias uncertainty about <code>[x, y, z]</code> axes
    * (default deg/s)
    */
-  Eigen::Vector3<Scalar> ang_bias_uncertainty_;
+  Eigen::Vector3<Scalar> ang_bias_uncertainty_ = {0, 0, 0};
 
   /**
    * @brief World frame rotation offset

@@ -23,7 +23,21 @@ class AttitudeExample : public kodlab::mjbots::MjbotsControlLoop<AttitudeLog,
                                                                  VoidLcm>
 {
 public:
-  using MjbotsControlLoop::MjbotsControlLoop;
+  /**
+   * @brief Construct a new Attitude Example object
+   * 
+   * @param joints vector of robot joint shared pointers
+   * @param options options defining the behavior
+   */
+  AttitudeExample(std::vector<kodlab::mjbots::JointMoteus> joints,
+                  const kodlab::mjbots::ControlLoopOptions &options)
+      : MjbotsControlLoop::MjbotsControlLoop(joints, options),
+        att_(robot_->GetAttitude())
+  {
+    // Modify world offset rotation to \f$\pi\f$ radians about the roll axis
+    att_->set_world_offset(
+        Eigen::Quaternionf(Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitX())));
+  }
 
 private:
   /**
@@ -31,9 +45,7 @@ private:
    * @note Uses a modified world offset rotation of \f$\pi\f$ radians about the
    *       roll axis
    */
-  kodlab::Attitude<float> att_ = {robot_->GetAttitude(),
-                                  Eigen::Quaternionf(Eigen::AngleAxisf(M_PI,
-                                                                       Eigen::Vector3f::UnitX()))};
+  std::shared_ptr<kodlab::Attitude<float>> att_;
 
   /**
    * @brief Gathers attitude data and sets command torques to zero
@@ -41,13 +53,12 @@ private:
   void CalcTorques() override
   {
     // Get Updated Attitude Representations
-    att_.Update(robot_->GetAttitude());
-    Eigen::Quaternionf quat = att_.get_att_quat();
-    kodlab::rotations::EulerAngles euler = att_.get_att_euler();
-    Eigen::Matrix3f rot_mat = att_.get_att_rot_mat();
+    Eigen::Quaternionf quat = att_->get_att_quat();
+    kodlab::rotations::EulerAngles euler = att_->get_att_euler();
+    Eigen::Matrix3f rot_mat = att_->get_att_rot_mat();
 
     // Print Attitude Representations to Terminal
-    att_.PrintAttitude();
+    att_->PrintAttitude();
 
     // Set Torques to Zero
     std::vector<float> torques(num_motors_, 0);
@@ -60,25 +71,25 @@ private:
   void PrepareLog() override
   {
     // Attitude Quaternion
-    log_data_.attitude_quaternion[0] = att_.get_att_quat().x();
-    log_data_.attitude_quaternion[1] = att_.get_att_quat().y();
-    log_data_.attitude_quaternion[2] = att_.get_att_quat().z();
-    log_data_.attitude_quaternion[3] = att_.get_att_quat().w();
+    log_data_.attitude_quaternion[0] = att_->get_att_quat().x();
+    log_data_.attitude_quaternion[1] = att_->get_att_quat().y();
+    log_data_.attitude_quaternion[2] = att_->get_att_quat().z();
+    log_data_.attitude_quaternion[3] = att_->get_att_quat().w();
 
     // Attitude Euler Angles
-    log_data_.attitude_euler[0] = att_.get_att_euler().roll;
-    log_data_.attitude_euler[1] = att_.get_att_euler().pitch;
-    log_data_.attitude_euler[2] = att_.get_att_euler().yaw;
+    log_data_.attitude_euler[0] = att_->get_att_euler().roll;
+    log_data_.attitude_euler[1] = att_->get_att_euler().pitch;
+    log_data_.attitude_euler[2] = att_->get_att_euler().yaw;
 
     // Angular Velocity
-    log_data_.angular_velocity[0] = att_.get_ang_rate().x();
-    log_data_.angular_velocity[1] = att_.get_ang_rate().y();
-    log_data_.angular_velocity[2] = att_.get_ang_rate().z();
+    log_data_.angular_velocity[0] = att_->get_ang_rate().x();
+    log_data_.angular_velocity[1] = att_->get_ang_rate().y();
+    log_data_.angular_velocity[2] = att_->get_ang_rate().z();
 
     // Linear Acceleration
-    log_data_.linear_acceleration[0] = att_.get_accel().x();
-    log_data_.linear_acceleration[1] = att_.get_accel().y();
-    log_data_.linear_acceleration[2] = att_.get_accel().z();
+    log_data_.linear_acceleration[0] = att_->get_accel().x();
+    log_data_.linear_acceleration[1] = att_->get_accel().y();
+    log_data_.linear_acceleration[2] = att_->get_accel().z();
   }
 
 };
