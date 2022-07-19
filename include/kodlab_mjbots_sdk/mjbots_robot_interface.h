@@ -147,7 +147,13 @@ class MjbotsRobotInterface {
    * @brief accessor for the attitude of the robot
    * @return the attitude object for the robot
    */
-  std::shared_ptr<::kodlab::Attitude<float>> GetAttitude();
+  const ::kodlab::Attitude<float>& GetAttitude();
+
+  /*!
+   * @brief accessor for the attitude of the robot
+   * @return the attitude shared pointer for the robot
+   */
+  std::shared_ptr<::kodlab::Attitude<float>> GetAttitudeSharedPtr();
 
  private:
   int num_servos_;                         /// The number of motors in the robot

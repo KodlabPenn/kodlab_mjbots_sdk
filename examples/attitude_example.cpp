@@ -32,33 +32,55 @@ public:
   AttitudeExample(std::vector<kodlab::mjbots::JointMoteus> joints,
                   const kodlab::mjbots::ControlLoopOptions &options)
       : MjbotsControlLoop::MjbotsControlLoop(joints, options),
-        att_(robot_->GetAttitude())
+        att_(robot_->GetAttitudeSharedPtr()),
+        att_read_only_(robot_->GetAttitude())
   {
     // Modify world offset rotation to \f$\pi\f$ radians about the roll axis
-    att_->set_world_offset(
-        Eigen::Quaternionf(Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitX())));
+    Eigen::Quaternionf world_offset = Eigen::Quaternionf(
+      Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitX()));
+    att_->set_world_offset(world_offset);
+    att_read_only_.set_world_offset(world_offset);
   }
 
 private:
   /**
-   * @brief Attitude object to store IMU data
+   * @brief Shared pointer to an attitude object for storing IMU data
    * @note Uses a modified world offset rotation of \f$\pi\f$ radians about the
    *       roll axis
+   * @note This is is a shared pointer to a continually updated `Attitude` 
+   *       object.  There is no need to update in the contorl loop itself.
    */
   std::shared_ptr<kodlab::Attitude<float>> att_;
+
+  /**
+   * @brief Read-only attitude object for storing IMU data
+   * @note Uses a modified world offset rotation of \f$\pi\f$ radians about the
+   *       roll axis
+   * @note Unlike `att_` above which is a shared pointer to a continually 
+   *       updated `Attitude` object, this object is only updated when 
+   *       specifically assigned.
+   */
+  kodlab::Attitude<float> att_read_only_;
 
   /**
    * @brief Gathers attitude data and sets command torques to zero
    */
   void CalcTorques() override
   {
+    // Get Updated Read-Only Attitude
+    att_read_only_ = robot_->GetAttitude();
+    
     // Get Updated Attitude Representations
     Eigen::Quaternionf quat = att_->get_att_quat();
     kodlab::rotations::EulerAngles euler = att_->get_att_euler();
     Eigen::Matrix3f rot_mat = att_->get_att_rot_mat();
 
     // Print Attitude Representations to Terminal
+    std::cout << "att_:" << std::endl;
     att_->PrintAttitude();
+    std::cout << "att_read_only_:" << std::endl;
+    att_read_only_.PrintAttitude();
+    std::cout << std::endl;
 
     // Set Torques to Zero
     std::vector<float> torques(num_motors_, 0);

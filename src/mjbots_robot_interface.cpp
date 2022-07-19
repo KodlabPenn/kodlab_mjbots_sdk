@@ -185,8 +185,12 @@ void MjbotsRobotInterface::Shutdown() {
   moteus_interface_->shutdown();
 }
 
-std::shared_ptr<::kodlab::Attitude<float>> MjbotsRobotInterface::GetAttitude() {
-  return  attitude_;
+const ::kodlab::Attitude<float>& MjbotsRobotInterface::GetAttitude() {
+  return *attitude_;
+}
+
+std::shared_ptr<::kodlab::Attitude<float>> MjbotsRobotInterface::GetAttitudeSharedPtr() {
+  return attitude_;
 }
 
 } // namespace kodlab::mjbots
