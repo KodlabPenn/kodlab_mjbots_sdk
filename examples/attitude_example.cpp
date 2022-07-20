@@ -11,8 +11,6 @@
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
-#include <iostream> // cout
-#include <iomanip> // setprecision, fixed
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
@@ -35,28 +33,26 @@ public:
         att_(robot_->GetAttitudeSharedPtr()),
         att_read_only_(robot_->GetAttitude())
   {
-    // Modify world offset rotation to \f$\pi\f$ radians about the roll axis
+    // Modify world offset rotation to be pi radians about the roll axis
     Eigen::Quaternionf world_offset = Eigen::Quaternionf(
-      Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitX()));
+        Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitX()));
     att_->set_world_offset(world_offset);
-    //BAD: att_read_only_.set_world_offset(world_offset); // WARNING, can't set world_offset in att_read_only
+    // NOTE: can't set world_offset in `att_read_only_`.  The value will be
+    // overwritten when `att_read_only_` is read again.  I.e., don't do this:
+    // `att_read_only_.set_world_offset(world_offset);`
   }
 
 private:
   /**
    * @brief Shared pointer to an attitude object for storing IMU data
-   * @note Uses a modified world offset rotation of \f$\pi\f$ radians about the
-   *       roll axis
-   * @note This is is a shared pointer to a continually updated `Attitude` 
-   *       object.  There is no need to update in the contorl loop itself.
+   * @note This is is a shared pointer to a continually updated `Attitude`
+   *       object.  There is no need to update in the control loop itself.
    */
   std::shared_ptr<kodlab::Attitude<float>> att_;
 
   /**
    * @brief Read-only attitude object for storing IMU data
-   * @note Uses a modified world offset rotation of \f$\pi\f$ radians about the
-   *       roll axis
-   * @note Unlike `att_` above which is a shared pointer to a continually 
+   * @note Unlike `att_` above which is a shared pointer to a continually
    *       updated `Attitude` object, this object is only updated when 
    *       specifically assigned.
    */
@@ -67,20 +63,21 @@ private:
    */
   void CalcTorques() override
   {
-    // Get Updated Read-Only Attitude
+    // Update Read-Only Attitude
     att_read_only_ = robot_->GetAttitude();
-    
-    // Get Updated Attitude Representations
-    Eigen::Quaternionf quat = att_->get_att_quat();
-    kodlab::rotations::EulerAngles euler = att_->get_att_euler();
-    Eigen::Matrix3f rot_mat = att_->get_att_rot_mat();
 
-    // Print Attitude Representations to Terminal
-    std::cout << "att_:" << std::endl;
+    // Read Various Attitude Information from `att_`
+    Eigen::Quaternionf quat = att_->get_att_quat();    // attitude quaternion
+    Eigen::Matrix3f rot_mat = att_->get_att_rot_mat(); // attitude rot. matrix
+    Eigen::Vector3f ang_vel = att_->get_ang_rate();    // angular velocity
+
+    // Read Various Attitude Information from `att_read_only_`
+    kodlab::rotations::EulerAngles<float>
+        euler = att_read_only_.get_att_euler();           // attitude euler ang.
+    Eigen::Vector3f lin_acc = att_read_only_.get_accel(); // linear acceleration
+
+    // Print `att_` Data to Terminal
     att_->PrintAttitude();
-    std::cout << "att_read_only_:" << std::endl;
-    att_read_only_.PrintAttitude();
-    std::cout << std::endl;
 
     // Set Torques to Zero
     std::vector<float> torques(num_motors_, 0);
