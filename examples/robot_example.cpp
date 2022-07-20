@@ -61,16 +61,13 @@ class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMoto
 int main(int argc, char **argv)
 {
 
-    // Setup joints with a std::vector
+    // Setup joints with a std::vector or JointSharedVector class
     std::vector<kodlab::mjbots::JointMoteus> joints;
     joints.emplace_back(100, 4, 1, 0,   1, 0);
     joints.emplace_back(101, 4,-1, 0, 5.0/3.0, 0);
-
-    // Setup joints with JointSharedVector
     // JointSharedVector<kodlab::mjbots::JointMoteus> joints;
     // joints.addJoint(100, 4, 1, 0, 1, 0);
     // joints.addJoint(101, 4, -1, 0, 5.0 / 3.0, 0);
-    // std::cout<<joints[0].get_can_id()<<std::endl;
 
     // Define robot options
     kodlab::mjbots::ControlLoopOptions options;

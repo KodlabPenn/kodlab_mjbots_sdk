@@ -34,7 +34,7 @@ static void EnableCtrlC() {
 
 /**
  * @brief Convert vector to shared pointers using copy constructor
- * @param vect vector of type T
+ * @param objs vector of type T
  * @tparam T object type
  */
 
