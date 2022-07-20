@@ -241,8 +241,9 @@ public:
               << "quat_raw:\t" << get_att_quat_raw() << "\n"
               << "    quat:\t" << get_att_quat() << "\n"
               << "-------------------------------------------------\n"
-              << "  euler (r, p, y):\t" << get_att_euler().roll << ",\t"
-              << get_att_euler().pitch << ",\t" << get_att_euler().yaw << "\n"
+              << "  euler (r, p, y):\t" << get_att_euler().roll() << ",\t"
+              << get_att_euler().pitch() << ",\t" << get_att_euler().yaw() 
+              << "\n"
               << "ang_vel (x, y, z):\t" << get_ang_rate()(0) << ",\t"
               << get_ang_rate()(1) << ",\t" << get_ang_rate()(2) << "\n"
               << "lin_acc (x, y, z):\t" << get_accel()(0) << ",\t"

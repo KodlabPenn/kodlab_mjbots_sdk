@@ -40,23 +40,14 @@ const EulerRotationType DEFAULT_EULER_ANGLE_ROTATION_TYPE = Extrinsic;
 template<typename Scalar = float>
 struct EulerAngles
 {
+public:
   static_assert(std::is_arithmetic<Scalar>::value,
                 "Euler angles must have a numeric type.");
 
   /**
-   * @brief Roll angle (default radians)
+   * @brief Euler rotation angles [alpha, beta, gamma]
    */
-  Scalar roll = 0;
-
-  /**
-   * @brief Pitch angle (default radians)
-   */
-  Scalar pitch = 0;
-
-  /**
-   * @brief Yaw angle (default radians)
-   */
-  Scalar yaw = 0;
+  std::array<Scalar, 3> angles = {0, 0, 0};
 
   /**
    * @brief Euler rotation axes.
@@ -82,72 +73,75 @@ struct EulerAngles
   /**
    * @brief Construct an Euler Angles object with default convention.
    *
-   * @param rpy_in array of roll, pitch, and yaw angles
+   * @param angles_in array of alpha, beta, and gamma angles
    */
-  explicit EulerAngles(const std::array<Scalar, 3> &rpy_in)
-      : roll(rpy_in[0]), pitch(rpy_in[1]), yaw(rpy_in[2]) {}
+  explicit EulerAngles(const std::array<Scalar, 3> &angles_in)
+      : angles(angles_in) {}
 
   /**
    * @brief Construct an Euler Angles object with default convention.
    *
-   * @param rpy_in vector of roll, pitch, and yaw angles
+   * @param angles_in array of alpha, beta, and gamma angles
    */
-  explicit EulerAngles(const Eigen::Vector3<Scalar> &rpy_in)
-      : roll(rpy_in(0)), pitch(rpy_in(1)), yaw(rpy_in(2)) {}
+  explicit EulerAngles(const Eigen::Vector3<Scalar> &angles_in)
+      : angles({angles_in(0), angles_in(1), angles_in(2)}) {}
 
   /**
    * @brief Construct an Euler Angles object with default convention.
    *
-   * @param roll_in roll angle
-   * @param pitch_in pitch angle
-   * @param yaw_in yaw angle
+   * @param alpha_in alpha angle
+   * @param beta_in beta angle
+   * @param gamma_in gamma angle
    */
-  EulerAngles(const Scalar &roll_in,
-              const Scalar &pitch_in,
-              const Scalar &yaw_in)
-      : roll(roll_in), pitch(pitch_in), yaw(yaw_in) {}
+  EulerAngles(const Scalar &alpha_in,
+              const Scalar &beta_in,
+              const Scalar &gamma_in)
+      : angles({alpha_in, beta_in, gamma_in}) {}
 
   /**
    * @brief Construct an Euler Angles object.
    *
-   * @param roll_in roll angle
-   * @param pitch_in pitch angle
-   * @param yaw_in yaw angle
+   * @param alpha_in alpha angle
+   * @param beta_in beta angle
+   * @param gamma_in gamma angle
    * @param axes_in array of rotation axes identifiers
-   * @param rot_type_in rotation type (Extrinsic or Intrinsic)
+   * @param rot_type_in rotation type (`Extrinsic` or `Intrinsic`)
    */
-  EulerAngles(const Scalar &roll_in,
-              const Scalar &pitch_in,
-              const Scalar &yaw_in,
+  EulerAngles(const Scalar &alpha_in,
+              const Scalar &beta_in,
+              const Scalar &gamma_in,
               const std::array<int, 3> &axes_in,
               const EulerRotationType &rot_type_in)
-      : roll(roll_in), pitch(pitch_in), yaw(yaw_in), axes(axes_in),
+      : angles({alpha_in, beta_in, gamma_in}), 
+        axes(axes_in),
         rot_type(rot_type_in) {}
 
   /**
    * @brief Construct an Euler Angles object.
    *
-   * @param rpy_in array of roll, pitch, and yaw angles
+   * @param angles_in array of alpha, beta, and gamma angles
    * @param axes_in array of rotation axes identifiers
    * @param rot_type_in rotation type (Extrinsic or Intrinsic)
    */
-  EulerAngles(const std::array<Scalar, 3> &rpy_in,
+  EulerAngles(const std::array<Scalar, 3> &angles_in,
               const std::array<int, 3> &axes_in,
               const EulerRotationType &rot_type_in)
-      : roll(rpy_in[0]), pitch(rpy_in[1]), yaw(rpy_in[2]), axes(axes_in),
+      : angles(angles_in), 
+        axes(axes_in),
         rot_type(rot_type_in) {}
 
   /**
    * @brief Construct an Euler Angles object.
    *
-   * @param rpy_in vector of roll, pitch, and yaw angles
+   * @param angles_in array of alpha, beta, and gamma angles
    * @param axes_in array of rotation axes identifiers
    * @param rot_type_in rotation type (Extrinsic or Intrinsic)
    */
-  EulerAngles(const Eigen::Vector3<Scalar> &rpy_in,
+  EulerAngles(const Eigen::Vector3<Scalar> &angles_in,
               const std::array<int, 3> &axes_in,
               const EulerRotationType &rot_type_in)
-      : roll(rpy_in(0)), pitch(rpy_in(1)), yaw(rpy_in(2)), axes(axes_in),
+      : angles({angles_in(0), angles_in(1), angles_in(2)}), 
+        axes(axes_in),
         rot_type(rot_type_in) {}
 
   /**
@@ -169,6 +163,58 @@ struct EulerAngles
   {
     return EulerAnglesToRotationMatrix(*this);
   }
+
+  /**
+   * @brief Returns roll angle if using a [Tait-Bryan convention]
+   *        (https://en.wikipedia.org/wiki/Davenport_chained_rotations)
+   * @note Returned value is incorrect if convention is not Tait-Bryan (e.g. if 
+   *       using Pure Euler convention)
+   * 
+   * @return const Scalar 
+   */
+  const Scalar roll() const { return angles[tait_bryan_rpy_map_[0]]; }
+
+  /**
+   * @brief Returns pitch angle if using a [Tait-Bryan convention]
+   *        (https://en.wikipedia.org/wiki/Davenport_chained_rotations)
+   * @note Returned value is incorrect if convention is not Tait-Bryan (e.g. if 
+   *       using Pure Euler convention)
+   * 
+   * @return const Scalar 
+   */
+  const Scalar pitch() const { return angles[tait_bryan_rpy_map_[1]]; }
+
+  /**
+   * @brief Returns yaw angle if using a [Tait-Bryan convention]
+   *        (https://en.wikipedia.org/wiki/Davenport_chained_rotations)
+   * @note Returned value is incorrect if convention is not Tait-Bryan (e.g. if 
+   *       using Pure Euler convention)
+   * 
+   * @return const Scalar 
+   */
+  const Scalar yaw() const { return angles[tait_bryan_rpy_map_[2]]; }
+
+private:
+  /**
+   * @brief Indices map from axes convention to roll-pitch-yaw angles
+   */
+  std::array<int, 3> tait_bryan_rpy_map_ = {0, 1, 2};
+
+  /**
+   * @brief Computes indices map from axes convention to roll-pitch-yaw angles.
+   * @link https://en.wikipedia.org/wiki/Davenport_chained_rotations @endlink
+   * 
+   * @param axes array of Tait-Bryan a
+   */
+  void ComputeAngleIndexMap(const std::array<int, 3> &axes)
+  {
+    for (unsigned int i = 0; i < axes.size(); i++)
+    {
+      tait_bryan_rpy_map_[axes[i]] = i;
+    }
+  }
+
+
 };
 
 /**

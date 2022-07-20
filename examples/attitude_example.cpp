@@ -99,9 +99,9 @@ private:
     log_data_.attitude_quaternion[3] = att_->get_att_quat().w();
 
     // Attitude Euler Angles
-    log_data_.attitude_euler[0] = att_->get_att_euler().roll;
-    log_data_.attitude_euler[1] = att_->get_att_euler().pitch;
-    log_data_.attitude_euler[2] = att_->get_att_euler().yaw;
+    log_data_.attitude_euler[0] = att_->get_att_euler().roll();
+    log_data_.attitude_euler[1] = att_->get_att_euler().pitch();
+    log_data_.attitude_euler[2] = att_->get_att_euler().yaw();
 
     // Angular Velocity
     log_data_.angular_velocity[0] = att_->get_ang_rate().x();
