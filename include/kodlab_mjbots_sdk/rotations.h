@@ -195,6 +195,37 @@ public:
    */
   const Scalar yaw() const { return angles[tait_bryan_rpy_map_[2]]; }
 
+  /**
+   * @brief Get the axes in extrinsic order
+   *
+   * @return std::array<int,3>
+   */
+  std::array<int, 3> get_axes_extrinsic() const
+  {
+    std::array<int, 3> axes_out(axes);
+    if (rot_type == INTRINSIC)
+    {
+      std::reverse(axes_out.begin(), axes_out.end());
+    }
+    return axes_out;
+  }
+
+  /**
+   * @brief Get the angles in extrinsic order
+   *
+   * @return std::array<Scalar, 3>
+   */
+  std::array<Scalar, 3> get_angles_extrinsic() const
+  {
+    std::array<Scalar, 3>
+        angles_out(angles);  // copy b/c std::reverse is in-place
+    if (rot_type == INTRINSIC)
+    {
+      std::reverse(angles_out.begin(), angles_out.end());
+    }
+    return angles_out;
+  }
+
 private:
   /**
    * @brief Indices map from axes convention to roll-pitch-yaw angles
@@ -214,37 +245,6 @@ private:
       tait_bryan_rpy_map_[axes[i]] = i;
     }
   }
-
-  /**
-   * @brief Get the axes in extrinsic order
-   * 
-   * @return std::array<int,3> 
-   */
-  std::array<int,3> get_axes_extrinsic()
-  {
-    std::array<int,3> axes_out(axes);
-    if(rot_type==INTRINSIC){
-        std::reverse(axes_out.begin(),axes_out.end());
-    }
-    return axes_out;
-  }
-  
-  /**
-   * @brief Get the angles in extrinsic order
-   * 
-   * @return std::array<float,3> 
-   */
-  std::array<float,3> get_angles_extrinsic()
-  {
-    std::array<float,3> angles_out(angles_out);
-    if(rot_type==INTRINSIC){
-        std::reverse(angles_out.begin(),angles_out.end());
-    }
-    return angles_out;
-  }
-    
-   
-
 
 };
 
