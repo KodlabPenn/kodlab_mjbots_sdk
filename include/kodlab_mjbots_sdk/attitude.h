@@ -236,23 +236,49 @@ public:
    */
   void PrintAttitude()
   {
-    std::cout << std::fixed << std::setprecision(2)
-              << "=================================================\n"
-              << "quat_raw:\t" << get_att_quat_raw() << "\n"
-              << "    quat:\t" << get_att_quat() << "\n"
-              << "-------------------------------------------------\n"
-              << "  euler (r, p, y):\t" << get_att_euler().roll() << ",\t"
-              << get_att_euler().pitch() << ",\t" << get_att_euler().yaw() 
-              << "\n"
-              << "ang_vel (x, y, z):\t" << get_ang_rate()(0) << ",\t"
-              << get_ang_rate()(1) << ",\t" << get_ang_rate()(2) << "\n"
-              << "lin_acc (x, y, z):\t" << get_accel()(0) << ",\t"
-              << get_accel()(1) << ",\t" << get_accel()(2) << "\n"
-              << "-------------------------------------------------\n"
-              << "rot_mat:\n" << get_att_rot_mat() << "\n"
-              << "================================================="
-              << std::endl;
+    // Gather Attitude Data
+    Eigen::Quaternionf qr = get_att_quat_raw();
+    Eigen::Quaternionf q = get_att_quat();
+    kodlab::rotations::EulerAngles<float> e = get_att_euler();
+    Eigen::Vector3f w = get_ang_rate();
+    Eigen::Vector3f a = get_accel();
+    Eigen::Matrix3f r = get_att_rot_mat();
 
+    // Print Attitude Information to Console
+    using std::fprintf;
+    std::cout << std::fixed;
+    fprintf(stdout,
+            "+------------------------ ATTITUDE ----------------------+\n");
+    fprintf(stdout,
+            "|      Raw Quat:  % 3.2fi + % 3.2fj + % 3.2fk + % 3.2f       |\n",
+            qr.x(), qr.y(), qr.z(), qr.w());
+    fprintf(stdout,
+            "|    Quaternion:  % 3.2fi + % 3.2fj + % 3.2fk + % 3.2f       |\n",
+            q.x(), q.y(), q.z(), q.w());
+    fprintf(stdout,
+            "+--------------------------------------------------------+\n");
+    fprintf(stdout,
+            "|   Euler (rpy):  ( % 7.2f, % 7.2f, % 7.2f )          |\n",
+            e.roll(), e.pitch(), e.yaw());
+    fprintf(stdout,
+            "| Ang Vel (xyz):  ( % 7.2f, % 7.2f, % 7.2f )          |\n",
+            w.x(), w.y(), w.z());
+    fprintf(stdout,
+            "| Lin Acc (xyz):  ( % 7.2f, % 7.2f, % 7.2f )          |\n",
+            a.x(), a.y(), a.z());
+    fprintf(stdout,
+            "+--------------------------------------------------------+\n");
+    fprintf(stdout,
+            "|       Rot Mat:  [ % 7.2f, % 7.2f, % 7.2f ]          |\n",
+            r(0, 0), r(0, 1), r(0, 2));
+    fprintf(stdout,
+            "|                 [ % 7.2f, % 7.2f, % 7.2f ]          |\n",
+            r(1, 0), r(1, 1), r(1, 2));
+    fprintf(stdout,
+            "|                 [ % 7.2f, % 7.2f, % 7.2f ]          |\n",
+            r(2, 0), r(2, 1), r(2, 2));
+    fprintf(stdout,
+            "+--------------------------------------------------------+\n");
   }
 
   /**
