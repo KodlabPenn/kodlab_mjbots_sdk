@@ -146,6 +146,54 @@ public:
         rot_type(rot_type_in) {}
 
   /**
+   * @brief Checks if EulerAngle object follows X-Y-Z Extrinsic Euler angle
+   *        convention.
+   *
+   * @param euler euler angles object
+   * @return true if `euler` follows default convention
+   * @return false if `euler` does not follow default convention
+   */
+  static bool IsDefaultConvention(const EulerAngles<Scalar> &euler)
+  {
+    return ((euler.axes == DEFAULT_EULER_ANGLE_AXES) &&
+        (euler.rot_type == DEFAULT_EULER_ANGLE_ROTATION_TYPE));
+  }
+
+  /**
+   * @brief Checks if `this` EulerAngle object follows X-Y-Z Extrinsic Euler
+   *        angle convention.
+   *
+   * @return true if `euler` follows default convention
+   * @return false if `euler` does not follow default convention
+   */
+  bool IsDefaultConvention() const
+  {
+    return IsDefaultConvention(*this);
+  }
+
+  /**
+   * @param euler_in Euler angles object following intrinsic or extrinsic
+   *                 convention
+   * @return Euler angles object equivalent to `euler_in` but following the
+   *         extrinsic convention
+   */
+  static EulerAngles<Scalar> ToExtrinsic(const EulerAngles<Scalar> &euler_in)
+  {
+    EulerAngles<Scalar> euler_ext = euler_in;
+    euler_ext.angles = euler_in.get_angles_extrinsic();
+    euler_ext.axes = euler_in.get_axes_extrinsic();
+  }
+
+  /**
+   * @brief Makes this EulerAngles object follow equivalent extrinsic convention
+   */
+  void MakeExtrinsic()
+  {
+    angles = get_angles_extrinsic();
+    axes = get_axes_extrinsic();
+  }
+
+  /**
    * @brief Returns quaternion representation of this rotation.
    *
    * @return quaternion
@@ -194,6 +242,20 @@ public:
    * @return const Scalar 
    */
   const Scalar yaw() const { return angles[tait_bryan_rpy_map_[2]]; }
+
+  /**
+   * @brief Set the Euler angles convention
+   * @note This does not do anything to modify angle or axes data
+   *
+   * @param axes_in axes sequence
+   * @param rot_type_in `Intrinsic` or `Extrinsic`
+   */
+  void set_convention(const std::array<int, 3> &axes_in,
+                      const EulerRotationType &rot_type_in)
+  {
+    axes = axes_in;
+    rot_type = rot_type_in;
+  }
 
   /**
    * @brief Get the axes in extrinsic order
@@ -248,30 +310,15 @@ private:
 
 };
 
-/**
- * @brief Static assertion that \c EulerAngle object follows X-Y-Z Extrinsic
- *        Euler angle convention.
- *
- * @tparam Scalar numeric type
- * @param euler Euler angle object
- */
-template<typename Scalar>
-void ASSERT_DEFAULT_EULER_CONVENTION(const EulerAngles<Scalar> &euler)
-{
-  if (!((euler.axes == DEFAULT_EULER_ANGLE_AXES) &&
-      (euler.rot_type == DEFAULT_EULER_ANGLE_ROTATION_TYPE)))
-  {
-    std::cerr << "Method only supports X-Y-Z Extrinsic Euler angle convention."
-              << std::endl;
-  }
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Rotation Representation Conversions                                       //
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief Returns a quaternion representation of an \c EulerAngles object
+ * @brief Returns a quaternion representation of an `EulerAngles` object with 
+ *        default Extrinsic X-Y-Z Tait-Bryan convention
+ * @note Assumes `euler` is default convention, does not check
  * @note See the cited Drake code for details
  * @cite Russ Tedrake and the Drake Development Team, "Drake: Model-based design
  *       and verification for robotics" (2019)
@@ -282,16 +329,14 @@ void ASSERT_DEFAULT_EULER_CONVENTION(const EulerAngles<Scalar> &euler)
  * @return Eigen::Quaternion<Scalar>
  */
 template<typename Scalar = float>
-inline Eigen::Quaternion<Scalar> EulerAnglesToQuaternion(
+inline Eigen::Quaternion<Scalar> DefaultEulerAnglesToQuaternion(
     const EulerAngles<Scalar> &euler)
 {
-  ASSERT_DEFAULT_EULER_CONVENTION(euler);
-
   using std::cos;
   using std::sin;
-  const Scalar q0Half = euler.roll / 2;
-  const Scalar q1Half = euler.pitch / 2;
-  const Scalar q2Half = euler.yaw / 2;
+  const Scalar q0Half = euler.roll() / 2;
+  const Scalar q1Half = euler.pitch() / 2;
+  const Scalar q2Half = euler.yaw() / 2;
   const Scalar c0 = cos(q0Half), s0 = sin(q0Half);
   const Scalar c1 = cos(q1Half), s1 = sin(q1Half);
   const Scalar c2 = cos(q2Half), s2 = sin(q2Half);
@@ -306,7 +351,38 @@ inline Eigen::Quaternion<Scalar> EulerAnglesToQuaternion(
 }
 
 /**
- * @brief Computes a rotation matrix from a normalized quaternion
+ * @brief Returns a quaternion representation of an `EulerAngles` object
+ * 
+ * @tparam Scalar[optional] numeric-type
+ * @param euler 
+ * @return Eigen::Quaternion<Scalar> 
+ */
+template<typename Scalar = float>
+inline Eigen::Quaternion<Scalar> EulerAnglesToQuaternion(
+    const EulerAngles<Scalar> &euler)
+{
+  if (euler.IsDefaultConvention())
+  {
+    return DefaultEulerAnglesToQuaternion(euler);
+  } else
+  {
+    using Eigen::Quaternion;
+    using Eigen::AngleAxis;
+    using Eigen::Vector3;
+    std::array<Scalar, 3> angles = euler.get_angles_extrinsic();
+    std::array<int, 3> axes = euler.get_axes_extrinsic();
+    Quaternion<Scalar> q;
+    q = AngleAxis<Scalar>(angles[0], Vector3<Scalar>::Unit(axes[2]))
+        * AngleAxis<Scalar>(angles[1], Vector3<Scalar>::Unit(axes[1]))
+        * AngleAxis<Scalar>(angles[2], Vector3<Scalar>::Unit(axes[0]));
+    return q;
+  }
+}
+
+/**
+ * @brief Computes a rotation matrix from Euler angles with default Extrinsic 
+ *        X-Y-Z Tait-Bryan convention
+ * @note Assumes `euler` is default convention, does not check
  * @note See the cited Drake code for details
  * @cite Russ Tedrake and the Drake Development Team, "Drake: Model-based design
  *       and verification for robotics" (2019)
@@ -317,14 +393,12 @@ inline Eigen::Quaternion<Scalar> EulerAnglesToQuaternion(
  * @return Eigen::Matrix3<Scalar>
  */
 template<typename Scalar = float>
-inline Eigen::Matrix3<Scalar> EulerAnglesToRotationMatrix(
+inline Eigen::Matrix3<Scalar> DefaultEulerAnglesToRotationMatrix(
     const EulerAngles<Scalar> &euler)
 {
-  ASSERT_DEFAULT_EULER_CONVENTION(euler);
-
-  const Scalar &r = euler.roll;
-  const Scalar &p = euler.pitch;
-  const Scalar &y = euler.yaw;
+  const Scalar &r = euler.roll();
+  const Scalar &p = euler.pitch();
+  const Scalar &y = euler.yaw();
   using std::cos;
   using std::sin;
   const Scalar c0 = cos(r), c1 = cos(p), c2 = cos(y);
@@ -343,6 +417,35 @@ inline Eigen::Matrix3<Scalar> EulerAnglesToRotationMatrix(
   m.coeffRef(2, 2) = c1 * c0;
 
   return m;
+}
+
+/**
+ * @brief Returns a rotation matrix representation of an `EulerAngles` object
+ * 
+ * @tparam Scalar[optional] numeric-type
+ * @param euler 
+ * @return Eigen::Matrix3<Scalar> 
+ */
+template<typename Scalar = float>
+inline Eigen::Matrix3<Scalar> EulerAnglesToRotationMatrix(
+    const EulerAngles<Scalar> &euler)
+{
+  using Eigen::Matrix3;
+  if (euler.IsDefaultConvention())
+  {
+    return DefaultEulerAnglesToRotationMatrix(euler);
+  } else
+  {
+    using Eigen::AngleAxis;
+    using Eigen::Vector3;
+    std::array<Scalar, 3> angles = euler.get_angles_extrinsic();
+    std::array<int, 3> axes = euler.get_axes_extrinsic();
+    Matrix3<Scalar> r;
+    r = AngleAxis<Scalar>(angles[0], Vector3<Scalar>::Unit(axes[2]))
+        * AngleAxis<Scalar>(angles[1], Vector3<Scalar>::Unit(axes[1]))
+        * AngleAxis<Scalar>(angles[2], Vector3<Scalar>::Unit(axes[0]));
+    return r;
+  }
 }
 
 /**
@@ -412,8 +515,8 @@ inline Eigen::Matrix3<Scalar> QuaternionToRotationMatrix(
 }
 
 /**
- * @brief Constructs an euler angle representation from a normalized quaternion
- *        and a rotation matrix
+ * @brief Constructs a Extrinsic X-Y-Z euler angle representation from a 
+ *        normalized quaternion and a rotation matrix
  * @note See the cited Drake code for details
  * @cite Russ Tedrake and the Drake Development Team, "Drake: Model-based design
  *       and verification for robotics" (2019)
