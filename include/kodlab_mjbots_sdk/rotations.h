@@ -25,12 +25,12 @@ namespace kodlab::rotations
 
 enum EulerRotationType
 {
-  Extrinsic = 0,
-  Intrinsic
+  EXTRINSIC = 0,
+  INTRINSIC
 };
 
 const std::array<int, 3> DEFAULT_EULER_ANGLE_AXES = {0, 1, 2};
-const EulerRotationType DEFAULT_EULER_ANGLE_ROTATION_TYPE = Extrinsic;
+const EulerRotationType DEFAULT_EULER_ANGLE_ROTATION_TYPE = EXTRINSIC;
 
 /**
  * @brief Euler angle rotation object.
