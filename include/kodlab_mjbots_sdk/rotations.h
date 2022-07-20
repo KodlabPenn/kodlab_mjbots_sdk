@@ -14,6 +14,7 @@
 #include <Eigen/Geometry>
 #include <type_traits>
 #include <array>
+#include <algorithm>
 
 namespace kodlab::rotations
 {
@@ -213,6 +214,36 @@ private:
       tait_bryan_rpy_map_[axes[i]] = i;
     }
   }
+
+  /**
+   * @brief Get the axes in extrinsic order
+   * 
+   * @return std::array<int,3> 
+   */
+  std::array<int,3> get_axes_extrinsic()
+  {
+    std::array<int,3> axes_out(axes);
+    if(rot_type==INTRINSIC){
+        std::reverse(axes_out.begin(),axes_out.end());
+    }
+    return axes_out;
+  }
+  
+  /**
+   * @brief Get the angles in extrinsic order
+   * 
+   * @return std::array<float,3> 
+   */
+  std::array<float,3> get_angles_extrinsic()
+  {
+    std::array<float,3> angles_out(angles_out);
+    if(rot_type==INTRINSIC){
+        std::reverse(angles_out.begin(),angles_out.end());
+    }
+    return angles_out;
+  }
+    
+   
 
 
 };
