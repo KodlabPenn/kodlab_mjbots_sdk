@@ -11,6 +11,9 @@
 
 #pragma once
 #include <limits>
+#include <memory>
+#include <vector>
+#include <type_traits>
 
 /**
  * Abstract joint state class with torque and joint pose limiting capabilities.
@@ -166,3 +169,41 @@ class JointBase {
 
 };
 
+
+/*!
+ * @brief Helper class to wrap the vector of shared pointers of JointBaseDerived
+ * 
+ * @tparam joint_type must be JointBaseDerived type
+ */
+template <class joint_type>
+class JointSharedVector
+{
+    static_assert(std::is_base_of<JointBase, joint_type>::value); // check that the joint_type is derived from JointBase
+    std::vector<std::shared_ptr<joint_type>> v_;  // internal vector of shared pointers 
+
+public:
+    /*!
+     * @brief constructs a shared_ptr joint_type and appends it to the internal vector
+     * 
+     * @tparam Args parameter pack for passing through the joint constructor
+     * @param args a set of args that match the joint_type constructor
+     */
+    template <typename... Args>
+    void addJoint(Args... args)
+    {
+        v_.push_back(std::make_shared<joint_type>(args...));
+    }
+
+    /*!
+     * @brief implicit conversion to vector that returns a copy of the shared_ptr's
+     * 
+     * @return std::vector<std::shared_ptr<joint_type>> 
+     */
+    operator std::vector<std::shared_ptr<joint_type>>() { return v_; }
+    /*!
+     * @brief get a reference to the ith instance of joint_type
+     * 
+     * @return joint_type>
+     */
+    joint_type & operator[](size_t i) {return *(v_[i]);}
+};
