@@ -39,7 +39,7 @@ public:
     Eigen::Quaternionf world_offset = Eigen::Quaternionf(
       Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitX()));
     att_->set_world_offset(world_offset);
-    att_read_only_.set_world_offset(world_offset);
+    //BAD: att_read_only_.set_world_offset(world_offset); // WARNING, can't set world_offset in att_read_only
   }
 
 private:
