@@ -21,26 +21,7 @@ class AttitudeExample : public kodlab::mjbots::MjbotsControlLoop<AttitudeLog,
                                                                  VoidLcm>
 {
 public:
-  /**
-   * @brief Construct a new Attitude Example object
-   * 
-   * @param joints vector of robot joint shared pointers
-   * @param options options defining the behavior
-   */
-  AttitudeExample(std::vector<kodlab::mjbots::JointMoteus> joints,
-                  const kodlab::mjbots::ControlLoopOptions &options)
-      : MjbotsControlLoop::MjbotsControlLoop(joints, options),
-        att_(robot_->GetAttitudeSharedPtr()),
-        att_read_only_(robot_->GetAttitude())
-  {
-    // Modify world offset rotation to be pi radians about the roll axis
-    Eigen::Quaternionf world_offset = Eigen::Quaternionf(
-        Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitX()));
-    att_->set_world_offset(world_offset);
-    // NOTE: can't set world_offset in `att_read_only_`.  The value will be
-    // overwritten when `att_read_only_` is read again.  I.e., don't do this:
-    // `att_read_only_.set_world_offset(world_offset);`
-  }
+  using MjbotsControlLoop::MjbotsControlLoop;
 
 private:
   /**
@@ -48,7 +29,7 @@ private:
    * @note This is is a shared pointer to a continually updated `Attitude`
    *       object.  There is no need to update in the control loop itself.
    */
-  std::shared_ptr<kodlab::Attitude<float>> att_;
+  std::shared_ptr<kodlab::Attitude<float>> att_ = robot_->GetAttitudeSharedPtr();
 
   /**
    * @brief Read-only attitude object for storing IMU data
@@ -133,6 +114,11 @@ int main(int argc, char **argv)
   options.imu_mounting_deg.pitch = 0;
   options.imu_mounting_deg.yaw = 180;
   options.attitude_rate_hz = 1000;
+
+  // Set IMU world offset to be a rotation of 180-deg about the x-axis
+  options.imu_world_offset_deg.roll = 180;
+  options.imu_world_offset_deg.pitch = 0;
+  options.imu_world_offset_deg.yaw = 0;
 
   // Create Control Loop
   AttitudeExample control_loop(joints, options);

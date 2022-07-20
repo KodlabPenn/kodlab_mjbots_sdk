@@ -31,6 +31,7 @@ struct ControlLoopOptions {
                                           /// results in a 1 dt delay in your controller, but is necessary for robots with
                                           /// more motors or more complicated update loops
   ::mjbots::pi3hat::Euler imu_mounting_deg; /// Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
+  ::mjbots::pi3hat::Euler imu_world_offset_deg; /// IMU orientation offset. Useful for re-orienting gravity, etc.
   int attitude_rate_hz = 1000;              /// Frequency of the imu updates from the pi3hat. Options are limited to 1000
                                             /// 400, 200, 100.
 };
@@ -139,7 +140,8 @@ MjbotsControlLoop<log_type, input_type>::MjbotsControlLoop(std::vector<kodlab::m
                                                                        options_.soft_start_duration,
                                                                        options_.max_torque,
                                                                        options_.imu_mounting_deg,
-                                                                       options_.attitude_rate_hz));
+                                                                       options_.attitude_rate_hz,
+                                                                       options_.imu_world_offset_deg));
 }
 
 template<class log_type, class input_type>

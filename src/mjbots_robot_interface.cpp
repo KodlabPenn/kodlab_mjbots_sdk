@@ -52,8 +52,10 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
                                            int soft_start_duration,
                                            float robot_max_torque,
                                            ::mjbots::pi3hat::Euler imu_mounting_deg,
-                                           int imu_rate_hz) :
-                                            soft_start_(robot_max_torque, soft_start_duration) { 
+                                           int imu_rate_hz,
+                                           ::mjbots::pi3hat::Euler imu_world_offset_deg)
+    : soft_start_(robot_max_torque, soft_start_duration)
+{
 
   for (JointMoteus joint: joint_list){
     // Make vector of shared_pointer objects using joint copy constructer 
@@ -82,6 +84,11 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
 
   // Initialize attitude shared pointer
   attitude_ = std::make_shared<::kodlab::Attitude<float>>();
+  kodlab::rotations::EulerAngles<float> imu_world_offset =
+      {M_PI / 180.0 * imu_world_offset_deg.roll,
+       M_PI / 180.0 * imu_world_offset_deg.pitch,
+       M_PI / 180.0 * imu_world_offset_deg.yaw};
+  attitude_->set_world_offset(imu_world_offset.ToQuaternion());
 
   // Initialize and send basic command
   InitializeCommand();
