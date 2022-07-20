@@ -43,12 +43,12 @@ private:
    * @brief Attitude euler angles in world frame
    * @note Always follow the default <b>Extrinsic X-Y-Z> convention
    */
-  mutable kodlab::ValidatedCache<rotations::EulerAngles<Scalar>> att_euler_;
+  mutable kodlab::ValidatedCache<rotations::EulerAngles<Scalar>> att_euler_= {rotations::EulerAngles<Scalar>(0,0,0), false};
 
   /**
    * @brief Attitude rotation matrix in world frame
    */
-  mutable kodlab::ValidatedCache<Eigen::Matrix3<Scalar>> att_rot_mat_;
+  mutable kodlab::ValidatedCache<Eigen::Matrix3<Scalar>> att_rot_mat_ = {Eigen::Matrix3<Scalar>::Identity(), false};;
 
   /**
    * @brief Angular velocity about <code>[x, y, z]</code> axes (default deg/s)

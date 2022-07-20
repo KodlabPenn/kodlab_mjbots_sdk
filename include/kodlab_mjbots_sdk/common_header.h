@@ -65,6 +65,11 @@ public:
   explicit ValidatedCache(const T &data) : data_(data), valid_(true) {}
 
   /**
+   * @brief Specified-validity data constructor. Useful for initializing, but leaving invalid to avoid a "get" of undefined memory.
+   */
+  ValidatedCache(const T &data, const bool &valid) : data_(data), valid_(valid) {}
+
+  /**
    * @brief Returns the data status
    * @return \c true if data is valid, \c false otherwise
    */
