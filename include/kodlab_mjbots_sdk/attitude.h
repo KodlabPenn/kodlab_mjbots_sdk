@@ -305,7 +305,7 @@ public:
   /**
    * @return attitude rotation matrix in world frame
    */
-  Eigen::Matrix3<Scalar> get_att_rot_mat()
+  Eigen::Matrix3<Scalar> get_att_rot_mat() const
   {
     if (!att_rot_mat_.valid())
     {
@@ -317,7 +317,7 @@ public:
   /**
    * @return attitude euler angles in the world frame
    */
-  rotations::EulerAngles<Scalar> get_att_euler()
+  rotations::EulerAngles<Scalar> get_att_euler() const
   {
     if (!att_euler_.valid())
     {
