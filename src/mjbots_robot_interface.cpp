@@ -52,8 +52,10 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
                                            int soft_start_duration,
                                            float robot_max_torque,
                                            ::mjbots::pi3hat::Euler imu_mounting_deg,
-                                           int imu_rate_hz) :
-                                            soft_start_(robot_max_torque, soft_start_duration) { 
+                                           int imu_rate_hz,
+                                           ::mjbots::pi3hat::Euler imu_world_offset_deg)
+    : soft_start_(robot_max_torque, soft_start_duration)
+{
 
   for (JointMoteus joint: joint_list){
     // Make vector of shared_pointer objects using joint copy constructer 
@@ -79,6 +81,14 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
   moteus_options.attitude_rate_hz = imu_rate_hz;
   moteus_options.imu_mounting_deg = imu_mounting_deg;
   moteus_interface_ = std::make_shared<::mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
+
+  // Initialize attitude shared pointer
+  attitude_ = std::make_shared<::kodlab::Attitude<float>>();
+  kodlab::rotations::EulerAngles<float> imu_world_offset =
+      {M_PI / 180.0 * imu_world_offset_deg.roll,
+       M_PI / 180.0 * imu_world_offset_deg.pitch,
+       M_PI / 180.0 * imu_world_offset_deg.yaw};
+  attitude_->set_world_offset(imu_world_offset.ToQuaternion());
 
   // Initialize and send basic command
   InitializeCommand();
@@ -112,7 +122,7 @@ void MjbotsRobotInterface::ProcessReply() {
       joint->UpdateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
     }
   }
-  attitude_ = *(moteus_data_.attitude);
+  attitude_->Update(*(moteus_data_.attitude));
 }
 
 void MjbotsRobotInterface::SendCommand() {
@@ -181,7 +191,13 @@ void MjbotsRobotInterface::SetModeStop() {
 void MjbotsRobotInterface::Shutdown() {
   moteus_interface_->shutdown();
 }
-::mjbots::pi3hat::Attitude MjbotsRobotInterface::GetAttitude() {
-  return  attitude_;
+
+const ::kodlab::Attitude<float>& MjbotsRobotInterface::GetAttitude() {
+  return *attitude_;
 }
+
+std::shared_ptr<::kodlab::Attitude<float>> MjbotsRobotInterface::GetAttitudeSharedPtr() {
+  return attitude_;
+}
+
 } // namespace kodlab::mjbots

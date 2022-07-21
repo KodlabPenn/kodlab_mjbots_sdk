@@ -96,43 +96,14 @@ struct Euler {
       : yaw(yaw_in), pitch(pitch_in), roll(roll_in) {}
 };
 
-// Todo place in the correct spot
-template <typename T> int sgn(T val) {
-  return (T(0) < val) - (val < T(0));
-}
-
-class Attitude {
- public:
+struct Attitude {
   Quaternion quat;
-  Euler euler;
   Point3D rate_dps;
   Point3D accel_mps2;
 
   Point3D bias_dps;
   Quaternion attitude_uncertainty;
   Point3D bias_uncertainty_dps;
-
-  static Euler ToEulerAngles(Quaternion q) {
-    Euler angles;
-    double x=q.x, y=q.y, z=q.z, w=q.w;
-
-    double t0 = (x+z)*(x-z);        // x^2-z^2
-    double t1 = (w+y)*(w-y);        // w^2-y^2
-    double xx = 0.5*(t0+t1);        // 1/2 x of x'
-    double xy = x*y+w*z;            // 1/2 y of x'
-    double xz = w*y-x*z;            // 1/2 z of x'
-    double t  = xx*xx+xy*xy;        // cos(theta)^2
-    double yz = 2.0*(y*z+w*x);      // z of y'
-
-    angles.yaw = -(float)atan2(xy, xx);    // yaw   (psi)
-    angles.pitch = -(float)atan(xz/sqrt(t)); // pitch (theta)
-
-    if (t != 0)
-      angles.roll = (float)atan2(yz, t1-t0);
-    else
-      angles.roll = (float)(2.0*atan2(x,w) - sgn(xz)*angles.yaw);
-    return angles;
-  }
 };
 
 struct RfSlot {
