@@ -29,7 +29,7 @@ private:
    * @note This is is a shared pointer to a continually updated `Attitude`
    *       object.  There is no need to update in the control loop itself.
    */
-  std::shared_ptr<kodlab::Attitude<float>> att_ = robot_->GetAttitudeSharedPtr();
+  std::shared_ptr<kodlab::Attitude<float>> att_ = mjbots_interface_->GetAttitudeSharedPtr();
 
   /**
    * @brief Read-only attitude object for storing IMU data
@@ -45,7 +45,7 @@ private:
   void CalcTorques() override
   {
     // Update Read-Only Attitude
-    att_read_only_ = robot_->GetAttitude();
+    att_read_only_ = mjbots_interface_->GetAttitude();
 
     // Read Various Attitude Information from `att_`
     Eigen::Quaternionf quat = att_->get_att_quat();    // attitude quaternion
