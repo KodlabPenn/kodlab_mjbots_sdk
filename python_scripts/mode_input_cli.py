@@ -46,16 +46,17 @@ def publish_mode(mode, print_msg="", lcm_ch=LCM_CHANNEL):
     # Publish Message
     lc = lcm.LCM()
     lc.publish(lcm_ch, msg.encode())
-    print(print_msg)
+    if print_msg:
+        print(print_msg)
 
 
-def header_str(off_int):
+def header_str(kill_int):
     return """
 +--------------------------------------------------------------------+
 | Enter a valid mode integer or 'q' to quit and return to OFF state. |
 | Inputting mode %d or Ctrl-C will send a kill command.              |
 +--------------------------------------------------------------------+
-    """.format(off_int)
+    """.format(kill_int)
 
 
 def main():
@@ -77,13 +78,13 @@ def main():
                     publish_mode(OFF, 'Exiting.')
                     break
                 else:
-                    publish_mode(OFF, 'Invalid input.  Exiting.')
-                    break
+                    print('Invalid input.')
             except AssertionError:
-                publish_mode(OFF, 'Invalid input.  Exiting.')
-                break
+                print('Invalid input.')
     except KeyboardInterrupt:
-        publish_mode(KILL, 'Keyboard interrupt.  Killing Robot and exiting.')
+        print('Keyboard interrupt.  Killing Robot and exiting.')
+        for _ in range(5): # ensure KILL message is received
+            publish_mode(KILL)
 
 
 if __name__ == '__main__':
