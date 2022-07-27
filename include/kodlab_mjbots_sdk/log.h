@@ -57,23 +57,26 @@
 #define STDOUT stdout
 
 // Colors
-#define COLOR_RESET "\x1b[0m"
-#define COLOR_BLACK "\x1b[30m"
-#define COLOR_RED "\x1b[31m"
-#define COLOR_GREEN "\x1b[32m"
-#define COLOR_YELLOW "\x1b[33m"
-#define COLOR_BLUE "\x1b[34m"
-#define COLOR_MAGENTA "\x1b[35m"
-#define COLOR_CYAN "\x1b[36m"
-#define COLOR_WHITE "\x1b[37m"
-#define COLOR_BLACK_BOLD "\x1b[1;30m"
-#define COLOR_RED_BOLD "\x1b[1;31m"
-#define COLOR_GREEN_BOLD "\x1b[1;32m"
-#define COLOR_YELLOW_BOLD "\x1b[1;33m"
-#define COLOR_BLUE_BOLD "\x1b[1;34m"
-#define COLOR_MAGENTA_BOLD "\x1b[1;35m"
-#define COLOR_CYAN_BOLD "\x1b[1;36m"
-#define COLOR_WHITE_BOLD "\x1b[1;37m"
+#define CONSOLE_SEQ_ESC "\x1b"
+#define CONSOLE_SEQ_BEG "["
+#define CONSOLE_SEQ_SEP ";"
+#define CONSOLE_SEQ_END "m"
+#define FONT_REG "0"
+#define FONT_BOLD "1"
+#define COLOR_RESET "0"
+#define COLOR_BLACK "30"
+#define COLOR_RED "31"
+#define COLOR_GREEN "32"
+#define COLOR_YELLOW "33"
+#define COLOR_BLUE "34"
+#define COLOR_MAGENTA "35"
+#define COLOR_CYAN "36"
+#define COLOR_WHITE "37"
+
+// Color Convenience
+#define FMT_TEXT(font, color) \
+  CONSOLE_SEQ_ESC CONSOLE_SEQ_BEG font CONSOLE_SEQ_SEP color CONSOLE_SEQ_END
+#define RESET_COLOR FMT_TEXT(FONT_REG, COLOR_RESET)
 
 // Console printing via ostreams
 #define PRINT(ostream, ...) std::fprintf(ostream, __VA_ARGS__)
@@ -106,11 +109,11 @@
 #define TAG_NONE "NONE"
 
 // Log Severity Tags
-#define COLOR_DEBUG COLOR_BLUE
-#define COLOR_INFO COLOR_WHITE
-#define COLOR_WARN COLOR_YELLOW
-#define COLOR_ERROR COLOR_RED
-#define COLOR_FATAL COLOR_RED_BOLD
+#define COLOR_DEBUG FMT_TEXT(FONT_REG, COLOR_BLUE)
+#define COLOR_INFO FMT_TEXT(FONT_REG, COLOR_WHITE)
+#define COLOR_WARN FMT_TEXT(FONT_REG, COLOR_YELLOW)
+#define COLOR_ERROR FMT_TEXT(FONT_REG, COLOR_RED)
+#define COLOR_FATAL FMT_TEXT(FONT_BOLD, COLOR_RED)
 
 // Log arguments & formatting flags
 // TODO(ethanmusser): Add time to log output.
@@ -126,7 +129,7 @@
 // TODO(ethanmusser): Implement logging to file.
 #define LOG(msg, tag, args...) PRINT(LOG_OSTREAM, LOG_FORMAT msg NEWLINE, LOG_ARGS(tag), ##args)
 #ifndef NO_COLOR
-#define LOG_COLOR(msg, tag, color, args...) PRINT(LOG_OSTREAM, color LOG_FORMAT msg NEWLINE COLOR_RESET, LOG_ARGS(tag), ##args)
+#define LOG_COLOR(msg, tag, color, args...) PRINT(LOG_OSTREAM, color LOG_FORMAT msg NEWLINE RESET_COLOR, LOG_ARGS(tag), ##args)
 #else
 #define LOG_COLOR(msg, tag, color, args...) LOG(msg, tag, args)
 #endif
