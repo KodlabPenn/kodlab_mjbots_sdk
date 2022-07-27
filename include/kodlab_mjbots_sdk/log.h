@@ -5,6 +5,8 @@
  * @date 2022-07-13
  *
  * @copyright 2022 The Trustees of the University of Pennsylvania. All rights reserved.
+ * 
+ * @todo(ethanmusser) Implement stack trace.
  *
  * This header provides a set of debug logging macros with adjustable
  * logging severity levels.  In order of increasing severity, the levels are
