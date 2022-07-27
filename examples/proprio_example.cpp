@@ -12,6 +12,7 @@
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "ManyMotorLog.hpp"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
+#include "kodlab_mjbots_sdk/log.h"  // provides console logging macros
 #include <sys/mman.h>
 #include <limits>
 #include <Eigen/Core>
@@ -50,10 +51,10 @@ class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
     Eigen::VectorXf::Map(&torques[0], num_motors_) = tau;
 
     // Print limits
-    std::cout<<"*********\n";
-    std::cout<<max_pos.transpose()<<"\n";
-    std::cout<<min_pos.transpose()<<"\n";
-    std::cout<<"*********"<<std::endl;
+    LOG_DEBUG("Max. Limits:");
+    std::cout << max_pos.transpose() << "\n";
+    LOG_DEBUG("Min. Limits:");
+    std::cout << min_pos.transpose() << "\n";
 
     robot_->SetTorques(torques);   
   }

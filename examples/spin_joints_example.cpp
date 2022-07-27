@@ -11,6 +11,7 @@
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "ManyMotorLog.hpp"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
+#include "kodlab_mjbots_sdk/log.h"  // provides console logging macros
 #include <sys/mman.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -58,6 +59,7 @@ int main(int argc, char **argv) {
   options.attitude_rate_hz = 1000;
 
   // Create control loop
+  LOG_INFO("Constructing Spin_Joint with %zu joints.", joints.size());
   Spin_Joint control_loop(std::move(joints), options);
   // Starts the loop, and then join it
   control_loop.Start();
