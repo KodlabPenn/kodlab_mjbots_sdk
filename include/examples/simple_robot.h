@@ -1,5 +1,7 @@
 #include "kodlab_mjbots_sdk/robot_interface.h"
 
+#pragma once
+
 class SimpleRobot : virtual public kodlab::RobotInterface
 {
 
