@@ -58,50 +58,16 @@ class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMoto
     }
 };
 
-/*!
- * @brief Helper class to wrap the vector of shared pointers of JointBaseDerived
- * 
- * @tparam joint_type must be JointBaseDerived type
- */
-template <class joint_type>
-class JointSharedVector
-{
-    static_assert(std::is_base_of<JointBase, joint_type>::value); // check that the joint_type is derived from JointBase
-    std::vector<std::shared_ptr<joint_type>> v_;  // internal vector of shared pointers 
-
-public:
-    /*!
-     * @brief constructs a shared_ptr joint_type and appends it to the internal vector
-     * 
-     * @tparam Args parameter pack for passing through the joint constructor
-     * @param args a set of args that match the joint_type constructor
-     */
-    template <typename... Args>
-    void addJoint(Args... args)
-    {
-        v_.push_back(std::make_shared<joint_type>(args...));
-    }
-
-    /*!
-     * @brief implicit conversion to vector that returns a copy of the shared_ptr's
-     * 
-     * @return std::vector<std::shared_ptr<joint_type>> 
-     */
-    operator std::vector<std::shared_ptr<joint_type>>() { return v_; }
-};
-
 int main(int argc, char **argv)
 {
 
-    // Setup joints with a std::vector
-    // std::vector<kodlab::mjbots::JointMoteus> joints;
-    // joints.emplace_back(100, 4, 1, 0,   1, 0);
-    // joints.emplace_back(101, 4,-1, 0, 5.0/3.0, 0);
-
-    // Setup joints with JointSharedVector
-    JointSharedVector<kodlab::mjbots::JointMoteus> joints;
-    joints.addJoint(100, 4, 1, 0, 1, 0);
-    joints.addJoint(101, 4, -1, 0, 5.0 / 3.0, 0);
+    // Setup joints with a std::vector or JointSharedVector class
+    std::vector<kodlab::mjbots::JointMoteus> joints;
+    joints.emplace_back(100, 4, 1, 0,   1, 0);
+    joints.emplace_back(101, 4,-1, 0, 5.0/3.0, 0);
+    // JointSharedVector<kodlab::mjbots::JointMoteus> joints;
+    // joints.addJoint(100, 4, 1, 0, 1, 0);
+    // joints.addJoint(101, 4, -1, 0, 5.0 / 3.0, 0);
 
     // Define robot options
     kodlab::mjbots::ControlLoopOptions options;
