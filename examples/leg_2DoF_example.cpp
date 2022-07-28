@@ -13,6 +13,7 @@
 #include "LegLog.hpp"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
+#include "kodlab_mjbots_sdk/log.h"  // provides console logging macros
 
 class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
   using MjbotsControlLoop::MjbotsControlLoop;
@@ -49,7 +50,7 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
             std::abs(robot_->GetJointVelocities()[1]) < kSoftVelocityThreshold) {
           mode_ = kFlight;
           z0_ = z_;
-          std::cout << "Starting Limb mode" << std::endl;
+          LOG_INFO("Starting Limb mode.");
         }
         break;
       }
@@ -100,7 +101,6 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
   }
 
   void ProcessInput() override {
-    std::cout << "Response received" << std::endl;
     kv_ = lcm_sub_.data_.kv;
     k_ = lcm_sub_.data_.k;
     k_stiff_ = lcm_sub_.data_.k_stiff;
@@ -108,6 +108,10 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
     b_stiff_ = lcm_sub_.data_.b_stiff;
     kp_ = lcm_sub_.data_.kp;
     kd_ = lcm_sub_.data_.kd;
+    LOG_INFO(
+        "Response received: { kv = % 5.2f, k = % 5.2f, k_stiff = % 5.2f, "
+        "b = % 5.2f, b_stiff = % 5.2f, kp = % 5.2f, kd = % 5.2f }",
+        kv_, k_, k_stiff_, b_, b_stiff_, kp_, kd_);
   }
 
   enum HybridMode {

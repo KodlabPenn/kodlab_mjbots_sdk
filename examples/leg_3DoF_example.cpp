@@ -12,6 +12,7 @@
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "ManyMotorLog.hpp"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
+#include "kodlab_mjbots_sdk/log.h"  // provides console logging macros
 #include <sys/mman.h>
 #include <limits>
 #include <Eigen/Core>
@@ -34,7 +35,7 @@ class Joints3DoF : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
       Eigen::VectorXf::Map(&torques[0], num_motors_) = tau;
     }
     else{
-      std::cout<<"Wrong number of motors"<<std::endl;
+      LOG_ERROR("Wrong number of motors");
     }
 
     robot_->SetTorques(torques);   

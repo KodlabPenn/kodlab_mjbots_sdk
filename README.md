@@ -72,6 +72,51 @@ To configure the soft Start, set the `options.max_torque` and `options.soft_star
 max torque is the maximum torque per motor and the soft Start duration is how long the torque ramp should last
 in iterations of the control loop. 
 
+## Console Logging
+The `log.h` header provides a set of debug logging macros with adjustable
+logging severity levels.  In order of increasing severity, the levels are 
+`DEBUG`, `INFO`, `WARN`, `ERROR`, and `FATAL`.  
+
+The minimum level for console output is set by defining `LOG_MIN_SEVERITY` 
+(default is `DEBUG`).  Setting `LOG_MIN_SEVERITY` to `NONE` will disable macro 
+console output.
+
+Usage of the `LOG_XXXX` logging macros (where `XXXX` is `DEBUG`, `INFO`,
+etc.) is akin to using [`std::fprintf`](https://en.cppreference.com/w/cpp/io/c/fprintf).
+For example,
+```cpp
+LOG_WARN("This is a warning message.");
+LOG_ERROR("%s", "This is an error message.");
+```
+
+Conditional logging macros `LOG_IF_XXXX` are also provided, which take a leading
+conditional argument before the standard `std::fprintf` input.  For example,
+```cpp
+LOG_IF_INFO(false, "%s", "This info message will not be logged.");
+LOG_IF_FATAL(true, "This fatal message will be logged.");
+```
+
+The default output of the `LOG_*` macros follows the format 
+```
+[SEVERITY][path/to/file | function:line_no] Logged message
+```
+The output behavior can be changed by redefining the `LOG_ARGS` and `LOG_FORMAT` 
+macros.  For example, to produce output of the form 
+```
+[SEVERITY][path/to/file][line_no][function] Logging message
+```
+these macros would be redefined as follows
+```cpp
+#define LOG_ARGS(tag) tag, __FILE__, __LINE__, __func__
+#define LOG_FORMAT "[%-5s][%-15s][%d][%s] "
+```
+
+Colored terminal output is provided by default via
+[ANSI escape codes](https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797).
+This can be disabled by defining the `NO_COLOR` macro.
+
+
+
 # Setup
 This setup sets up the PI as an access point and sets up cross compiling on the main computer.
 ## Setting up your Pi
