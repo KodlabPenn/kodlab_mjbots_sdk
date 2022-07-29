@@ -51,6 +51,11 @@ private:
   static const int KILL_ROBOT_IDX = -1;
 
   /**
+   * @brief Behavior command that turns robot off, always 0
+   */
+  static const int DEFAULT_IDX = 0;
+
+  /**
    * @brief Behaviors available to the robot
    * @note The first element of this vector is always `OFF_BEHAVIOR`.  Added
    *       behaviors are appended to the end.
@@ -83,7 +88,10 @@ public:
    * @brief Construct a behavior manager object
    * @param robot pointer to robot that the behavior is executing on
    */
-  BehaviorManager(std::shared_ptr<Robot> robot) : robot_(robot) {}
+  BehaviorManager(std::shared_ptr<Robot> robot) : robot_(robot)
+  {
+    AddBehavior<OffBehavior<Robot>>(robot_, "OFF");
+  }
 
   /**
    * @brief Destructor
@@ -94,7 +102,31 @@ public:
    * @brief Set the current behavior
    * @param next_idx index in `behaviors_`
    */
-  virtual void SetBehavior(const int &next_idx);
+  virtual void SetBehavior(const int &next_idx)
+  {
+    if (next_idx == KILL_ROBOT_IDX)
+    {
+      kodlab::CTRL_C_DETECTED = true; // kill robot
+      LOG_FATAL("Behavior %d received, killing robot.", KILL_ROBOT_IDX);
+    } else if (next_idx == selected_idx)
+    {
+      LOG_INFO("Behavior %d is already active.", next_idx);
+      return;
+    }
+    else if (next_idx < behaviors_.size() && next_idx >= 0)
+    {
+      next_idx_ = next_idx; // update next behavior
+      if (!behaviors_[next_idx_]->is_initialized())
+      {
+        behaviors_[next_idx_]->Init();
+      }
+      behaviors_[selected_idx]->Stop(behaviors_[next_idx_]); // stop current behavior
+      switching_behaviors_ = true;  // indicate transition is in progress
+    } else
+    {
+      LOG_WARN("Invalid behavior selected: %d", next_idx);
+    }
+  }
 
   /**
    * @brief Add a behavior to the behaviors list and initialize it
@@ -103,18 +135,63 @@ public:
    * @param args behavior constructor arguments
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  void AddBehavior(ConstructorArgs &&... args);
+  void AddBehavior(ConstructorArgs &&... args)
+  {
+    static_assert(std::is_base_of<kodlab::Behavior<Robot>, BehaviorType>::value,
+                  "BehaviorType must be a `kodlab::Behavior`-derived type");
+    behaviors_.emplace_back(std::make_unique<BehaviorType>(args...));
+    names_.push_back(behaviors_.back()->get_name());
+    behaviors_.back()->Init();
+  }
 
   /**
    * @brief Reset the behaviors list back to default
    */
-  void ResetBehaviors();
+  void ResetBehaviors()
+  {
+    if (behaviors_.size() > 1)
+    {
+      behaviors_.erase(behaviors_.begin() + 1, behaviors_.end());
+      names_.erase(names_.begin() + 1, names_.end());
+    }
+  }
 
   /**
    * @brief Update the current behavior
    * @param robot shared pointer to robot behavior is executing on
    */
-  virtual void Update();
+  virtual void Update()
+  {
+    behaviors_[selected_idx]->Update();
+    if (switching_behaviors_
+        && behaviors_[selected_idx]->ReadyToSwitch(behaviors_[next_idx_]))
+    {
+      behaviors_[selected_idx]->set_inactive();  // mark previous behavior as inactive
+      behaviors_[next_idx_]->Begin(behaviors_[selected_idx]);  // begin new behavior
+      behaviors_[next_idx_]->set_active();  // mark new behavior as active
+      selected_idx = next_idx_;  // update selected behavior to next
+      switching_behaviors_ = false;  // no longer transitioning behaviors
+      std::fprintf(stdout,
+                   "[INFO][BehaviorManager] Switched to behavior %d.\n",
+                   selected_idx);
+    }
+  }
+
+  /**
+   * @brief Prints a list of behaviors currently in `behaviors_`
+   */
+  void PrintBehaviorList() const
+  {
+    std::fprintf(stdout, "+--------------------------------+\n");
+    std::fprintf(stdout, "| Control Loop Behaviors         |\n");
+    std::fprintf(stdout, "| ----------------------         |\n");
+    for (unsigned int i = 0; i < names_.size(); i++)
+    {
+      std::fprintf(stdout, "| %3d. %-25s |\n",
+                   i, names_[i].c_str());
+    }
+    std::fprintf(stdout, "+--------------------------------+\n");
+  }
 
   /**
    * @brief Accessor for index of selected behavior
