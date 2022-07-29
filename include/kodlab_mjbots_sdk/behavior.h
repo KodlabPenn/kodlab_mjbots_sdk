@@ -76,7 +76,10 @@ public:
    *          occur, e.g., setting up pointers.
    * @param robot robot interface
    */
-  virtual void Init() = 0;
+  virtual void Init()
+  {
+    set_initialized();
+  }
 
   /**
    * @brief Begin this behavior for a given robot interface
@@ -87,7 +90,7 @@ public:
    *          functionalities for different prior behaviors.
    * @param prev_behavior previously active behavior
    */
-  virtual void Begin(std::unique_ptr<Behavior<Robot>> &prev_behavior) = 0;
+  virtual void Begin(std::unique_ptr<Behavior<Robot>> &prev_behavior) {}
 
   /**
    * @brief Update this behavior for a given robot interface
@@ -110,7 +113,7 @@ public:
    *          for different on-deck behaviors.
    * @param next_behavior behavior to be transitioned to
    */
-  virtual void Stop(std::unique_ptr<Behavior<Robot>> &next_behavior) = 0;
+  virtual void Stop(std::unique_ptr<Behavior<Robot>> &next_behavior) {}
 
   /**
    * @brief Check for whether the behavior is running
@@ -119,7 +122,7 @@ public:
    *          behavior manager.
    * @return true if this behavior is active, false otherwise
    */
-  virtual bool Running() = 0;
+  virtual bool Running() { return active_; }
 
   /**
    * @brief Check for whether this behavior is prepared to switch to a new
@@ -132,7 +135,10 @@ public:
    * @param next_behavior behavior being transitioned to
    * @return true if behavior is ready to switch, false otherwise
    */
-  virtual bool ReadyToSwitch(std::unique_ptr<Behavior<Robot>> &next_behavior) = 0;
+  virtual bool ReadyToSwitch(std::unique_ptr<Behavior<Robot>> &next_behavior)
+  {
+    return true;
+  }
 
   /**
    * @brief Sets this behavior's robot
