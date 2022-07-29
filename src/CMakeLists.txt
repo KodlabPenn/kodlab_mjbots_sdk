@@ -19,6 +19,7 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/imu_data.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/log.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/robot_base.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/behavior_manager.h"
         )
 
 set(SOURCE_LIST "pi3hat.cpp" 
