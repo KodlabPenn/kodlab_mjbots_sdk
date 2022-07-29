@@ -29,7 +29,7 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_robot.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_spin_joints_behavior.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_control_io_behavior.h"
-
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/behavior_manager.h"
         )
 
 set(SOURCE_LIST "pi3hat.cpp" 
