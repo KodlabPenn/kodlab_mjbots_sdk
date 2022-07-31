@@ -83,12 +83,12 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
   moteus_interface_ = std::make_shared<::mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
 
   // Initialize attitude shared pointer
-  attitude_ = std::make_shared<::kodlab::Attitude<float>>();
+  imu_data_ = std::make_shared<::kodlab::IMUData<float>>();
   kodlab::rotations::EulerAngles<float> imu_world_offset =
       {M_PI / 180.0 * imu_world_offset_deg.roll,
        M_PI / 180.0 * imu_world_offset_deg.pitch,
        M_PI / 180.0 * imu_world_offset_deg.yaw};
-  attitude_->set_world_offset(imu_world_offset.ToQuaternion());
+  imu_data_->set_world_offset(imu_world_offset.ToQuaternion());
 
   // Initialize and send basic command
   InitializeCommand();
@@ -122,7 +122,7 @@ void MjbotsRobotInterface::ProcessReply() {
       joint->UpdateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
     }
   }
-  attitude_->Update(*(moteus_data_.attitude));
+  imu_data_->Update(*(moteus_data_.attitude));
 }
 
 void MjbotsRobotInterface::SendCommand() {
@@ -192,12 +192,12 @@ void MjbotsRobotInterface::Shutdown() {
   moteus_interface_->shutdown();
 }
 
-const ::kodlab::Attitude<float>& MjbotsRobotInterface::GetAttitude() {
-  return *attitude_;
+const ::kodlab::IMUData<float>& MjbotsRobotInterface::GetIMUData() {
+  return *imu_data_;
 }
 
-std::shared_ptr<::kodlab::Attitude<float>> MjbotsRobotInterface::GetAttitudeSharedPtr() {
-  return attitude_;
+std::shared_ptr<::kodlab::IMUData<float>> MjbotsRobotInterface::GetIMUDataSharedPtr() {
+  return imu_data_;
 }
 
 } // namespace kodlab::mjbots

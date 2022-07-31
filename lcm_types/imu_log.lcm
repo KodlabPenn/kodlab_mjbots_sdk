@@ -1,4 +1,4 @@
-struct AttitudeLog
+struct IMULog
 {
   float timestamp;
   float margin;

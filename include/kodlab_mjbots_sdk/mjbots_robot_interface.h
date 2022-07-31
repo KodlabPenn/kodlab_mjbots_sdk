@@ -14,7 +14,7 @@
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
-#include "kodlab_mjbots_sdk/attitude.h"
+#include "kodlab_mjbots_sdk/imu_data.h"
 
 namespace kodlab::mjbots {
 
@@ -146,16 +146,16 @@ class MjbotsRobotInterface {
   std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(){return joints;}
   
   /*!
-   * @brief accessor for the attitude of the robot
+   * @brief accessor for the IMU data of the robot
    * @return the attitude object for the robot
    */
-  const ::kodlab::Attitude<float>& GetAttitude();
+  const ::kodlab::IMUData<float>& GetIMUData();
 
   /*!
-   * @brief accessor for the attitude of the robot
+   * @brief accessor for the IMU data of the robot
    * @return the attitude shared pointer for the robot
    */
-  std::shared_ptr<::kodlab::Attitude<float>> GetAttitudeSharedPtr();
+  std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();
 
  private:
   int num_servos_;                         /// The number of motors in the robot
@@ -176,7 +176,7 @@ class MjbotsRobotInterface {
   std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
   /// response is ready
   SoftStart soft_start_;                                                      /// Soft Start object
-  std::shared_ptr<::kodlab::Attitude<float>> attitude_;                       /// Robot attitude
+  std::shared_ptr<::kodlab::IMUData<float>> imu_data_;                        /// Robot IMU data
 
   /*!
    * @brief initialize the command with resolutions

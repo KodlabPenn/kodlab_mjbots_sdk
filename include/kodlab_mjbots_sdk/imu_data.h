@@ -1,5 +1,5 @@
 /**
- * @file attitude.h
+ * @file imu_data.h
  * @author Ethan Musser (emusser@seas.upenn.edu)
  * @brief Defines an attitude object for storing inertial parameters.
  * @date 7/7/22
@@ -21,11 +21,11 @@ namespace kodlab
 {
 
 /**
- * @brief Attitude object storing inertial data.
+ * @brief IMUData object storing inertial data.
  * @tparam Scalar[optional] numeric type
  */
 template<typename Scalar = float>
-class Attitude
+class IMUData
 {
 
 private:
@@ -35,19 +35,19 @@ private:
   Eigen::Quaternion<Scalar> att_quat_raw_ = {1, 0, 0, 0};
 
   /**
-   * @brief Attitude quaternion in world frame
+   * @brief IMUData quaternion in world frame
    */
   Eigen::Quaternion<Scalar> att_quat_ = {1, 0, 0, 0};
 
   /**
-   * @brief Attitude euler angles in world frame
+   * @brief IMUData euler angles in world frame
    * @note Always follow the default <b>Extrinsic X-Y-Z> convention
    */
   mutable kodlab::ValidatedCache<rotations::EulerAngles<Scalar>>
       att_euler_ = {rotations::EulerAngles<Scalar>(0, 0, 0), false};
 
   /**
-   * @brief Attitude rotation matrix in world frame
+   * @brief IMUData rotation matrix in world frame
    */
   mutable kodlab::ValidatedCache<Eigen::Matrix3<Scalar>>
       att_rot_mat_ = {Eigen::Matrix3<Scalar>::Identity(), false};;
@@ -69,7 +69,7 @@ private:
   Eigen::Vector3<Scalar> ang_rate_bias_ = {0, 0, 0};
 
   /**
-   * @brief Attitude uncertainty about the raw attitude
+   * @brief IMUData uncertainty about the raw attitude
    */
   Eigen::Quaternion<Scalar> att_uncertainty_ = {1, 0, 0, 0};
 
@@ -96,22 +96,22 @@ private:
 
 public:
   /**
-   * @brief Construct a new \c Attitude object.
+   * @brief Construct a new \c IMUData object.
    */
-  Attitude() = default;
+  IMUData() = default;
 
   /**
-   * @brief Construct a new \c Attitude object with populated data.
+   * @brief Construct a new \c IMUData object with populated data.
    *
    * @param att_quat_in attitude quaternion
    * @param ang_rate_in angular velocity about <code>[x, y, z]</code> axes
    * @param accel_in linear acceleration along <code>[x, y, z]</code> axes
    * @param world_offset_in world frame rotation offset (default identity)
    */
-  Attitude(const Eigen::Quaternion<Scalar> &att_quat_in,
-           const Eigen::Vector3<Scalar> &ang_rate_in,
-           const Eigen::Vector3<Scalar> &accel_in,
-           const Eigen::Quaternion<Scalar> &world_offset_in = {1, 0, 0, 0})
+  IMUData(const Eigen::Quaternion<Scalar> &att_quat_in,
+          const Eigen::Vector3<Scalar> &ang_rate_in,
+          const Eigen::Vector3<Scalar> &accel_in,
+          const Eigen::Quaternion<Scalar> &world_offset_in = {1, 0, 0, 0})
       : att_quat_raw_(att_quat_in),
         att_quat_(world_offset_in * att_quat_in),
         ang_rate_(ang_rate_in),
@@ -119,7 +119,7 @@ public:
         world_offset_(world_offset_in) {}
 
   /**
-   * @brief Construct a new \c Attitude object with populated data, biases,
+   * @brief Construct a new \c IMUData object with populated data, biases,
    *        and uncertainty.
    *
    * @param att_quat_in attitude quaternion
@@ -131,13 +131,13 @@ public:
    *                                <code>[x, y, z]</code> axes
    * @param world_offset_in world frame rotation offset (default identity)
    */
-  Attitude(const Eigen::Quaternion<Scalar> &att_quat_in,
-           const Eigen::Vector3<Scalar> &ang_rate_in,
-           const Eigen::Vector3<Scalar> &accel_in,
-           const Eigen::Vector3<Scalar> &ang_rate_bias_in,
-           const Eigen::Quaternion<Scalar> &att_uncertainty_in,
-           const Eigen::Vector3<Scalar> &ang_bias_uncertainty_in,
-           const Eigen::Quaternion<Scalar> &world_offset_in = {1, 0, 0, 0})
+  IMUData(const Eigen::Quaternion<Scalar> &att_quat_in,
+          const Eigen::Vector3<Scalar> &ang_rate_in,
+          const Eigen::Vector3<Scalar> &accel_in,
+          const Eigen::Vector3<Scalar> &ang_rate_bias_in,
+          const Eigen::Quaternion<Scalar> &att_uncertainty_in,
+          const Eigen::Vector3<Scalar> &ang_bias_uncertainty_in,
+          const Eigen::Quaternion<Scalar> &world_offset_in = {1, 0, 0, 0})
       : att_quat_raw_(att_quat_in),
         att_quat_(world_offset_in * att_quat_in),
         ang_rate_(ang_rate_in),
@@ -148,14 +148,14 @@ public:
         world_offset_(world_offset_in) {}
 
   /**
-   * @brief Construct a new \c Attitude object from a
-   *        \c mjbots::pi3hat::Attitude object
+   * @brief Construct a new \c IMUData object from a
+   *        \c mjbots::pi3hat::IMUData object
    *
    * @param pi_att attitude object
    * @param world_offset_in world frame rotation offset (default identity)
    */
-  Attitude(const ::mjbots::pi3hat::Attitude &pi_att,
-           const Eigen::Quaternion<Scalar> &world_offset_in = {1, 0, 0, 0})
+  IMUData(const ::mjbots::pi3hat::Attitude &pi_att,
+          const Eigen::Quaternion<Scalar> &world_offset_in = {1, 0, 0, 0})
       : att_quat_raw_(pi_att.quat.x,
                       pi_att.quat.y,
                       pi_att.quat.z,
@@ -174,7 +174,7 @@ public:
         world_offset_(world_offset_in) {}
 
   /**
-   * @brief Update this \c Attitude object's data
+   * @brief Update this \c IMUData object's data
    *
    * @param att_quat_in attitude quaternion
    * @param ang_rate_in angular velocity about <code>[x, y, z]</code> axes
@@ -192,7 +192,7 @@ public:
   }
 
   /**
-   * @brief Update this \c Attitude object's data
+   * @brief Update this \c IMUData object's data
    *
    * @param att_quat_in attitude quaternion
    * @param ang_rate_in angular velocity about <code>[x, y, z]</code> axes
@@ -216,7 +216,7 @@ public:
   }
 
   /**
-   * @brief Update this \c Attitude object's data
+   * @brief Update this \c IMUData object's data
    *
    * @param pi_att
    */
@@ -236,9 +236,9 @@ public:
    * @brief Prints attitude, angular velocity, and linear acceleration in
    * various representations
    */
-  void PrintAttitude()
+  void PrintIMUData()
   {
-    // Gather Attitude Data
+    // Gather IMUData Data
     Eigen::Quaternionf qr = get_att_quat_raw();
     Eigen::Quaternionf q = get_att_quat();
     kodlab::rotations::EulerAngles<float> e = get_att_euler();
@@ -246,7 +246,7 @@ public:
     Eigen::Vector3f a = get_accel();
     Eigen::Matrix3f r = get_att_rot_mat();
 
-    // Print Attitude Information to Console
+    // Print IMUData Information to Console
     using std::fprintf;
     std::cout << std::fixed;
     fprintf(stdout,
