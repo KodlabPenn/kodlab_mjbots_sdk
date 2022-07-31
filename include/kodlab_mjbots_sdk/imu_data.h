@@ -22,6 +22,16 @@ namespace kodlab
 
 /**
  * @brief IMUData object storing inertial data.
+ * @note The body, world, and modified world frames are referred to throughout
+ *       this class' documentation. The body frame is fixed to the robot body
+ *       and offset from the IMU/Pi3Hat frame based on the Mjbots control loop
+ *       options `imu_mounting_deg` parameters. The world frame describes a
+ *       fixed inertial frame which is defined at robot startup. This frame
+ *       always has \f$\hat{z}\f$ pointing in the direction of gravity. The
+ *       modified world frame is also a fixed inertial frame, but is offset from
+ *       the world frame by a user-defined `world_offset_`. This is intended
+ *       to allow reorientation of the common world frame to something more
+ *       intuitive to a given use case, e.g., reorienting gravity to be upwards.
  * @tparam Scalar[optional] numeric type
  */
 template<typename Scalar = float>
@@ -88,7 +98,7 @@ private:
   /**
    * @brief Invalidates cached data
    */
-  void InvalidateCached()
+  void InvalidateCache()
   {
     euler_.invalidate();
     rot_mat_.invalidate();
@@ -184,7 +194,7 @@ public:
               const Eigen::Vector3<Scalar> &ang_rate_in,
               const Eigen::Vector3<Scalar> &accel_in)
   {
-    InvalidateCached();
+    InvalidateCache();
     quat_raw_ = quat_in;
     quat_ = world_offset_ * quat_in;
     ang_rate_ = ang_rate_in;
@@ -235,8 +245,9 @@ public:
   /**
    * @brief Prints attitude, angular velocity, and linear acceleration in
    * various representations
+   * @param stream[optional] output stream
    */
-  void PrintIMUData()
+  void PrintIMUData(FILE* stream = stdout)
   {
     // Gather IMUData Data
     Eigen::Quaternionf qr = get_quat_raw();
@@ -248,38 +259,37 @@ public:
 
     // Print IMUData Information to Console
     using std::fprintf;
-    std::cout << std::fixed;
-    fprintf(stdout,
+    fprintf(stream,
             "+------------------------ ATTITUDE ----------------------+\n");
-    fprintf(stdout,
+    fprintf(stream,
             "|      Raw Quat:  % 3.2fi + % 3.2fj + % 3.2fk + % 3.2f       |\n",
             qr.x(), qr.y(), qr.z(), qr.w());
-    fprintf(stdout,
+    fprintf(stream,
             "|    Quaternion:  % 3.2fi + % 3.2fj + % 3.2fk + % 3.2f       |\n",
             q.x(), q.y(), q.z(), q.w());
-    fprintf(stdout,
+    fprintf(stream,
             "+--------------------------------------------------------+\n");
-    fprintf(stdout,
+    fprintf(stream,
             "|   Euler (rpy):  ( % 7.2f, % 7.2f, % 7.2f )          |\n",
             e.roll(), e.pitch(), e.yaw());
-    fprintf(stdout,
+    fprintf(stream,
             "| Ang Vel (xyz):  ( % 7.2f, % 7.2f, % 7.2f )          |\n",
             w.x(), w.y(), w.z());
-    fprintf(stdout,
+    fprintf(stream,
             "| Lin Acc (xyz):  ( % 7.2f, % 7.2f, % 7.2f )          |\n",
             a.x(), a.y(), a.z());
-    fprintf(stdout,
+    fprintf(stream,
             "+--------------------------------------------------------+\n");
-    fprintf(stdout,
+    fprintf(stream,
             "|       Rot Mat:  [ % 7.2f, % 7.2f, % 7.2f ]          |\n",
             r(0, 0), r(0, 1), r(0, 2));
-    fprintf(stdout,
+    fprintf(stream,
             "|                 [ % 7.2f, % 7.2f, % 7.2f ]          |\n",
             r(1, 0), r(1, 1), r(1, 2));
-    fprintf(stdout,
+    fprintf(stream,
             "|                 [ % 7.2f, % 7.2f, % 7.2f ]          |\n",
             r(2, 0), r(2, 1), r(2, 2));
-    fprintf(stdout,
+    fprintf(stream,
             "+--------------------------------------------------------+\n");
   }
 
