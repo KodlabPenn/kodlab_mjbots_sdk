@@ -97,7 +97,10 @@ int main(int argc, char **argv)
 
   // Build and initialize behaviors list
   // Note: the behaviors list includes a kodlab::OffBehavior as the first
-  // element by default, see BehaviorManager definition for details.
+  // element by default. This can be replaced with an alternative default
+  // behavior via SetDefaultBehavior, as follows. See the BehaviorManager
+  // definition for details.
+  simple_robot.SetDefaultBehavior<kodlab::OffBehavior<SimpleRobot>>("MY_OFF");
   simple_robot.AddBehavior<SimpleBehavior>("SIMPLE");
   simple_robot.AddBehavior<SimpleBehavior>("ANOTHER_SIMPLE");
   simple_robot.AddBehavior<kodlab::OffBehavior<SimpleRobot>>("ANOTHER_OFF");
