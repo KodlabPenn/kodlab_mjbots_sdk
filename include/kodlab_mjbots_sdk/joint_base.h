@@ -74,6 +74,13 @@ class JointBase {
         void set_velocity(float vel){velocity_ = vel;}
 
         /**
+         * @brief Set the joint zero offset
+         * 
+         * @param zero zero offset override
+         */
+        void set_zero(float zero){zero_offset_ = zero;}
+
+        /**
          * @brief Get the position
          * 
          * @return float 
@@ -165,7 +172,7 @@ class JointBase {
         // Limits
         float max_torque_    =  std::numeric_limits<float>::infinity(); /// max torque [N m]
         float pos_limit_min_ = -std::numeric_limits<float>::infinity(); /// max position [rad] before soft stop
-        float pos_limit_max_ = -std::numeric_limits<float>::infinity(); /// min position [rad] before soft stop
+        float pos_limit_max_ =  std::numeric_limits<float>::infinity(); /// min position [rad] before soft stop
 
 };
 
