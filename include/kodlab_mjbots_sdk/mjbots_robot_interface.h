@@ -147,15 +147,15 @@ class MjbotsRobotInterface {
   
   /*!
    * @brief accessor for the IMU data of the robot
-   * @return the attitude object for the robot
+   * @return const reference to the IMU data object for the robot
    */
   const ::kodlab::IMUData<float>& GetIMUData();
 
   /*!
    * @brief accessor for the IMU data of the robot
-   * @return the attitude shared pointer for the robot
+   * @return const IMU data shared pointer for the robot
    */
-  std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();
+  const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();
 
  private:
   int num_servos_;                         /// The number of motors in the robot

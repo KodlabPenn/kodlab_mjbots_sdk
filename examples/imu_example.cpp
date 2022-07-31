@@ -27,7 +27,7 @@ private:
    * @note This is is a shared pointer to a continually updated `IMUData`
    *       object.  There is no need to update in the control loop itself.
    */
-  std::shared_ptr<kodlab::IMUData<float>> imu_ = robot_->GetIMUDataSharedPtr();
+  const std::shared_ptr<kodlab::IMUData<float>> imu_ = robot_->GetIMUDataSharedPtr();
 
   /**
    * @brief Read-only IMU data object
@@ -46,9 +46,9 @@ private:
     imu_read_only_ = robot_->GetIMUData();
 
     // Read Various IMUData Information from `imu_`
-    Eigen::Quaternionf quat = imu_->get_quat();    // attitude quaternion
-    Eigen::Matrix3f rot_mat = imu_->get_rot_mat(); // attitude rot. matrix
-    Eigen::Vector3f ang_vel = imu_->get_ang_rate();    // angular velocity
+    const Eigen::Quaternionf quat = imu_->get_quat();    // attitude quaternion
+    const Eigen::Matrix3f rot_mat = imu_->get_rot_mat(); // attitude rot. matrix
+    const Eigen::Vector3f ang_vel = imu_->get_ang_rate();    // angular velocity
 
     // Read Various IMUData Information from `imu_read_only_`
     kodlab::rotations::EulerAngles<float>

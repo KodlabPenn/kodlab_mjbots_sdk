@@ -196,7 +196,7 @@ const ::kodlab::IMUData<float>& MjbotsRobotInterface::GetIMUData() {
   return *imu_data_;
 }
 
-std::shared_ptr<::kodlab::IMUData<float>> MjbotsRobotInterface::GetIMUDataSharedPtr() {
+const std::shared_ptr<::kodlab::IMUData<float>> MjbotsRobotInterface::GetIMUDataSharedPtr() {
   return imu_data_;
 }
 
