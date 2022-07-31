@@ -99,6 +99,19 @@ public:
     behavior_mgr.template AddBehavior<BehaviorType>(this->robot_, args...);
   }
 
+  /**
+   * @brief Wrapper for behavior manager SetDefaultBehavior function
+   * @tparam BehaviorType `kodlab::Behavior`-derived type
+   * @tparam ConstructorArgs constructor arguments
+   * @param args behavior constructor arguments
+   */
+  template<class BehaviorType, typename... ConstructorArgs>
+  void SetDefaultBehavior(ConstructorArgs &&... args)
+  {
+    behavior_mgr.template SetDefaultBehavior<BehaviorType>(this->robot_,
+                                                           args...);
+  }
+
 };
 
 } // kodlab::mjbots
