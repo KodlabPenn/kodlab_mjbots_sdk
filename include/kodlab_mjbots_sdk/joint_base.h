@@ -74,6 +74,13 @@ class JointBase {
         void set_velocity(float vel){velocity_ = vel;}
 
         /**
+         * @brief Set the joint zero offset
+         * 
+         * @param zero zero offset override
+         */
+        void set_zero(float zero){zero_offset_ = zero;}
+
+        /**
          * @brief Get the position
          * 
          * @return float 
