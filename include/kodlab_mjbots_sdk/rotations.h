@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <array>
 #include <algorithm>
+#include <stdexcept>
 
 namespace kodlab::rotations
 {
@@ -195,7 +196,9 @@ public:
 
   /**
    * @brief Returns quaternion representation of this rotation.
-   *
+   * @warning Currently this method only supports the default Extrinsic X-Y-Z
+   *          Tait-Bryan Euler angles convention. An exception will be thrown if
+   *          this object uses another convention.
    * @return quaternion
    */
   Eigen::Quaternion<Scalar> ToQuaternion() const
@@ -205,7 +208,9 @@ public:
 
   /**
    * @brief Returns 3x3 rotation matrix representation of this rotation.
-   *
+   * @warning Currently this method only supports the default Extrinsic X-Y-Z
+   *          Tait-Bryan Euler angles convention. An exception will be thrown if
+   *          this object uses another convention.
    * @return 3x3 rotation matrix
    */
   Eigen::Matrix3<Scalar> ToRotationMatrix() const
@@ -352,7 +357,9 @@ inline Eigen::Quaternion<Scalar> DefaultEulerAnglesToQuaternion(
 
 /**
  * @brief Returns a quaternion representation of an `EulerAngles` object
- * 
+ * @warning Currently this method only supports the default Extrinsic X-Y-Z
+ *          Tait-Bryan Euler angles convention. An exception will be thrown if
+ *          Euler angles with another convention are provided.
  * @tparam Scalar[optional] numeric-type
  * @param euler 
  * @return Eigen::Quaternion<Scalar> 
@@ -366,16 +373,18 @@ inline Eigen::Quaternion<Scalar> EulerAnglesToQuaternion(
     return DefaultEulerAnglesToQuaternion(euler);
   } else
   {
-    using Eigen::Quaternion;
-    using Eigen::AngleAxis;
-    using Eigen::Vector3;
-    std::array<Scalar, 3> angles = euler.get_angles_extrinsic();
-    std::array<int, 3> axes = euler.get_axes_extrinsic();
-    Quaternion<Scalar> q;
-    q = AngleAxis<Scalar>(angles[0], Vector3<Scalar>::Unit(axes[2]))
-        * AngleAxis<Scalar>(angles[1], Vector3<Scalar>::Unit(axes[1]))
-        * AngleAxis<Scalar>(angles[2], Vector3<Scalar>::Unit(axes[0]));
-    return q;
+    throw std::invalid_argument(
+        "kodlab::rotations::EulerAnglesToQuaternion only supports Extrinsic X-Y-Z Euler angles convention.");
+//    using Eigen::Quaternion;
+//    using Eigen::AngleAxis;
+//    using Eigen::Vector3;
+//    std::array<Scalar, 3> angles = euler.get_angles_extrinsic();
+//    std::array<int, 3> axes = euler.get_axes_extrinsic();
+//    Quaternion<Scalar> q;
+//    q = AngleAxis<Scalar>(angles[0], Vector3<Scalar>::Unit(axes[2]))
+//        * AngleAxis<Scalar>(angles[1], Vector3<Scalar>::Unit(axes[1]))
+//        * AngleAxis<Scalar>(angles[2], Vector3<Scalar>::Unit(axes[0]));
+//    return q;
   }
 }
 
@@ -421,7 +430,9 @@ inline Eigen::Matrix3<Scalar> DefaultEulerAnglesToRotationMatrix(
 
 /**
  * @brief Returns a rotation matrix representation of an `EulerAngles` object
- * 
+ * @warning Currently this method only supports the default Extrinsic X-Y-Z
+ *          Tait-Bryan Euler angles convention. An exception will be thrown if
+ *          Euler angles with another convention are provided.
  * @tparam Scalar[optional] numeric-type
  * @param euler 
  * @return Eigen::Matrix3<Scalar> 
@@ -436,15 +447,17 @@ inline Eigen::Matrix3<Scalar> EulerAnglesToRotationMatrix(
     return DefaultEulerAnglesToRotationMatrix(euler);
   } else
   {
-    using Eigen::AngleAxis;
-    using Eigen::Vector3;
-    std::array<Scalar, 3> angles = euler.get_angles_extrinsic();
-    std::array<int, 3> axes = euler.get_axes_extrinsic();
-    Matrix3<Scalar> r;
-    r = AngleAxis<Scalar>(angles[0], Vector3<Scalar>::Unit(axes[2]))
-        * AngleAxis<Scalar>(angles[1], Vector3<Scalar>::Unit(axes[1]))
-        * AngleAxis<Scalar>(angles[2], Vector3<Scalar>::Unit(axes[0]));
-    return r;
+    throw std::invalid_argument(
+        "kodlab::rotations::EulerAnglesToRotationMatrix only supports Extrinsic X-Y-Z Euler angles convention.");
+//    using Eigen::AngleAxis;
+//    using Eigen::Vector3;
+//    std::array<Scalar, 3> angles = euler.get_angles_extrinsic();
+//    std::array<int, 3> axes = euler.get_axes_extrinsic();
+//    Matrix3<Scalar> r;
+//    r = AngleAxis<Scalar>(angles[0], Vector3<Scalar>::Unit(axes[2]))
+//        * AngleAxis<Scalar>(angles[1], Vector3<Scalar>::Unit(axes[1]))
+//        * AngleAxis<Scalar>(angles[2], Vector3<Scalar>::Unit(axes[0]));
+//    return r;
   }
 }
 
