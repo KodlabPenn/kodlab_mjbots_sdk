@@ -145,6 +145,25 @@ public:
   }
 
   /**
+   * @brief Replaces the default behavior with a user-defined one
+   * @note This is included to provide support for custom default robot
+   *       behaviors. If this function is not called, the default behavior will
+   *       be a `kodlab::OffBehavior`.
+   * @tparam BehaviorType `kodlab::Behavior`-derived type
+   * @tparam ConstructorArgs constructor arguments
+   * @param args behavior constructor arguments
+   */
+  template<class BehaviorType, typename... ConstructorArgs>
+  void SetDefaultBehavior(ConstructorArgs &&... args)
+  {
+    static_assert(std::is_base_of<kodlab::Behavior<Robot>, BehaviorType>::value,
+                  "BehaviorType must be a `kodlab::Behavior`-derived type");
+    behaviors_[0] = std::make_unique<BehaviorType>(args...);
+    names_[0] = behaviors_.back()->get_name();
+    behaviors_[0]->Init();
+  }
+
+  /**
    * @brief Reset the behaviors list back to default
    */
   void ResetBehaviors()
