@@ -46,13 +46,13 @@ private:
     imu_read_only_ = robot_->GetIMUData();
 
     // Read Various IMUData Information from `imu_`
-    Eigen::Quaternionf quat = imu_->get_att_quat();    // attitude quaternion
-    Eigen::Matrix3f rot_mat = imu_->get_att_rot_mat(); // attitude rot. matrix
+    Eigen::Quaternionf quat = imu_->get_quat();    // attitude quaternion
+    Eigen::Matrix3f rot_mat = imu_->get_rot_mat(); // attitude rot. matrix
     Eigen::Vector3f ang_vel = imu_->get_ang_rate();    // angular velocity
 
     // Read Various IMUData Information from `imu_read_only_`
     kodlab::rotations::EulerAngles<float>
-        euler = imu_read_only_.get_att_euler();           // attitude euler ang.
+        euler = imu_read_only_.get_euler();           // attitude euler ang.
     Eigen::Vector3f lin_acc = imu_read_only_.get_accel(); // linear acceleration
 
     // Print `imu_` Data to Terminal
@@ -69,15 +69,15 @@ private:
   void PrepareLog() override
   {
     // IMUData Quaternion
-    log_data_.attitude_quaternion[0] = imu_->get_att_quat().x();
-    log_data_.attitude_quaternion[1] = imu_->get_att_quat().y();
-    log_data_.attitude_quaternion[2] = imu_->get_att_quat().z();
-    log_data_.attitude_quaternion[3] = imu_->get_att_quat().w();
+    log_data_.attitude_quaternion[0] = imu_->get_quat().x();
+    log_data_.attitude_quaternion[1] = imu_->get_quat().y();
+    log_data_.attitude_quaternion[2] = imu_->get_quat().z();
+    log_data_.attitude_quaternion[3] = imu_->get_quat().w();
 
     // IMUData Euler Angles
-    log_data_.attitude_euler[0] = imu_->get_att_euler().roll();
-    log_data_.attitude_euler[1] = imu_->get_att_euler().pitch();
-    log_data_.attitude_euler[2] = imu_->get_att_euler().yaw();
+    log_data_.attitude_euler[0] = imu_->get_euler().roll();
+    log_data_.attitude_euler[1] = imu_->get_euler().pitch();
+    log_data_.attitude_euler[2] = imu_->get_euler().yaw();
 
     // Angular Velocity
     log_data_.angular_velocity[0] = imu_->get_ang_rate().x();

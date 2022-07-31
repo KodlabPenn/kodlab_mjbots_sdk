@@ -32,25 +32,25 @@ private:
   /**
    * @brief Inputted attitude quaternion before world offset rotation
    */
-  Eigen::Quaternion<Scalar> att_quat_raw_ = {1, 0, 0, 0};
+  Eigen::Quaternion<Scalar> quat_raw_ = {1, 0, 0, 0};
 
   /**
    * @brief IMUData quaternion in world frame
    */
-  Eigen::Quaternion<Scalar> att_quat_ = {1, 0, 0, 0};
+  Eigen::Quaternion<Scalar> quat_ = {1, 0, 0, 0};
 
   /**
    * @brief IMUData euler angles in world frame
    * @note Always follow the default <b>Extrinsic X-Y-Z> convention
    */
   mutable kodlab::ValidatedCache<rotations::EulerAngles<Scalar>>
-      att_euler_ = {rotations::EulerAngles<Scalar>(0, 0, 0), false};
+      euler_ = {rotations::EulerAngles<Scalar>(0, 0, 0), false};
 
   /**
    * @brief IMUData rotation matrix in world frame
    */
   mutable kodlab::ValidatedCache<Eigen::Matrix3<Scalar>>
-      att_rot_mat_ = {Eigen::Matrix3<Scalar>::Identity(), false};;
+      rot_mat_ = {Eigen::Matrix3<Scalar>::Identity(), false};;
 
   /**
    * @brief Angular velocity about <code>[x, y, z]</code> axes (default deg/s)
@@ -90,8 +90,8 @@ private:
    */
   void InvalidateCached()
   {
-    att_euler_.invalidate();
-    att_rot_mat_.invalidate();
+    euler_.invalidate();
+    rot_mat_.invalidate();
   }
 
 public:
@@ -103,17 +103,17 @@ public:
   /**
    * @brief Construct a new \c IMUData object with populated data.
    *
-   * @param att_quat_in attitude quaternion
+   * @param quat_in attitude quaternion
    * @param ang_rate_in angular velocity about <code>[x, y, z]</code> axes
    * @param accel_in linear acceleration along <code>[x, y, z]</code> axes
    * @param world_offset_in world frame rotation offset (default identity)
    */
-  IMUData(const Eigen::Quaternion<Scalar> &att_quat_in,
+  IMUData(const Eigen::Quaternion<Scalar> &quat_in,
           const Eigen::Vector3<Scalar> &ang_rate_in,
           const Eigen::Vector3<Scalar> &accel_in,
           const Eigen::Quaternion<Scalar> &world_offset_in = {1, 0, 0, 0})
-      : att_quat_raw_(att_quat_in),
-        att_quat_(world_offset_in * att_quat_in),
+      : quat_raw_(quat_in),
+        quat_(world_offset_in * quat_in),
         ang_rate_(ang_rate_in),
         accel_(accel_in),
         world_offset_(world_offset_in) {}
@@ -122,7 +122,7 @@ public:
    * @brief Construct a new \c IMUData object with populated data, biases,
    *        and uncertainty.
    *
-   * @param att_quat_in attitude quaternion
+   * @param quat_in attitude quaternion
    * @param ang_rate_in angular velocity about <code>[x, y, z]</code> axes
    * @param accel_in linear acceleration along <code>[x, y, z]</code> axes
    * @param ang_rate_bias_in gyroscope bias about <code>[x, y, z]</code> axes
@@ -131,15 +131,15 @@ public:
    *                                <code>[x, y, z]</code> axes
    * @param world_offset_in world frame rotation offset (default identity)
    */
-  IMUData(const Eigen::Quaternion<Scalar> &att_quat_in,
+  IMUData(const Eigen::Quaternion<Scalar> &quat_in,
           const Eigen::Vector3<Scalar> &ang_rate_in,
           const Eigen::Vector3<Scalar> &accel_in,
           const Eigen::Vector3<Scalar> &ang_rate_bias_in,
           const Eigen::Quaternion<Scalar> &att_uncertainty_in,
           const Eigen::Vector3<Scalar> &ang_bias_uncertainty_in,
           const Eigen::Quaternion<Scalar> &world_offset_in = {1, 0, 0, 0})
-      : att_quat_raw_(att_quat_in),
-        att_quat_(world_offset_in * att_quat_in),
+      : quat_raw_(quat_in),
+        quat_(world_offset_in * quat_in),
         ang_rate_(ang_rate_in),
         accel_(accel_in),
         ang_rate_bias_(ang_rate_bias_in),
@@ -156,11 +156,11 @@ public:
    */
   IMUData(const ::mjbots::pi3hat::Attitude &pi_att,
           const Eigen::Quaternion<Scalar> &world_offset_in = {1, 0, 0, 0})
-      : att_quat_raw_(pi_att.quat.x,
-                      pi_att.quat.y,
-                      pi_att.quat.z,
-                      pi_att.quat.w),
-        att_quat_(world_offset_in * att_quat_raw_),
+      : quat_raw_(pi_att.quat.x,
+                  pi_att.quat.y,
+                  pi_att.quat.z,
+                  pi_att.quat.w),
+        quat_(world_offset_in * quat_raw_),
         ang_rate_(pi_att.rate_dps.x, pi_att.rate_dps.y, pi_att.rate_dps.z),
         accel_(pi_att.accel_mps2.x, pi_att.accel_mps2.y, pi_att.accel_mps2.z),
         ang_rate_bias_(pi_att.bias_dps.x, pi_att.bias_dps.y, pi_att.bias_dps.z),
@@ -176,17 +176,17 @@ public:
   /**
    * @brief Update this \c IMUData object's data
    *
-   * @param att_quat_in attitude quaternion
+   * @param quat_in attitude quaternion
    * @param ang_rate_in angular velocity about <code>[x, y, z]</code> axes
    * @param accel_in linear acceleration along <code>[x, y, z]</code> axes
    */
-  void Update(const Eigen::Quaternion<Scalar> &att_quat_in,
+  void Update(const Eigen::Quaternion<Scalar> &quat_in,
               const Eigen::Vector3<Scalar> &ang_rate_in,
               const Eigen::Vector3<Scalar> &accel_in)
   {
     InvalidateCached();
-    att_quat_raw_ = att_quat_in;
-    att_quat_ = world_offset_ * att_quat_in;
+    quat_raw_ = quat_in;
+    quat_ = world_offset_ * quat_in;
     ang_rate_ = ang_rate_in;
     accel_ = accel_in;
   }
@@ -194,7 +194,7 @@ public:
   /**
    * @brief Update this \c IMUData object's data
    *
-   * @param att_quat_in attitude quaternion
+   * @param quat_in attitude quaternion
    * @param ang_rate_in angular velocity about <code>[x, y, z]</code> axes
    * @param accel_in linear acceleration along <code>[x, y, z]</code> axes
    * @param ang_rate_bias_in gyroscope bias about <code>[x, y, z]</code> axes
@@ -202,14 +202,14 @@ public:
    * @param ang_bias_uncertainty_in gyroscope bias uncertainty about
    *                                <code>[x, y, z]</code> axes
    */
-  void Update(const Eigen::Quaternion<Scalar> &att_quat_in,
+  void Update(const Eigen::Quaternion<Scalar> &quat_in,
               const Eigen::Vector3<Scalar> &ang_rate_in,
               const Eigen::Vector3<Scalar> &accel_in,
               const Eigen::Vector3<Scalar> &ang_rate_bias_in,
               const Eigen::Quaternion<Scalar> &att_uncertainty_in,
               const Eigen::Vector3<Scalar> &ang_bias_uncertainty_in)
   {
-    Update(att_quat_in, ang_rate_in, accel_in);
+    Update(quat_in, ang_rate_in, accel_in);
     ang_rate_bias_ = ang_rate_bias_in;
     att_uncertainty_ = att_uncertainty_in;
     ang_bias_uncertainty_ = ang_bias_uncertainty_in;
@@ -239,12 +239,12 @@ public:
   void PrintIMUData()
   {
     // Gather IMUData Data
-    Eigen::Quaternionf qr = get_att_quat_raw();
-    Eigen::Quaternionf q = get_att_quat();
-    kodlab::rotations::EulerAngles<float> e = get_att_euler();
+    Eigen::Quaternionf qr = get_quat_raw();
+    Eigen::Quaternionf q = get_quat();
+    kodlab::rotations::EulerAngles<float> e = get_euler();
     Eigen::Vector3f w = get_ang_rate();
     Eigen::Vector3f a = get_accel();
-    Eigen::Matrix3f r = get_att_rot_mat();
+    Eigen::Matrix3f r = get_rot_mat();
 
     // Print IMUData Information to Console
     using std::fprintf;
@@ -295,37 +295,37 @@ public:
    * @return attitude quaternion in the unmodified world frame (i.e., not yet
    *         offset)
    */
-  Eigen::Quaternion<Scalar> get_att_quat_raw() const { return att_quat_raw_; }
+  Eigen::Quaternion<Scalar> get_quat_raw() const { return quat_raw_; }
 
   /**
    * @return attitude quaternion in world frame
    */
-  Eigen::Quaternion<Scalar> get_att_quat() const { return att_quat_; }
+  Eigen::Quaternion<Scalar> get_quat() const { return quat_; }
 
   /**
    * @return attitude rotation matrix in world frame
    */
-  Eigen::Matrix3<Scalar> get_att_rot_mat() const
+  Eigen::Matrix3<Scalar> get_rot_mat() const
   {
-    if (!att_rot_mat_.valid())
+    if (!rot_mat_.valid())
     {
-      att_rot_mat_.set(rotations::QuaternionToRotationMatrix(att_quat_));
+      rot_mat_.set(rotations::QuaternionToRotationMatrix(quat_));
     }
-    return att_rot_mat_;
+    return rot_mat_;
   }
 
   /**
    * @return attitude euler angles in the world frame
    */
-  rotations::EulerAngles<Scalar> get_att_euler() const
+  rotations::EulerAngles<Scalar> get_euler() const
   {
-    if (!att_euler_.valid())
+    if (!euler_.valid())
     {
-      att_euler_.set(rotations::QuaternionAndRotationMatrixToEulerAngles(
-          att_quat_,
-          get_att_rot_mat()));
+      euler_.set(rotations::QuaternionAndRotationMatrixToEulerAngles(
+          quat_,
+          get_rot_mat()));
     }
-    return att_euler_;
+    return euler_;
   }
 
   /**
