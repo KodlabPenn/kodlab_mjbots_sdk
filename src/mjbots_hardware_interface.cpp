@@ -4,13 +4,13 @@
 // Shane Rozen-Levy <srozen01@seas.upenn.edu>
 
 
-#include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
+#include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
 
 #include <iostream>
 #include <algorithm>
 
 namespace kodlab::mjbots {
-void MjbotsRobotInterface::InitializeCommand() {
+void MjbotsHardwareInterface::InitializeCommand() {
   for (const auto &joint : joints) {
     commands_.push_back({});
     commands_.back().id = joint->get_can_id(); //id
@@ -31,7 +31,7 @@ void MjbotsRobotInterface::InitializeCommand() {
   }
 }
 
-void MjbotsRobotInterface::PrepareTorqueCommand() {
+void MjbotsHardwareInterface::PrepareTorqueCommand() {
   for (auto &cmd : commands_) {
     cmd.mode = ::mjbots::moteus::Mode::kPosition;
     cmd.position.kd_scale = 0;
@@ -39,19 +39,19 @@ void MjbotsRobotInterface::PrepareTorqueCommand() {
   }
 }
 
-::mjbots::moteus::QueryResult MjbotsRobotInterface::Get(const std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> &replies,
-                                                      int id) {
+::mjbots::moteus::QueryResult MjbotsHardwareInterface::Get(const std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> &replies,
+                                                           int id) {
   for (const auto &item : replies) {
     if (item.id == id) { return item.result; }
   }
   return {};
 }
 
-MjbotsRobotInterface::MjbotsRobotInterface(std::vector<std::shared_ptr<JointMoteus>> joint_ptrs,
-                                           const RealtimeParams &realtime_params,
-                                           ::mjbots::pi3hat::Euler imu_mounting_deg,
-                                           int imu_rate_hz,
-                                           ::mjbots::pi3hat::Euler imu_world_offset_deg) 
+MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<JointMoteus>> joint_ptrs,
+                                                 const RealtimeParams &realtime_params,
+                                                 ::mjbots::pi3hat::Euler imu_mounting_deg,
+                                                 int imu_rate_hz,
+                                                 ::mjbots::pi3hat::Euler imu_world_offset_deg) 
 { 
   joints = joint_ptrs;
   num_joints_ = joints.size();
@@ -88,7 +88,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(std::vector<std::shared_ptr<JointMote
   moteus_data_.timeout = timeout_;
 }
 
-void MjbotsRobotInterface::Init() {
+void MjbotsHardwareInterface::Init() {
     SendCommand();
     ProcessReply();
     // Setup message for basic torque commands
@@ -97,7 +97,7 @@ void MjbotsRobotInterface::Init() {
     ProcessReply();
 }
 
-void MjbotsRobotInterface::ProcessReply() {
+void MjbotsHardwareInterface::ProcessReply() {
 
   // Make sure the m_can_result is valid before waiting otherwise undefined behavior
   moteus_interface_->WaitForCycle();
@@ -113,7 +113,7 @@ void MjbotsRobotInterface::ProcessReply() {
   imu_data_->Update(*(moteus_data_.attitude));
 }
 
-void MjbotsRobotInterface::SendCommand() {
+void MjbotsHardwareInterface::SendCommand() {
   cycle_count_++;
   
   for (int servo=0; servo < num_joints_;servo++) {// TODO Move to a seperate update method (allow non-ff torque commands)?
@@ -123,18 +123,18 @@ void MjbotsRobotInterface::SendCommand() {
   moteus_interface_->Cycle(moteus_data_);
 }
 
-std::vector<::mjbots::moteus::Mode> MjbotsRobotInterface::GetJointModes() {
+std::vector<::mjbots::moteus::Mode> MjbotsHardwareInterface::GetJointModes() {
   std::vector<::mjbots::moteus::Mode>modes(modes_.begin(), modes_.end());
   return modes;
 }
 
-void MjbotsRobotInterface::SetModeStop() {
+void MjbotsHardwareInterface::SetModeStop() {
   for (auto &cmd : commands_) {
     cmd.mode = ::mjbots::moteus::Mode::kStopped;
   }
 }
 
-void MjbotsRobotInterface::Stop() {
+void MjbotsHardwareInterface::Stop() {
   // Send a few stop commands
   ProcessReply();
   SetModeStop();
@@ -144,15 +144,15 @@ void MjbotsRobotInterface::Stop() {
   ProcessReply();
 }
 
-void MjbotsRobotInterface::Shutdown() {
+void MjbotsHardwareInterface::Shutdown() {
   moteus_interface_->shutdown();
 }
 
-const ::kodlab::IMUData<float>& MjbotsRobotInterface::GetIMUData() {
+const ::kodlab::IMUData<float>& MjbotsHardwareInterface::GetIMUData() {
   return *imu_data_;
 }
 
-const std::shared_ptr<::kodlab::IMUData<float>> MjbotsRobotInterface::GetIMUDataSharedPtr() {
+const std::shared_ptr<::kodlab::IMUData<float>> MjbotsHardwareInterface::GetIMUDataSharedPtr() {
   return imu_data_;
 }
 
