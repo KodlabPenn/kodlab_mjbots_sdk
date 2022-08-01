@@ -20,18 +20,18 @@
 class Joints3DoF : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
   void Update() override {
-    std::vector<float> torques(num_motors_, 0);
+    std::vector<float> torques(num_joints_, 0);
 
-    if (num_motors_==3){
+    if (num_joints_==3){
       Eigen::Vector3f leg_pos_des;
       leg_pos_des<<1-M_PI_2,2,0;
-      Eigen::Vector3f positions  = Eigen::Map<Eigen::VectorXf,Eigen::Unaligned> ( robot_->GetJointPositions().data(), num_motors_);
-      Eigen::Vector3f velocities = Eigen::Map<Eigen::VectorXf,Eigen::Unaligned> (robot_->GetJointVelocities().data(), num_motors_);
+      Eigen::Vector3f positions  = Eigen::Map<Eigen::VectorXf,Eigen::Unaligned> (robot_->GetJointPositions().data(), num_joints_);
+      Eigen::Vector3f velocities = Eigen::Map<Eigen::VectorXf,Eigen::Unaligned> (robot_->GetJointVelocities().data(), num_joints_);
       float kp = 100;
       float kd = 1;
       Eigen::VectorXf tau = kp*(leg_pos_des-positions) + kd*(Eigen::Vector3f::Zero()-velocities);
 
-      Eigen::VectorXf::Map(&torques[0], num_motors_) = tau;
+      Eigen::VectorXf::Map(&torques[0], num_joints_) = tau;
     }
     else{
       std::cout<<"Wrong number of motors"<<std::endl;
@@ -41,13 +41,13 @@ class Joints3DoF : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   }
 
   void PrepareLog() override {
-    for (int servo = 0; servo < num_motors_; servo++) {
+    for (int servo = 0; servo < num_joints_; servo++) {
       log_data_.positions[servo]  = robot_->GetJointPositions()[servo];
       log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
       log_data_.modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
       log_data_.torques[servo] = robot_->GetJointTorqueCmd()[servo];
     }
-    for (int servo = num_motors_; servo < 13; servo++) {
+    for (int servo = num_joints_; servo < 13; servo++) {
       log_data_.positions[servo] = 0;
       log_data_.velocities[servo] = 0;
       log_data_.modes[servo] = 0;
