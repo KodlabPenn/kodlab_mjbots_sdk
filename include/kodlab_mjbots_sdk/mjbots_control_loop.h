@@ -123,7 +123,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   std::shared_ptr<RobotClass> robot_;     /// ptr to the robot object
   std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface> mjbots_interface_;   ///ptr to mjbots_interface object, if unique causes issues, also should be initialized inside thread
   int frequency_;                         /// frequency of the controller in Hz
-  int num_motors_;                        /// Number of motors
+  int num_joints_;                        /// Number of motors
   ControlLoopOptions options_;            /// Options struct
   bool logging_ = false;                  /// Boolean to determine if logging is in use
   bool input_ = false;                    /// Boolean to determine if input is in use
@@ -153,7 +153,7 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
                                           options.realtime_params,
                                           options.imu_mounting_deg,
                                           options.attitude_rate_hz);
-  num_motors_ = robot_->joints.size();
+  num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
 
@@ -167,7 +167,7 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
                                           options.realtime_params,
                                           options.imu_mounting_deg,
                                           options.attitude_rate_hz);
-  num_motors_ = robot_->joints.size();
+  num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
 
