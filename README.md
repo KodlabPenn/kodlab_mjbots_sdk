@@ -7,7 +7,7 @@ for better realtime performance
 3. Integration with LCM (https://lcm-proj.github.io/) for remote logging and remote input to the robot
 4.  The `MjbotsControlLoop` object which handles the structure of the control loop for
 the easy creation of new controllers
-5. The `MjbotsRobotInterface` which provides a convenient interface for communicating with any number
+5. The `MjbotsHardwareInterface` which provides a convenient interface for communicating with any number
 of moteus motor controllers 
 
 Note: This library only supports torque commands. If you wish to use

@@ -9,7 +9,7 @@
 #include <type_traits>
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 #include "kodlab_mjbots_sdk/robot_interface.h"
-#include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
+#include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/timer.hpp"
@@ -120,7 +120,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   void SetupOptions(const ControlLoopOptions &options);
 
   std::shared_ptr<RobotClass> robot_;     /// ptr to the robot object
-  std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface> mjbots_interface_;   ///ptr to mjbots_interface object, if unique causes issues, also should be initialized inside thread
+  std::shared_ptr<kodlab::mjbots::MjbotsHardwareInterface> mjbots_interface_;   ///ptr to mjbots_interface object, if unique causes issues, also should be initialized inside thread
   int frequency_;                         /// frequency of the controller in Hz
   int num_joints_;                        /// Number of motors
   ControlLoopOptions options_;            /// Options struct
@@ -148,10 +148,10 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
                                           options.soft_start_duration,
                                           options.max_torque);
   
-  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsRobotInterface>( joint_ptrs,
-                                          options.realtime_params,
-                                          options.imu_mounting_deg,
-                                          options.attitude_rate_hz);
+  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(joint_ptrs,
+                                                                                options.realtime_params,
+                                                                                options.imu_mounting_deg,
+                                                                                options.attitude_rate_hz);
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
@@ -162,10 +162,10 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
     lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) {
   // Create robot object
   robot_ = robot_in;
-  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsRobotInterface>( robot_->joints,
-                                          options.realtime_params,
-                                          options.imu_mounting_deg,
-                                          options.attitude_rate_hz);
+  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(robot_->joints,
+                                                                                options.realtime_params,
+                                                                                options.imu_mounting_deg,
+                                                                                options.attitude_rate_hz);
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
