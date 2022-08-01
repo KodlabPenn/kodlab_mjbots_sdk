@@ -81,7 +81,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   /*!
    * @brief function to be implemented by child. Must set torques in the robot class
    */
-  virtual void Update() {robot_->Update();}
+  virtual void Update() = 0;
 
   /*!
    * @brief adds data to m_log_data if logging is being used. To be implemented by child class
