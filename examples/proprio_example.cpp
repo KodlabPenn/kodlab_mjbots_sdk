@@ -4,7 +4,7 @@
 // J. Diego Caporale <jdcap@seas.upenn.edu>
 
 /* Example script running joints to their mechanical limits before switching direction. The functions to implement are
- * CalcTorques and PrepareLog. In this example we run the motor forward until its 
+ * Update and PrepareLog. In this example we run the motor forward until its
  * position error is large enough to detect a obstacle, then switching directions
  */
 
@@ -19,7 +19,7 @@
 
 class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
-  void CalcTorques() override {
+  void Update() override {
 
     float omega_des = 0.3; //velocity in rads per sec
     Eigen::VectorXf omega = Eigen::VectorXf::Ones(num_motors_)*omega_des; //radians

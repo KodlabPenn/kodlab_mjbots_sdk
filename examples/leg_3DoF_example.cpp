@@ -4,7 +4,7 @@
 // J. Diego Caporale <jdcap@seas.upenn.edu>
 
 /* Basic PD Control example script demonstrating how to use the mjbots_control_loop to 3 motors. The functions to implement are
- * CalcTorques and PrepareLog. In this example we send a PD control torques and log the motor information.
+ * Update and PrepareLog. In this example we send a PD control torques and log the motor information.
  * Also, an implementation that uses Eigen conversions.
  */
 
@@ -19,7 +19,7 @@
 
 class Joints3DoF : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
-  void CalcTorques() override {
+  void Update() override {
     std::vector<float> torques(num_motors_, 0);
 
     if (num_motors_==3){
