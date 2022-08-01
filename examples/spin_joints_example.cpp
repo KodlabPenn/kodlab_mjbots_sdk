@@ -4,7 +4,7 @@
 // Shane Rozen-Levy <srozen01@seas.upenn.edu>, J. Diego Caporale <jdcap@seas.upenn.edu>
 
 /* Basic example script demonstrating how to use the mjbots_control_loop to 2 joints. The functions to implement are
- * CalcTorques and PrepareLog. In this example we send a torque cmd of all zeros and log the motor information.
+ * Update and PrepareLog. In this example we send a torque cmd of all zeros and log the motor information.
  */
 
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
@@ -18,7 +18,7 @@
 
 class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
-  void CalcTorques() override {
+  void Update() override {
     std::vector<float> torques(num_motors_, 0);
     robot_->SetTorques(torques);
   }

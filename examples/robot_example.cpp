@@ -23,7 +23,7 @@ class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMoto
 {
     using MjbotsControlLoop::MjbotsControlLoop;
 
-    void CalcTorques() override
+    void Update() override
     {
         robot_->Update();
     }

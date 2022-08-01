@@ -41,7 +41,7 @@ struct ControlLoopOptions {
 
 /*!
  * @brief mjbots_control_loop class is an parent class to be used to create a control loop. It supports 1 controller and
- *        logging. The child class must implement CalcTorques and PrepareLog (if logging). The robot data is stored in
+ *        logging. The child class must implement Update and PrepareLog (if logging). The robot data is stored in
  *        the robot object. The behavior runs in its own thread. To Start the thread Run Start()
  * @tparam LogClass[optional] data type for logging
  * @tparam InputClass[optional] class for input data 
@@ -82,7 +82,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   /*!
    * @brief function to be implemented by child. Must set torques in the robot class
    */
-  virtual void CalcTorques() {robot_->Update();}
+  virtual void Update() {robot_->Update();}
 
   /*!
    * @brief adds data to m_log_data if logging is being used. To be implemented by child class
@@ -249,7 +249,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
     }
 
     // Calculate torques and log
-    CalcTorques();      //TODO should we give full control to the robot_ instead of feeding update thorugh?
+    Update();      //TODO should we give full control to the robot_ instead of feeding update thorugh?
     // robot_->Update();
     PrepareLog();
     AddTimingLog(time_now_, sleep_duration, prev_msg_duration);

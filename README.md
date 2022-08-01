@@ -20,11 +20,11 @@ In order to keep the message size down, kp and kd on the motors must be set to 0
 # Usage
 ## MjbotsControlLoop:
 To use the `MjbotsControlLoop` create a class which inherits the `MjbotsControlLoop`
-and implements `CalcTorques` to set the torques in the robot object. 
+and implements `Update` to set the torques in the robot object. 
 
     class Controller : public MjbotsControlLoop{
       using MjbotsControlLoop::MjbotsControlLoop;
-      void CalcTorques() override{
+      void Update() override{
         std::vector<float> torques = control_effort;
         robot_->SetTorques(torques);
       }    

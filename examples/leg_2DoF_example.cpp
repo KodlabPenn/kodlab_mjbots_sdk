@@ -18,8 +18,8 @@
 class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
   using MjbotsControlLoop::MjbotsControlLoop;
 
-  // We use CalcTorques as the main control loop
-  void CalcTorques() override {
+  // We use Update as the main control loop
+  void Update() override {
     std::vector<float> torques = {0, 0};
 
     // Run the FK to get leg state
