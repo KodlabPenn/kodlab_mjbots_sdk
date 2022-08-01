@@ -179,18 +179,19 @@ public:
 
   /**
    * @brief Prints a list of behaviors currently in `behaviors_`
+   * @param stream output stream
    */
-  void PrintBehaviorList() const
+  void PrintBehaviorList(FILE *stream = stdout) const
   {
-    std::fprintf(stdout, "+--------------------------------+\n");
-    std::fprintf(stdout, "| Control Loop Behaviors         |\n");
-    std::fprintf(stdout, "| ----------------------         |\n");
+    std::fprintf(stream, "+--------------------------------+\n");
+    std::fprintf(stream, "| Control Loop Behaviors         |\n");
+    std::fprintf(stream, "| ----------------------         |\n");
     for (unsigned int i = 0; i < names_.size(); i++)
     {
-      std::fprintf(stdout, "| %3d. %-25s |\n",
+      std::fprintf(stream, "| %3d. %-25s |\n",
                    i, names_[i].c_str());
     }
-    std::fprintf(stdout, "+--------------------------------+\n");
+    std::fprintf(stream, "+--------------------------------+\n");
   }
 
   /**
