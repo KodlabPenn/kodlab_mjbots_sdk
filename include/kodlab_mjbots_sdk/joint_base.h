@@ -14,6 +14,8 @@
 #include <memory>
 #include <vector>
 #include <type_traits>
+#include <string>
+
 
 /**
  * Abstract joint state class with torque and joint pose limiting capabilities.
@@ -24,6 +26,28 @@
 class JointBase {
 
     public:
+
+        /**
+         * @brief Construct a new Joint Base object with a name
+         * 
+         * @param name          /// Sets the joint name
+         * @param direction     /// 1 or -1, flips positive rotation direction (Default:1)
+         * @param zero_offset   /// offset [rad] of joint zero position (Default:0) 
+         * @param gear_ratio    /// Gear ratio joint to servo (ratio>1 means slower joint) (Default:1.0)
+         * @param max_torque    /// Maximum torque of the joint [N m] (Default:inf)
+         * @param pos_min       /// Minimum joint limit before taking protective measures such as torque limiting or shut off (Default:inf)
+         * @param pos_max       /// Maximum joint limit before taking protective measures such as torque limiting or shut off (Default:-inf)
+         */
+        JointBase(
+                std::string name,
+                int direction = 1, 
+                float zero_offset = 0,
+                float gear_ratio = 1.0, 
+                float max_torque = std::numeric_limits<float>::infinity(),
+                float pos_min = -std::numeric_limits<float>::infinity(), 
+                float pos_max = std::numeric_limits<float>::infinity()
+                );
+
         /**
          * @brief Construct a new Joint Base object
          * 
@@ -79,6 +103,13 @@ class JointBase {
          * @param zero zero offset override
          */
         void set_zero(float zero){zero_offset_ = zero;}
+
+        /**
+         * @brief Set the joint name
+         *
+         * @param name New joint name
+         */
+        void set_name(std::string name) { name_ = name; }
 
         /**
          * @brief Get the position
@@ -150,7 +181,15 @@ class JointBase {
          */
         const float get_pos_limit_max() const {return pos_limit_max_; }
 
+        /**
+         * @brief Get the joint name
+         *
+         * @return name as string
+         */
+        const std::string get_name() const { return name_; }
+
     protected:
+        std::string name_ = "";  // Optional joint name
         // Joint Params
         float gear_ratio_  = 1.0;   /// external joint gear ratio
         float zero_offset_ = 0;     /// zero offset [rad]
