@@ -54,16 +54,21 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
                                            ::mjbots::pi3hat::Euler imu_mounting_deg,
                                            int imu_rate_hz,
                                            ::mjbots::pi3hat::Euler imu_world_offset_deg)
+    : MjbotsRobotInterface(make_share_vector(joint_list), realtime_params, soft_start_duration, robot_max_torque) {}
+
+MjbotsRobotInterface::MjbotsRobotInterface(std::vector<std::shared_ptr<JointMoteus>> joint_ptrs,
+                                           const RealtimeParams &realtime_params,
+                                           int soft_start_duration,
+                                           float robot_max_torque,
+                                           ::mjbots::pi3hat::Euler imu_mounting_deg,
+                                           int imu_rate_hz,
+                                           ::mjbots::pi3hat::Euler imu_world_offset_deg)
     : soft_start_(robot_max_torque, soft_start_duration)
 {
+    joints = joint_ptrs;
 
-  for (JointMoteus joint: joint_list){
-    // Make vector of shared_pointer objects using joint copy constructer 
-    // (original list will be descoped)
-    joints.push_back(std::make_shared<JointMoteus>(joint)); 
-  }
-
-  for( auto & j: joints){
+  for (auto &j : joints)
+  {
     positions_.push_back( j->get_position_reference() );
     velocities_.push_back( j->get_velocity_reference() );
     torque_cmd_.push_back( j->get_servo_torque_reference()   ); 
@@ -96,9 +101,7 @@ MjbotsRobotInterface::MjbotsRobotInterface(const std::vector<JointMoteus> &joint
   moteus_data_.commands = {commands_.data(), commands_.size()};
   moteus_data_.replies = {replies_.data(), replies_.size()};
   moteus_data_.timeout = timeout_;
-
 }
-
 
 void MjbotsRobotInterface::Init() {
     SendCommand();
