@@ -1,7 +1,7 @@
 /**
  * @file simple_robot.h
  * @author J. Diego Caporale
- * @brief A simple RobotInterface derived class example. Here is where you would implement any state updates,
+ * @brief A simple RobotBase derived class example. Here is where you would implement any state updates,
  *        behaviors, or control system
  * @date 2022-07-19
  *
@@ -11,12 +11,12 @@
 
 #pragma once
 
-#include "kodlab_mjbots_sdk/robot_interface.h"
+#include "kodlab_mjbots_sdk/robot_base.h"
 
-class SimpleRobot : virtual public kodlab::RobotInterface
+class SimpleRobot : virtual public kodlab::RobotBase
 {
 
-    using kodlab::RobotInterface::RobotInterface;
+    using kodlab::RobotBase::RobotBase;
 
 public:
     int mode = 0; // Member variables encode whatever added state we need

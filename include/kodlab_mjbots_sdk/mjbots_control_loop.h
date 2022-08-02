@@ -8,7 +8,7 @@
 #pragma once
 #include <type_traits>
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
-#include "kodlab_mjbots_sdk/robot_interface.h"
+#include "kodlab_mjbots_sdk/robot_base.h"
 #include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "lcm/lcm-cpp.hpp"
@@ -47,9 +47,9 @@ struct ControlLoopOptions {
  * @tparam InputClass[optional] class for input data 
  * @tparam RobotClass[optional] RobotInterfaceDerived class that contains state and control calculations 
  */
-template<class LogClass = VoidLcm, class InputClass = VoidLcm, class RobotClass = kodlab::RobotInterface>
+template<class LogClass = VoidLcm, class InputClass = VoidLcm, class RobotClass = kodlab::RobotBase>
 class MjbotsControlLoop : public AbstractRealtimeObject {
- static_assert(std::is_base_of<kodlab::RobotInterface,RobotClass>::value);
+ static_assert(std::is_base_of<kodlab::RobotBase, RobotClass>::value);
  public:
   /*!
    * @brief constructs an mjbots control loop based on the options struct. Does not Start the controller.
@@ -66,7 +66,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joints, const ControlLoopOptions &options);
   /*!
    * @brief constructs an mjbots control loop based on the options struct. Does not Start the controller.
-   * @param robot_in an instance of a derived RobotInterface
+   * @param robot_in an instance of a derived RobotBase
    * @param options contains options defining the behavior
    * \overload 
    */
