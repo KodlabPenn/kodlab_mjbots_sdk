@@ -331,7 +331,7 @@ public:
   {
     if (!euler_.valid())
     {
-      euler_.set(rotations::QuaternionAndRotationMatrixToEulerAngles(
+      euler_.set(rotations::QuaternionAndRotationMatrixToDefaultEulerAngles(
           quat_,
           get_rot_mat()));
     }

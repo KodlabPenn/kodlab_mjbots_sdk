@@ -541,7 +541,7 @@ inline Eigen::Matrix3<Scalar> QuaternionToRotationMatrix(
  * @return EulerAngles<Scalar>
  */
 template<typename Scalar = float>
-EulerAngles<Scalar> QuaternionAndRotationMatrixToEulerAngles(
+EulerAngles<Scalar> QuaternionAndRotationMatrixToDefaultEulerAngles(
     const Eigen::Quaternion<Scalar> &quaternion,
     const Eigen::Matrix3<Scalar> &R)
 {
@@ -592,10 +592,10 @@ EulerAngles<Scalar> QuaternionAndRotationMatrixToEulerAngles(
  * @return EulerAngles<Scalar>
  */
 template<typename Scalar = float>
-EulerAngles<Scalar> QuaternionToEulerAngles(
+EulerAngles<Scalar> QuaternionToDefaultEulerAngles(
     const Eigen::Quaternion<Scalar> &unit_quaternion)
 {
-  return QuaternionAndRotationMatrixToEulerAngles(
+  return QuaternionAndRotationMatrixToDefaultEulerAngles(
       unit_quaternion, QuaternionToRotationMatrix(unit_quaternion));
 }
 
