@@ -2,7 +2,6 @@
  * @file joint_moteus.h
  * @author J. Diego Caporale (jdcap@seas.upenn.edu)
  * @brief Moteus powered joint class
- * @version 0.1
  * @date 2022-02-22
  * 
  * @copyright BSD 3-Clause License, Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
