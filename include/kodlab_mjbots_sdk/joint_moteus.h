@@ -23,13 +23,13 @@ namespace mjbots{
 struct MoteusJointConfig{
     int can_id;
     int can_bus;
+    std::string name = "";
     int direction = 1; 
     float zero_offset = 0;
     float gear_ratio = 1.0;
     float max_torque = std::numeric_limits<float>::infinity();
     float pos_min = -std::numeric_limits<float>::infinity();
     float pos_max = std::numeric_limits<float>::infinity();
-    std::string name = "";
 };
 
 /**         
@@ -37,10 +37,37 @@ struct MoteusJointConfig{
  * moteus motor driver powered joint 
  * 
  */
-class JointMoteus: public JointBase{
+class JointMoteus: public JointBase
+{
     public:
         /**
          * @brief Construct a new Joint Moteus object
+         * 
+         * @param name         /// name string for this joint
+         * @param can_id       /// the can id of this joint's moteus [1-127]
+         * @param can_bus      /// the can bus the moteus communicates on [1-4]
+         * @param direction     /// 1 or -1, flips positive rotation direction (Default:1)
+         * @param zero_offset   /// offset [rad] of joint zero position from servo zero postition (Default:0)
+         * @param gear_ratio    /// Gear ratio joint to servo (ratio>1 means slower joint) (Default:1.0)
+         * @param max_torque    /// Maximum torque limit of the joint [N m] (Default:inf)
+         * @param pos_min       /// Minimum joint pose limit before taking protective measures such as torque limiting or shut off (Default:-inf)
+         * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
+         */
+        JointMoteus(
+            std::string name,
+            int can_id,
+            int can_bus,
+            int direction = 1,
+            float zero_offset = 0,
+            float gear_ratio = 1.0,
+            float max_torque = std::numeric_limits<float>::infinity(),
+            float pos_min = -std::numeric_limits<float>::infinity(),
+            float pos_max = std::numeric_limits<float>::infinity())
+            : JointBase(name, direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max),
+              can_bus_(can_bus), can_id_(can_id) {}
+
+        /**
+         * @brief Construct a new Joint Moteus object without name
          * 
          * @param can_id       /// the can id of this joint's moteus [1-127]
          * @param can_bus      /// the can bus the moteus communicates on [1-4]
@@ -52,17 +79,17 @@ class JointMoteus: public JointBase{
          * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
          */
         JointMoteus(
-            int can_id, 
+            int can_id,
             int can_bus,
-            int direction = 1, 
+            int direction = 1,
             float zero_offset = 0,
-            float gear_ratio = 1.0, 
+            float gear_ratio = 1.0,
             float max_torque = std::numeric_limits<float>::infinity(),
-            float pos_min = -std::numeric_limits<float>::infinity(), 
-            float pos_max = std::numeric_limits<float>::infinity()
-            )
-            :JointBase(direction,zero_offset,gear_ratio,max_torque,pos_min,pos_max),
-            can_bus_(can_bus), can_id_(can_id){}
+            float pos_min = -std::numeric_limits<float>::infinity(),
+            float pos_max = std::numeric_limits<float>::infinity())
+            : JointBase("", direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max),
+              can_bus_(can_bus), can_id_(can_id) {}
+
 
         /**
          * @brief Construct a new Joint Moteus object with a MoteusJointConfig struct
@@ -70,7 +97,8 @@ class JointMoteus: public JointBase{
          * @param config MoteusJointConfig input
          */
         JointMoteus(MoteusJointConfig config)
-            : JointBase( config.direction,
+            : JointBase( config.name,
+                         config.direction,
                          config.zero_offset,
                          config.gear_ratio,
                          config.max_torque,
