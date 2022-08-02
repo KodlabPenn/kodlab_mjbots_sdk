@@ -2,28 +2,44 @@
  * @file joint_base.cpp
  * @author Kodlab - J. Diego Caporale (jdcap@seas.upenn.edu)
  * @brief Class implementation for JointBase.
- * @version 0.1
  * @date 2022-03-21
  * 
  * @copyright BSD 3-Clause License, Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
  * 
  */
 
+#include <iostream>
 #include "kodlab_mjbots_sdk/joint_base.h"
-JointBase::JointBase(
-                int direction, 
-                float zero_offset,
-                float gear_ratio, 
-                float max_torque,
-                float pos_min, 
-                float pos_max)
-                :direction_(direction), zero_offset_(zero_offset), 
-                 max_torque_(max_torque), gear_ratio_(gear_ratio),
-                 pos_limit_min_(pos_min), pos_limit_max_(pos_max){
-                    // Set to sign if not -1 or 1
-                    direction_ = (direction_ >= 0) - (direction_ < 0); 
-                    gear_ratio_ = gear_ratio_ == 0 ? 1.0 : gear_ratio_;
-                }
+
+JointBase::JointBase(std::string name,
+                     int direction,
+                     float zero_offset,
+                     float gear_ratio,
+                     float max_torque,
+                     float pos_min,
+                     float pos_max)
+    : name_(name), direction_(direction), zero_offset_(zero_offset),
+      max_torque_(max_torque), gear_ratio_(gear_ratio),
+      pos_limit_min_(pos_min), pos_limit_max_(pos_max)
+{
+    // Set to sign if not -1 or 1
+    direction_ = (direction_ >= 0) - (direction_ < 0);
+    // Don't allow zero or negative gear ratio
+    if (gear_ratio <= 0)
+    {
+        //TODO Replace with LOG_WARN
+        std::cout << "Warning: Gear ratio must be positive. \nGear ratio reset to 1.0" << std::endl;
+        gear_ratio_ = 1.0;
+    }
+}
+
+JointBase::JointBase(int direction,
+                     float zero_offset,
+                     float gear_ratio,
+                     float max_torque,
+                     float pos_min,
+                     float pos_max)
+    : JointBase("", direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max) {}
 
 float JointBase::UpdateTorque(float joint_torque){
     // Clip max torque

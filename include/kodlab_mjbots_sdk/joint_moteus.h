@@ -2,7 +2,6 @@
  * @file joint_moteus.h
  * @author J. Diego Caporale (jdcap@seas.upenn.edu)
  * @brief Moteus powered joint class
- * @version 0.1
  * @date 2022-02-22
  * 
  * @copyright BSD 3-Clause License, Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
@@ -12,24 +11,40 @@
 #pragma once
 #include "kodlab_mjbots_sdk/joint_base.h"
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
+#include <string>
 
 namespace kodlab{
 namespace mjbots{
-/**         
- * A JointBase child class that encapsulates parameters and functions of 
- * moteus motor driver powered joint 
- * @brief 
- * Moteus Joint class 
+/**
+ * @brief struct for storing or passing moteus joint configurations
+ * 
  */
-class JointMoteus: public JointBase{
+struct MoteusJointConfig{
+    int can_id;
+    int can_bus;
+    std::string name = "";
+    int direction = 1; 
+    float zero_offset = 0;
+    float gear_ratio = 1.0;
+    float max_torque = std::numeric_limits<float>::infinity();
+    float pos_min = -std::numeric_limits<float>::infinity();
+    float pos_max = std::numeric_limits<float>::infinity();
+};
+
+/**         
+ * @brief A JointBase derived class that encapsulates parameters and functions of 
+ * moteus motor driver powered joint 
+ * 
+ */
+class JointMoteus: public JointBase
+{
     public:
         /**
-
-         *
          * @brief Construct a new Joint Moteus object
          * 
-         * @param can_bus      /// the can bus the moteus communicates on [1-4]
+         * @param name         /// name string for this joint
          * @param can_id       /// the can id of this joint's moteus [1-127]
+         * @param can_bus      /// the can bus the moteus communicates on [1-4]
          * @param direction     /// 1 or -1, flips positive rotation direction (Default:1)
          * @param zero_offset   /// offset [rad] of joint zero position from servo zero postition (Default:0)
          * @param gear_ratio    /// Gear ratio joint to servo (ratio>1 means slower joint) (Default:1.0)
@@ -38,17 +53,58 @@ class JointMoteus: public JointBase{
          * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
          */
         JointMoteus(
-            int can_id, 
+            std::string name,
+            int can_id,
             int can_bus,
-            int direction = 1, 
+            int direction = 1,
             float zero_offset = 0,
-            float gear_ratio = 1.0, 
+            float gear_ratio = 1.0,
             float max_torque = std::numeric_limits<float>::infinity(),
-            float pos_min = -std::numeric_limits<float>::infinity(), 
-            float pos_max = std::numeric_limits<float>::infinity()
-            )
-            :JointBase(direction,zero_offset,gear_ratio,max_torque,pos_min,pos_max),
-            can_bus_(can_bus), can_id_(can_id){}
+            float pos_min = -std::numeric_limits<float>::infinity(),
+            float pos_max = std::numeric_limits<float>::infinity())
+            : JointBase(name, direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max),
+              can_bus_(can_bus), can_id_(can_id) {}
+
+        /**
+         * @brief Construct a new Joint Moteus object without name
+         * 
+         * @param can_id       /// the can id of this joint's moteus [1-127]
+         * @param can_bus      /// the can bus the moteus communicates on [1-4]
+         * @param direction     /// 1 or -1, flips positive rotation direction (Default:1)
+         * @param zero_offset   /// offset [rad] of joint zero position from servo zero postition (Default:0)
+         * @param gear_ratio    /// Gear ratio joint to servo (ratio>1 means slower joint) (Default:1.0)
+         * @param max_torque    /// Maximum torque limit of the joint [N m] (Default:inf)
+         * @param pos_min       /// Minimum joint pose limit before taking protective measures such as torque limiting or shut off (Default:-inf)
+         * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
+         */
+        JointMoteus(
+            int can_id,
+            int can_bus,
+            int direction = 1,
+            float zero_offset = 0,
+            float gear_ratio = 1.0,
+            float max_torque = std::numeric_limits<float>::infinity(),
+            float pos_min = -std::numeric_limits<float>::infinity(),
+            float pos_max = std::numeric_limits<float>::infinity())
+            : JointBase("", direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max),
+              can_bus_(can_bus), can_id_(can_id) {}
+
+
+        /**
+         * @brief Construct a new Joint Moteus object with a MoteusJointConfig struct
+         * 
+         * @param config MoteusJointConfig input
+         */
+        JointMoteus(MoteusJointConfig config)
+            : JointBase( config.name,
+                         config.direction,
+                         config.zero_offset,
+                         config.gear_ratio,
+                         config.max_torque,
+                         config.pos_min,
+                         config.pos_max),
+              can_id_( config.can_id),
+              can_bus_( config.can_bus) {}
         
         /**
          * @brief Update the joint of the moteus. Converts rot/s to rad/s and saves mode
