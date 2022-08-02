@@ -14,6 +14,7 @@
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
+#include "kodlab_mjbots_sdk/imu_data.h"
 
 namespace kodlab::mjbots {
 
@@ -43,13 +44,15 @@ class MjbotsRobotInterface {
    * @param robot_max_torque the maximum torque to allow per motor in the robot
    * @param imu_mounting_deg Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
    * @param imu_rate_hz Frequency of the imu updates from the pi3hat
+   * @param imu_world_offset_deg IMU orientation offset. Useful for re-orienting gravity, etc.
    */
   MjbotsRobotInterface(const std::vector<JointMoteus> &joint_list,
                        const RealtimeParams &realtime_params,
                        int soft_start_duration = 1,
                        float robot_max_torque = 100,
                        ::mjbots::pi3hat::Euler imu_mounting_deg = ::mjbots::pi3hat::Euler(),
-                       int imu_rate_hz = 1000);
+                       int imu_rate_hz = 1000,
+                       ::mjbots::pi3hat::Euler imu_world_offset_deg = ::mjbots::pi3hat::Euler());
 
   /**
    * @brief Send and recieve initial communications effectively starting the robot
@@ -143,10 +146,16 @@ class MjbotsRobotInterface {
   std::vector<std::shared_ptr<::kodlab::mjbots::JointMoteus>> GetJoints(){return joints;}
   
   /*!
-   * @brief accessor for the attitude of the robot
-   * @return the attitude object for the robot
+   * @brief accessor for the IMU data of the robot
+   * @return const reference to the IMU data object for the robot
    */
-  ::mjbots::pi3hat::Attitude GetAttitude();
+  const ::kodlab::IMUData<float>& GetIMUData();
+
+  /*!
+   * @brief accessor for the IMU data of the robot
+   * @return const IMU data shared pointer for the robot
+   */
+  const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();
 
  private:
   int num_servos_;                         /// The number of motors in the robot
@@ -167,7 +176,7 @@ class MjbotsRobotInterface {
   std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if
   /// response is ready
   SoftStart soft_start_;                                                      /// Soft Start object
-  ::mjbots::pi3hat::Attitude attitude_;                                       /// Robot attitude
+  std::shared_ptr<::kodlab::IMUData<float>> imu_data_;                        /// Robot IMU data
 
   /*!
    * @brief initialize the command with resolutions
