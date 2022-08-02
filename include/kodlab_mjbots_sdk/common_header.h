@@ -3,9 +3,6 @@
 #pragma once
 #include <atomic>
 #include <signal.h>  // manage the ctrl+c signal
-#include <type_traits>
-#include <iostream>
-#include <vector>
 
 namespace kodlab {
 /**
