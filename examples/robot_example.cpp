@@ -15,7 +15,7 @@
 #include "kodlab_mjbots_sdk/common_header.h"
 #include "ManyMotorLog.hpp"
 #include "ModeInput.hpp"
-#include "kodlab_mjbots_sdk/robot_interface.h"
+#include "kodlab_mjbots_sdk/robot_base.h"
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 
 #include "examples/simple_robot.h"

@@ -14,7 +14,7 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_control_loop.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/joint_base.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/joint_moteus.h"
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/robot_interface.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/robot_base.h"
                 )
 
 set(SOURCE_LIST "pi3hat.cpp" 
@@ -22,7 +22,7 @@ set(SOURCE_LIST "pi3hat.cpp"
                 "polar_leg.cpp"
                 "soft_start.cpp"
                 "abstract_realtime_object.cpp"
-                "robot_interface.cpp"
+                "robot_base.cpp"
                 "joint_base.cpp"
                 "cartesian_leg.cpp" )
 

@@ -1,7 +1,7 @@
 /*!
- * @file robot_interface.h
+ * @file robot_base.h
  * @author Kodlab - J. Diego Caporale (jdcap@seas.upenn.edu)
- * @brief Robot Interface Class 
+ * @brief Robot Base Class
  * @date 2022-07-12
  * 
  * @copyright Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
@@ -19,10 +19,10 @@
 namespace kodlab
 {
     /*!
-     * @brief Sets up a kodlab robot interface class 
+     * @brief Sets up a kodlab robot base class
      * 
      */
-    class RobotInterface {
+    class RobotBase {
     public:
         static const int KILL_ROBOT = -1;
         std::vector< std::shared_ptr<JointBase> > joints; ///the vector of shared_ptrs to joints 
@@ -35,10 +35,10 @@ namespace kodlab
          * @param robot_max_torque the maximum torque to allow per motor in the robot
          */
         template <class JointDerived = JointBase>
-        RobotInterface( std::vector<std::shared_ptr<JointDerived>> joint_vect, 
-                        float robot_max_torque,
-                        int soft_start_duration )
-                        : soft_start_(robot_max_torque, soft_start_duration)
+        RobotBase(std::vector<std::shared_ptr<JointDerived>> joint_vect,
+                  float robot_max_torque,
+                  int soft_start_duration)
+            : soft_start_(robot_max_torque, soft_start_duration)
         {
             // Ensure at compile time that the template is JointBase or a child of JointBase
             static_assert(std::is_base_of<JointBase, JointDerived>::value);
@@ -58,7 +58,7 @@ namespace kodlab
         /*!
          * @brief Destroy the Robot Interface object. Virtual destructor for proper derived pointer destruction.
          */
-        virtual ~RobotInterface() {};
+        virtual ~RobotBase() {};
 
         /*!
          * @brief Initialize the robot (e.g. communication or states etc.)
