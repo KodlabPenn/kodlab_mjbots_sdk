@@ -24,7 +24,7 @@ namespace kodlab
      */
     class RobotInterface {
     public:
-        static const int KILL_ROBOT = -1;
+        static const int KILL_ROBOT = -1;  // Kill mode/behavior index; used to signal robot E-stop
         std::vector< std::shared_ptr<JointBase> > joints; ///the vector of shared_ptrs to joints 
         u_int64_t cycle_count_; //TODO Make this time based not cycle based for when the system fails to keep up (i.e. time_us_)
         
