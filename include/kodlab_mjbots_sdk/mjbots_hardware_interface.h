@@ -32,21 +32,21 @@ struct RealtimeParams {
 };
 
 /*!
- * @brief A class that allows interaction with the Mjbots Moteus Motor Controllers
- * 
+ * @brief Object allowing interaction with the Mjbots Moteus motor controller
+ *        hardware
  */
-class MjbotsRobotInterface  {
+class MjbotsHardwareInterface  {
  public:
 
   /*!
    * @brief constructs an mjbots_robot_interface to communicate with a collection of moeteusses
-   * @param joint_list a list of shared pointers to joints defining the motors in the robot
+   * @param joint_list a vector of shared pointers to joints defining the motors in the robot
    * @param realtime_params the realtime parameters defining cpu and realtime priority
    * @param imu_mounting_deg Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
    * @param imu_rate_hz Frequency of the imu updates from the pi3hat
    * @param imu_world_offset_deg IMU orientation offset. Useful for re-orienting gravity, etc.
    */
-  MjbotsRobotInterface(std::vector<std::shared_ptr<JointMoteus>> joint_list,
+  MjbotsHardwareInterface(std::vector<std::shared_ptr<JointMoteus>> joint_list,
                        const RealtimeParams &realtime_params,
                        ::mjbots::pi3hat::Euler imu_mounting_deg = ::mjbots::pi3hat::Euler(),
                        int imu_rate_hz = 1000,

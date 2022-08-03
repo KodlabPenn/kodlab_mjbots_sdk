@@ -8,8 +8,8 @@
 #pragma once
 #include <type_traits>
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
-#include "kodlab_mjbots_sdk/robot_interface.h"
-#include "kodlab_mjbots_sdk/mjbots_robot_interface.h"
+#include "kodlab_mjbots_sdk/robot_base.h"
+#include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/timer.hpp"
@@ -40,16 +40,19 @@ struct ControlLoopOptions {
 };
 
 /*!
- * @brief mjbots_control_loop class is an parent class to be used to create a control loop. It supports 1 controller and
- *        logging. The child class must implement CalcTorques and PrepareLog (if logging). The robot data is stored in
- *        the robot object. The behavior runs in its own thread. To Start the thread Run Start()
+ * @brief A parent class used to create a control loop. It supports one
+ *        controller, a `RobotBase` child class, logging, and inputs. The
+ *        `MjbotsControlLoop` child class must implement `Update`,
+ *        `PrepareLog` if logging, and `ProcessInput` if receiving inputs. The
+ *        robot data is stored in the `RobotClass` object. The behavior runs in
+ *        its own thread. To Start the thread, run `Start()`.
  * @tparam LogClass[optional] data type for logging
  * @tparam InputClass[optional] class for input data 
  * @tparam RobotClass[optional] RobotInterfaceDerived class that contains state and control calculations 
  */
-template<class LogClass = VoidLcm, class InputClass = VoidLcm, class RobotClass = kodlab::RobotInterface>
+template<class LogClass = VoidLcm, class InputClass = VoidLcm, class RobotClass = kodlab::RobotBase>
 class MjbotsControlLoop : public AbstractRealtimeObject {
- static_assert(std::is_base_of<kodlab::RobotInterface,RobotClass>::value);
+ static_assert(std::is_base_of<kodlab::RobotBase, RobotClass>::value);
  public:
   /*!
    * @brief constructs an mjbots control loop based on the options struct. Does not Start the controller.
@@ -66,7 +69,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joints, const ControlLoopOptions &options);
   /*!
    * @brief constructs an mjbots control loop based on the options struct. Does not Start the controller.
-   * @param robot_in an instance of a derived RobotInterface
+   * @param robot_in an instance of a derived RobotBase
    * @param options contains options defining the behavior
    * \overload 
    */
@@ -82,7 +85,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   /*!
    * @brief function to be implemented by child. Must set torques in the robot class
    */
-  virtual void CalcTorques() {robot_->Update();}
+  virtual void Update() = 0;
 
   /*!
    * @brief adds data to m_log_data if logging is being used. To be implemented by child class
@@ -121,9 +124,9 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   void SetupOptions(const ControlLoopOptions &options);
 
   std::shared_ptr<RobotClass> robot_;     /// ptr to the robot object
-  std::shared_ptr<kodlab::mjbots::MjbotsRobotInterface> mjbots_interface_;   ///ptr to mjbots_interface object, if unique causes issues, also should be initialized inside thread
+  std::shared_ptr<kodlab::mjbots::MjbotsHardwareInterface> mjbots_interface_;   ///ptr to mjbots_interface object, if unique causes issues, also should be initialized inside thread
   int frequency_;                         /// frequency of the controller in Hz
-  int num_motors_;                        /// Number of motors
+  int num_joints_;                        /// Number of motors
   ControlLoopOptions options_;            /// Options struct
   bool logging_ = false;                  /// Boolean to determine if logging is in use
   bool input_ = false;                    /// Boolean to determine if input is in use
@@ -149,11 +152,11 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
                                           options.soft_start_duration,
                                           options.max_torque);
   
-  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsRobotInterface>( joint_ptrs,
-                                          options.realtime_params,
-                                          options.imu_mounting_deg,
-                                          options.attitude_rate_hz);
-  num_motors_ = robot_->joints.size();
+  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(joint_ptrs,
+                                                                                options.realtime_params,
+                                                                                options.imu_mounting_deg,
+                                                                                options.attitude_rate_hz);
+  num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
 
@@ -163,11 +166,11 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
     lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) {
   // Create robot object
   robot_ = robot_in;
-  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsRobotInterface>( robot_->joints,
-                                          options.realtime_params,
-                                          options.imu_mounting_deg,
-                                          options.attitude_rate_hz);
-  num_motors_ = robot_->joints.size();
+  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(robot_->joints,
+                                                                                options.realtime_params,
+                                                                                options.imu_mounting_deg,
+                                                                                options.attitude_rate_hz);
+  num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
 
@@ -249,7 +252,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
     }
 
     // Calculate torques and log
-    CalcTorques();      //TODO should we give full control to the robot_ instead of feeding update thorugh?
+    Update();      //TODO should we give full control to the robot_ instead of feeding update thorugh?
     // robot_->Update();
     PrepareLog();
     AddTimingLog(time_now_, sleep_duration, prev_msg_duration);

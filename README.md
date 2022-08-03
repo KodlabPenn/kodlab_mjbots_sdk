@@ -7,9 +7,9 @@ for better realtime performance
 3. Integration with LCM (https://lcm-proj.github.io/) for remote logging and remote input to the robot
 4.  The `MjbotsControlLoop` object which handles the structure of the control loop for
 the easy creation of new controllers
-5. The `MjbotsRobotInterface` which provides a convenient interface for communicating with any number
+5. The `MjbotsHardwareInterface` which provides a convenient interface for communicating with any number
 of moteus motor controllers 
-6. The `RobotInterface` which provides and interface for updating robot state and joint torques.
+6. The `RobotBase` class which provides an interface for updating robot state and joint torques.
 
 Note: This library only supports torque commands. If you wish to use
 position control, you either must close the loop yourself or modify the 
@@ -22,11 +22,12 @@ In order to keep the message size down, kp and kd on the motors must be set to 0
 
 ## MjbotsControlLoop:
 To use the Mjbots control loop, create a class which inherits the 
-`MjbotsControlLoop` object and implements `CalcTorques` to set the torques in 
+`MjbotsControlLoop` object and implements `Update` to set the torques in 
 the robot object as follows.
 
 ```cpp
 class MyControlLoop : public kodlab::mjbots::MjbotsControlLoop
+{
   using MjbotsControlLoop::MjbotsControlLoop;
   void CalcTorques() override{
     std::vector<float> torques = control_effort;
@@ -37,7 +38,7 @@ class MyControlLoop : public kodlab::mjbots::MjbotsControlLoop
 
 A simple example using the `MjbotsControlLoop` is provided in
 `examples/spint_joints_example.cpp`.  The `MjbotsControlLoop` is optionally templated with an LCM
-log type, an LCM input type, and a `RobotInterface`-derived class. These are
+log type, an LCM input type, and a `RobotBase`-derived class. These are
 described below.
 
 ## Accessing robot state
@@ -78,16 +79,16 @@ Next, implement the `ProcessInput` function to do things with the data in `lcm_s
         gains_ = lcm_sub_.data_.gains;
       }
 
-## Robot Interface
-The `RobotInterface` object is intended to be inherited by a user-defined robot 
+## Robot Base
+The `RobotBase` object is intended to be inherited by a user-defined robot 
 class.  The derived class should implement an override of 
-`RobotInterface::Update()`.  Note that this new `Update()` function must 
+`RobotBase::Update()`.  Note that this new `Update()` function must 
 increment the cycle count.  A simple implementation follows.
 
 ```cpp
-class MyRobot : virtual public kodlab::RobotInterface
+class MyRobot : virtual public kodlab::RobotBase
 {
-  using kodlab::RobotInterface::RobotInterface;
+  using kodlab::RobotBase::RobotBase;
 
 public:
   int mode = 0; // Member variables encode whatever added state we need

@@ -4,7 +4,7 @@
 // J. Diego Caporale <jdcap@seas.upenn.edu>
 
 /* Example script running joints to their mechanical limits before switching direction. The functions to implement are
- * CalcTorques and PrepareLog. In this example we run the motor forward until its 
+ * Update and PrepareLog. In this example we run the motor forward until its
  * position error is large enough to detect a obstacle, then switching directions
  */
 
@@ -20,18 +20,18 @@
 
 class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
-  void CalcTorques() override {
+  void Update() override {
 
     float omega_des = 0.3; //velocity in rads per sec
-    Eigen::VectorXf omega = Eigen::VectorXf::Ones(num_motors_)*omega_des; //radians
+    Eigen::VectorXf omega = Eigen::VectorXf::Ones(num_joints_)*omega_des; //radians
  
-    Eigen::VectorXf positions  = Eigen::Map<Eigen::VectorXf,Eigen::Unaligned> ( robot_->GetJointPositions().data(), num_motors_);
-    Eigen::VectorXf velocities = Eigen::Map<Eigen::VectorXf,Eigen::Unaligned> (robot_->GetJointVelocities().data(), num_motors_);
+    Eigen::VectorXf positions  = Eigen::Map<Eigen::VectorXf,Eigen::Unaligned> (robot_->GetJointPositions().data(), num_joints_);
+    Eigen::VectorXf velocities = Eigen::Map<Eigen::VectorXf,Eigen::Unaligned> (robot_->GetJointVelocities().data(), num_joints_);
 
     static Eigen::VectorXf  phase = positions; //radians
-    static Eigen::VectorXf    dir = Eigen::VectorXf::Ones(num_motors_); //radians
-    static Eigen::VectorXf max_pos = Eigen::VectorXf::Ones(num_motors_) * ( -std::numeric_limits<float>::infinity() );
-    static Eigen::VectorXf min_pos = Eigen::VectorXf::Ones(num_motors_) * (  std::numeric_limits<float>::infinity() );
+    static Eigen::VectorXf    dir = Eigen::VectorXf::Ones(num_joints_); //radians
+    static Eigen::VectorXf max_pos = Eigen::VectorXf::Ones(num_joints_) * ( -std::numeric_limits<float>::infinity() );
+    static Eigen::VectorXf min_pos = Eigen::VectorXf::Ones(num_joints_) * (  std::numeric_limits<float>::infinity() );
 
     phase.array() += dir.array()*(omega.array() / frequency_) ;
     
@@ -46,9 +46,9 @@ class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
     min_pos = (phase.array() < min_pos.array()).select(phase, min_pos);
     
     //Calculate torques
-    std::vector<float> torques(num_motors_, 0);
+    std::vector<float> torques(num_joints_, 0);
     Eigen::VectorXf tau = 100*(phase-positions) + 1*(omega-velocities);
-    Eigen::VectorXf::Map(&torques[0], num_motors_) = tau;
+    Eigen::VectorXf::Map(&torques[0], num_joints_) = tau;
 
     // Print limits
     LOG_DEBUG("Max. Limits:");
@@ -60,13 +60,13 @@ class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   }
 
   void PrepareLog() override {
-    for (int servo = 0; servo < num_motors_; servo++) {
+    for (int servo = 0; servo < num_joints_; servo++) {
       log_data_.positions[servo]  = robot_->GetJointPositions()[servo];
       log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
       log_data_.modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
       log_data_.torques[servo] = robot_->GetJointTorqueCmd()[servo];
     }
-    for (int servo = num_motors_; servo < 13; servo++) {
+    for (int servo = num_joints_; servo < 13; servo++) {
       log_data_.positions[servo] = 0;
       log_data_.velocities[servo] = 0;
       log_data_.modes[servo] = 0;

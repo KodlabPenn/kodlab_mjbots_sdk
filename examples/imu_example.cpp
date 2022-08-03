@@ -40,7 +40,7 @@ private:
   /**
    * @brief Gathers IMU data and sets command torques to zero
    */
-  void CalcTorques() override
+  void Update() override
   {
     // Update Read-Only IMUData
     imu_read_only_ = mjbots_interface_->GetIMUData();
@@ -59,7 +59,7 @@ private:
     imu_->PrintIMUData();
 
     // Set Torques to Zero
-    std::vector<float> torques(num_motors_, 0);
+    std::vector<float> torques(num_joints_, 0);
     robot_->SetTorques(torques);
   }
 
