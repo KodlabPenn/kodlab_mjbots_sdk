@@ -118,4 +118,19 @@ public:
 
 };
 
+/**
+ * @brief Convert vector to shared pointers using copy constructor
+ * @param vect vector of type T
+ * @tparam T object type
+ */
+
+template< typename T>
+std::vector<std::shared_ptr <T> > make_share_vector(std::vector<T> objs){
+  std::vector<std::shared_ptr<T>> ptrs;
+  for (T obj: objs){
+    // Make vector of shared_pointer objects using copy constructer 
+    ptrs.push_back(std::make_shared<T>(obj)); 
+  }
+  return ptrs;
+}
 }  // namespace kodlab

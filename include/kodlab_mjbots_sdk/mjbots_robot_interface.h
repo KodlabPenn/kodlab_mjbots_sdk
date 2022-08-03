@@ -38,7 +38,7 @@ class MjbotsRobotInterface {
 
   /*!
    * @brief constructs an mjbots_robot_interface to communicate with a collection of moeteusses
-   * @param joint_list a list of joints defining the motors in the robot
+   * @param joint_list a list of joints (or shared pointers to joints) defining the motors in the robot
    * @param realtime_params the realtime parameters defining cpu and realtime priority
    * @param soft_start_duration how long in dt to spend ramping the torque
    * @param robot_max_torque the maximum torque to allow per motor in the robot
@@ -47,6 +47,16 @@ class MjbotsRobotInterface {
    * @param imu_world_offset_deg IMU orientation offset. Useful for re-orienting gravity, etc.
    */
   MjbotsRobotInterface(const std::vector<JointMoteus> &joint_list,
+                       const RealtimeParams &realtime_params,
+                       int soft_start_duration = 1,
+                       float robot_max_torque = 100,
+                       ::mjbots::pi3hat::Euler imu_mounting_deg = ::mjbots::pi3hat::Euler(),
+                       int imu_rate_hz = 1000,
+                       ::mjbots::pi3hat::Euler imu_world_offset_deg = ::mjbots::pi3hat::Euler());
+  /*!
+   * \overload
+   */
+  MjbotsRobotInterface(std::vector<std::shared_ptr<JointMoteus>> joint_list,
                        const RealtimeParams &realtime_params,
                        int soft_start_duration = 1,
                        float robot_max_torque = 100,
