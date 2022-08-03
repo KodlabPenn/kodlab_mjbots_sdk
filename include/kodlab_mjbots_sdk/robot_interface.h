@@ -66,7 +66,9 @@ namespace kodlab
         virtual void Init(){};
 
         /*!
-         * @brief Update the robot state and torque command. 
+         * @brief Update the robot state and torque command.
+         * @warning All derivative classes overriding this method should include
+         *          a cycle count increment (i.e., `cycle_count_++;`).
          */
         virtual void Update(){cycle_count_++;}; //TODO remove cycle_count and use time or more intelligently set cycle_count or properly handle softstart
 
