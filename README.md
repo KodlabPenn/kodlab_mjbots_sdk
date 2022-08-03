@@ -26,7 +26,7 @@ To use the Mjbots control loop, create a class which inherits the
 the robot object as follows.
 
 ```cpp
-class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop
+class MyControlLoop : public kodlab::mjbots::MjbotsControlLoop
   using MjbotsControlLoop::MjbotsControlLoop;
   void CalcTorques() override{
     std::vector<float> torques = control_effort;
