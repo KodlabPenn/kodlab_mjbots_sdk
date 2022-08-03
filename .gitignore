@@ -1,6 +1,7 @@
 build/*
 .idea
 cmake-build-debug
+docs/
 lcm_types/*.hpp
 lcm_types/*.py
 __pycache__/
