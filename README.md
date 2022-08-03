@@ -63,7 +63,7 @@ Finally when creating the instance of the class set the `log_channel_name` optio
       Controller control_loop(options)
       
 To log data, on your laptop Start the bot lcm tunnel with `bot-lcm-tunnel <IP>` and Start logging using `lcm-logger`.
-Refer again to `examples/spint_joints_example.cpp` for an example implementation.
+Refer again to `examples/spin_joints_example.cpp` for an example implementation.
 
 ## Input LCM Communication
 In order to set gains during run time or to communicate between your laptop and the robot, first define the LCM data
@@ -99,6 +99,12 @@ public:
     SetTorques(torques);
   }
 };
+```
+
+The corresponding control loop definition would be.
+
+```cpp
+class MyController : public MjbotsControlLoop<LcmLog, LcmInput, MyRobot>
 ```
 
 Refer to `include/examples/simple_robot.h` for a sample robot class and 
