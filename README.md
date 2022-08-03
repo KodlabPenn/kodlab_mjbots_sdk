@@ -9,26 +9,36 @@ for better realtime performance
 the easy creation of new controllers
 5. The `MjbotsRobotInterface` which provides a convenient interface for communicating with any number
 of moteus motor controllers 
+6. The `RobotInterface` which provides and interface for updating robot state and joint torques.
 
 Note: This library only supports torque commands. If you wish to use
 position control, you either must close the loop yourself or modify the 
 library to allow for the position loop to Run on the moteus.
 
-#Important
+# Important
 In order to keep the message size down, kp and kd on the motors must be set to 0
 
 # Usage
-## MjbotsControlLoop:
-To use the `MjbotsControlLoop` create a class which inherits the `MjbotsControlLoop`
-and implements `CalcTorques` to set the torques in the robot object. 
 
-    class Controller : public MjbotsControlLoop{
-      using MjbotsControlLoop::MjbotsControlLoop;
-      void CalcTorques() override{
-        std::vector<float> torques = control_effort;
-        robot_->SetTorques(torques);
-      }    
-    };
+## MjbotsControlLoop:
+To use the Mjbots control loop, create a class which inherits the 
+`MjbotsControlLoop` object and implements `CalcTorques` to set the torques in 
+the robot object as follows.
+
+```cpp
+class MyControlLoop : public kodlab::mjbots::MjbotsControlLoop
+  using MjbotsControlLoop::MjbotsControlLoop;
+  void CalcTorques() override{
+    std::vector<float> torques = control_effort;
+    robot_->SetTorques(torques);
+  }    
+};
+```
+
+A simple example using the `MjbotsControlLoop` is provided in
+`examples/spint_joints_example.cpp`.  The `MjbotsControlLoop` is optionally templated with an LCM
+log type, an LCM input type, and a `RobotInterface`-derived class. These are
+described below.
 
 ## Accessing robot state
 To access the robot state use `robot_->GetJointPositions()` or `robot_->GetJointVelocities()`
@@ -52,7 +62,8 @@ Finally when creating the instance of the class set the `log_channel_name` optio
       options.log_channel_name = "example";
       Controller control_loop(options)
       
-To log data, on your laptop Start the bot lcm tunnel with `bot-lcm-tunnel <IP>` and Start logging using `lcm-logger`
+To log data, on your laptop Start the bot lcm tunnel with `bot-lcm-tunnel <IP>` and Start logging using `lcm-logger`.
+Refer again to `examples/spin_joints_example.cpp` for an example implementation.
 
 ## Input LCM Communication
 In order to set gains during run time or to communicate between your laptop and the robot, first define the LCM data
@@ -66,6 +77,38 @@ Next, implement the `ProcessInput` function to do things with the data in `lcm_s
       void ProcessInput()  override{
         gains_ = lcm_sub_.data_.gains;
       }
+
+## Robot Interface
+The `RobotInterface` object is intended to be inherited by a user-defined robot 
+class.  The derived class should implement an override of 
+`RobotInterface::Update()`.  Note that this new `Update()` function must 
+increment the cycle count.  A simple implementation follows.
+
+```cpp
+class MyRobot : virtual public kodlab::RobotInterface
+{
+  using kodlab::RobotInterface::RobotInterface;
+
+public:
+  int mode = 0; // Member variables encode whatever added state we need
+  // Set up robot update function for state and torques
+  void Update() override
+  { 
+    cycle_count_++;
+    std::vector<float> torques(num_joints_, 0);
+    SetTorques(torques);
+  }
+};
+```
+
+The corresponding control loop definition would be.
+
+```cpp
+class MyController : public MjbotsControlLoop<LcmLog, LcmInput, MyRobot>
+```
+
+Refer to `include/examples/simple_robot.h` for a sample robot class and 
+`examples/robot_example.cpp` for a usage example.
 
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the

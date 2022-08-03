@@ -5,6 +5,8 @@
 #include <signal.h>  // manage the ctrl+c signal
 #include <type_traits>
 #include <iostream>
+#include <memory>
+#include <vector>
 
 namespace kodlab {
 /*
@@ -120,7 +122,7 @@ public:
 
 /**
  * @brief Convert vector to shared pointers using copy constructor
- * @param vect vector of type T
+ * @param objs vector of type T
  * @tparam T object type
  */
 
