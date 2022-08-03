@@ -56,7 +56,8 @@ namespace kodlab
         }
 
         /*!
-         * @brief Destroy the Robot Interface object. Virtual destructor for proper derived pointer destruction.
+         * @brief Destroy the robot base object. Virtual destructor for proper
+         *        derived pointer destruction.
          */
         virtual ~RobotBase() {};
 

@@ -32,8 +32,8 @@ struct RealtimeParams {
 };
 
 /*!
- * @brief A class that allows interaction with the Mjbots Moteus Motor Controllers
- * 
+ * @brief Object allowing interaction with the Mjbots Moteus motor controller
+ *        hardware
  */
 class MjbotsHardwareInterface  {
  public:

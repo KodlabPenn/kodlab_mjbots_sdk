@@ -40,9 +40,12 @@ struct ControlLoopOptions {
 };
 
 /*!
- * @brief mjbots_control_loop class is an parent class to be used to create a control loop. It supports 1 controller and
- *        logging. The child class must implement Update and PrepareLog (if logging). The robot data is stored in
- *        the robot object. The behavior runs in its own thread. To Start the thread Run Start()
+ * @brief A parent class used to create a control loop. It supports one
+ *        controller, a `RobotBase` child class, logging, and inputs. The
+ *        `MjbotsControlLoop` child class must implement `Update`,
+ *        `PrepareLog` if logging, and `ProcessInput` if receiving inputs. The
+ *        robot data is stored in the `RobotClass` object. The behavior runs in
+ *        its own thread. To Start the thread, run `Start()`.
  * @tparam LogClass[optional] data type for logging
  * @tparam InputClass[optional] class for input data 
  * @tparam RobotClass[optional] RobotInterfaceDerived class that contains state and control calculations 
