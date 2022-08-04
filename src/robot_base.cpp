@@ -19,21 +19,21 @@ std::vector<float> kodlab::RobotBase::GetJointVelocities() { //Copy of velocitie
   return vel;
 }
 
-std::vector<std::shared_ptr<JointBase>> kodlab::RobotBase::GetJoints(std::vector<int> joint_indices){
-  std::vector<std::shared_ptr<JointBase>> joint_list;
+std::vector<std::shared_ptr<kodlab::JointBase>> kodlab::RobotBase::GetJoints(std::vector<int> joint_indices){
+  std::vector<std::shared_ptr<kodlab::JointBase>> joint_list;
   for (int ind: joint_indices){
     joint_list.emplace_back(joints[ind]);
   }
   return joint_list;
 }
 
-std::vector<std::shared_ptr<JointBase>> kodlab::RobotBase::GetJoints(std::initializer_list<int> joint_indices){
+std::vector<std::shared_ptr<kodlab::JointBase>> kodlab::RobotBase::GetJoints(std::initializer_list<int> joint_indices){
   std::vector<int> joint_vect (joint_indices); 
   return kodlab::RobotBase::GetJoints(joint_vect);
 }
 
 template <size_t N>
-std::vector<std::shared_ptr<JointBase>> kodlab::RobotBase::GetJoints(std::array<int, N> joint_indices){
+std::vector<std::shared_ptr<kodlab::JointBase>> kodlab::RobotBase::GetJoints(std::array<int, N> joint_indices){
   std::vector<int> joint_vect (joint_indices.begin(), joint_indices.end()); 
   return kodlab::RobotBase::GetJoints(joint_vect);
 }
