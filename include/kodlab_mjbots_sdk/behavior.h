@@ -59,7 +59,7 @@ public:
    * @param robot robot behavior is executing on
    * @param name[optional] behavior name
    */
-  Behavior(std::shared_ptr<Robot> robot, std::string name = "EMPTY")
+  Behavior(std::shared_ptr<Robot> robot, std::string name = "")
       : robot_(robot), name_(std::move(name)) {}
 
   /**
