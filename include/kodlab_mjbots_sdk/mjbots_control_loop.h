@@ -78,6 +78,20 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
  protected:
 
   /*!
+   * @brief Initialization function run when the control loop is started
+   * @details This function is called at the beginning of the `Run` function,
+   *          and can be used for initialization in child implementations.
+   * @note This function is called in the `Run` function directly after `robot_`
+   *       and `mjbots_interface_` are initialized.  Any initialization desired
+   *       before this point should be written into the derived class
+   *       constructors.
+   * @note This function is included to provide a user-overridable
+   *       initialization function.  It is not called in the constructor due to
+   *       issues with virtual methods in base class constructors.
+   */
+  virtual void Init() {}
+
+  /*!
    * @brief runs the controller at frequency and logs the data
    */
   void Run() override;
@@ -218,6 +232,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
 
   mjbots_interface_->Init();
   robot_->Init();
+  Init();
 
   float prev_msg_duration = 0;
 
