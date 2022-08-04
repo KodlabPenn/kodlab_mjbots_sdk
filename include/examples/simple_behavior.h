@@ -130,17 +130,6 @@ public:
         // Lower the joint torques to slowing levels
         desired_torques_ =
             std::vector<float>(robot_->joints.size(), SLOW_TORQUE);
-
-        // Set behavior to inactive if average velocity is below a threshold
-        float avg_velocity =
-            std::accumulate(joint_velocities_.begin(),
-                            joint_velocities_.end(),
-                            0.0) / static_cast<float>(joint_velocities_.size());
-        if (avg_velocity <= 0.1)
-        {
-          set_inactive();
-          std::fprintf(stdout, "%s is no longer active\n", get_name().c_str());
-        }
         break;
     }
 
@@ -186,7 +175,17 @@ public:
    */
   bool ReadyToSwitch(std::unique_ptr<kodlab::Behavior<SimpleRobot>> &next_behavior) override
   {
-    return !Running();
+    // Ready to switch if average velocity is below a threshold
+    float avg_velocity =
+        std::accumulate(joint_velocities_.begin(),
+                        joint_velocities_.end(),
+                        0.0) / static_cast<float>(joint_velocities_.size());
+    if (avg_velocity <= 0.1)
+    {
+      std::fprintf(stdout, "%s is no longer active\n", get_name().c_str());
+      return true;
+    }
+    return false;
   }
 
 };
