@@ -111,7 +111,7 @@ class MyController : public MjbotsControlLoop<LcmLog, LcmInput, MyRobot>
 Refer to `include/examples/simple_robot.h` for a sample robot class and 
 `examples/robot_example.cpp` for a usage example.
 
-## Behaviors
+# Behaviors
 The `Behavior` abstract class can be derived by the user and used to define 
 custom behaviors.  The abstract class includes functions for behavior 
 initialization, startup, updating, and stopping, as well as methods for 
@@ -136,6 +136,14 @@ Refer to the `SimpleSpinJointsBehavior` class defined in
 behavior class can be implemented, and the `SimpleControlIOBehavior` in 
 `include/examples/simple_control_io_behavior.h` for an example of implementing
 a behavior with inputs and outputs.
+
+## Mjbots Behavior Loop
+The `MjbotsBehaviorLoop` extends the [`MjbotsControlLoop`](https://github.com/KodlabPenn/kodlab_mjbots_sdk#mjbotscontrolloop)
+to include a `BehaviorManager` which internally manages `Behavior` objects for a
+`RobotBase`-derived class.  The `MjbotsBehaviorLoop` works in much the same way 
+as the `MjbotsControlLoop`, except the user no longer needs to override the 
+`Update()` method.  An example demonstrating usage of the `MjbotsBehaviorLoop`
+is provided in `examples/behavior_robot_example.cpp`.
 
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
