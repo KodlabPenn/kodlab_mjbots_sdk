@@ -120,7 +120,7 @@ public:
       {
         behaviors_[next_idx_]->Init();
       }
-      behaviors_[selected_idx]->Stop(behaviors_[next_idx_]); // stop current behavior
+      behaviors_[selected_idx]->Stop(*behaviors_[next_idx_]); // stop current behavior
       switching_behaviors_ = true;  // indicate transition is in progress
     } else
     {
@@ -220,10 +220,10 @@ public:
   {
     behaviors_[selected_idx]->Update();
     if (switching_behaviors_
-        && behaviors_[selected_idx]->ReadyToSwitch(behaviors_[next_idx_]))
+        && behaviors_[selected_idx]->ReadyToSwitch(*behaviors_[next_idx_]))
     {
       behaviors_[selected_idx]->set_inactive();  // mark previous behavior as inactive
-      behaviors_[next_idx_]->Begin(behaviors_[selected_idx]);  // begin new behavior
+      behaviors_[next_idx_]->Begin(*behaviors_[selected_idx]);  // begin new behavior
       behaviors_[next_idx_]->set_active();  // mark new behavior as active
       selected_idx = next_idx_;  // update selected behavior to next
       switching_behaviors_ = false;  // no longer transitioning behaviors
