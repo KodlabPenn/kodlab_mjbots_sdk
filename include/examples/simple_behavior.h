@@ -70,15 +70,16 @@ public:
    *          initialization that did not take place in the constructor should
    *          occur, e.g., setting up pointers. In this example, the desired
    *          torques are initialized to zero.
+   * @return true if initialization successful, false otherwise
    */
-  void Init() override
+  bool Init() override
   {
     // Initializes desired torques (for user safety, these are set to zero)
     desired_torques_ = std::vector<float>(robot_->joints.size(), 0);
 
-    // Indicate that behavior has been initialized
-    set_initialized();
+    // Indicate that behavior has been initialized and return
     std::fprintf(stdout, "Initialized %s\n", get_name().c_str());
+    return true;  // indicates successful initialization
   }
 
   /**
