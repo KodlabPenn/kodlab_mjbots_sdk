@@ -51,7 +51,8 @@ MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<Joi
                                                  const RealtimeParams &realtime_params,
                                                  ::mjbots::pi3hat::Euler imu_mounting_deg,
                                                  int imu_rate_hz,
-                                                 ::mjbots::pi3hat::Euler imu_world_offset_deg) 
+                                                 ::mjbots::pi3hat::Euler imu_world_offset_deg,
+                                                 std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr) 
 { 
   joints = joint_ptrs;
   num_joints_ = joints.size();
@@ -73,7 +74,13 @@ MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<Joi
   moteus_interface_ = std::make_shared<::mjbots::moteus::Pi3HatMoteusInterface>(moteus_options);
 
   // Initialize attitude shared pointer
-  imu_data_ = std::make_shared<::kodlab::IMUData<float>>();
+  if(imu_data_ptr){
+    imu_data_ = imu_data_ptr;
+  }
+  else
+  {
+    imu_data_ = std::make_shared<::kodlab::IMUData<float>>();
+  }
   kodlab::rotations::EulerAngles<float> imu_world_offset =
       {M_PI / 180.0 * imu_world_offset_deg.roll,
        M_PI / 180.0 * imu_world_offset_deg.pitch,

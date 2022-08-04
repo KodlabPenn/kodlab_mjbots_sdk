@@ -50,7 +50,8 @@ class MjbotsHardwareInterface  {
                        const RealtimeParams &realtime_params,
                        ::mjbots::pi3hat::Euler imu_mounting_deg = ::mjbots::pi3hat::Euler(),
                        int imu_rate_hz = 1000,
-                       ::mjbots::pi3hat::Euler imu_world_offset_deg = ::mjbots::pi3hat::Euler());
+                       ::mjbots::pi3hat::Euler imu_world_offset_deg = ::mjbots::pi3hat::Euler(),
+                       std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr = nullptr);
 
   /**
    * @brief Send and recieve initial communications effectively starting the robot
@@ -103,7 +104,14 @@ class MjbotsHardwareInterface  {
    * @brief accessor for the IMU data of the robot
    * @return const IMU data shared pointer for the robot
    */
-  const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();
+  const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();        
+  
+  /*!
+  * @brief Setter for the robot's IMU data pointer. Releases the previously owned IMU data object
+  *
+  * @param imu_data_ptr a shared pointer to kodlab::IMUData
+  */
+  void SetIMUDataSharedPtr(std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr){imu_data_ = imu_data_ptr;}
 
  private:
   std::vector< std::shared_ptr<JointMoteus>> joints; /// Vector of shared pointers to joints for the robot, shares state information

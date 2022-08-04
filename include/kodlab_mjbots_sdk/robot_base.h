@@ -15,6 +15,7 @@
 #include "kodlab_mjbots_sdk/common_header.h"
 #include "kodlab_mjbots_sdk/joint_base.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
+#include "kodlab_mjbots_sdk/imu_data.h"
 
 namespace kodlab
 {
@@ -37,7 +38,8 @@ namespace kodlab
         template <class JointDerived = JointBase>
         RobotBase(std::vector<std::shared_ptr<JointDerived>> joint_vect,
                   float robot_max_torque,
-                  int soft_start_duration)
+                  int soft_start_duration,
+                  std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr = nullptr)
             : soft_start_(robot_max_torque, soft_start_duration)
         {
             // Ensure at compile time that the template is JointBase or a child of JointBase
@@ -53,6 +55,16 @@ namespace kodlab
 
             // Set number of joints
             num_joints_ = joint_vect.size();
+            
+            // Initialize attitude shared pointer
+            if (imu_data_ptr)
+            {
+                imu_data_ = imu_data_ptr;
+            }
+            else
+            {
+                imu_data_ = std::make_shared<::kodlab::IMUData<float>>();
+            }
         }
 
         /*!
@@ -103,7 +115,25 @@ namespace kodlab
          */
         std::vector<float> GetJointTorqueCmd();
 
-        //TODO virtual Attitude GetAttitude()
+        
+        /*!
+        * @brief accessor for the IMU data of the robot
+        * @return const reference to the IMU data object for the robot
+        */
+        const ::kodlab::IMUData<float>& GetIMUData();
+
+        /*!
+        * @brief accessor for the IMU data of the robot
+        * @return const IMU data shared pointer for the robot
+        */
+        const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();  
+
+        /*!
+        * @brief Setter for the robot's IMU data pointer. Releases the previously owned IMU data object
+        *
+        * @param imu_data_ptr a shared pointer to kodlab::IMUData
+        */
+        void SetIMUDataSharedPtr(std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr){imu_data_ = imu_data_ptr;}
 
         /*! 
          * @brief Get sub-vector of shared_ptr to joint objects via a set of indices
@@ -139,7 +169,7 @@ namespace kodlab
         std::vector<std::reference_wrapper<const float>> positions_;  /// Vector of the motor positions (references to the members of joints_)
         std::vector<std::reference_wrapper<const float>> velocities_; /// Vector of the motor velocities (references to the members of joints_)
         std::vector<std::reference_wrapper<const float>> torque_cmd_; /// Vector of the torque command sent to motors (references to the members of joints_)
-        //TODO Attitude attitude_; 
+        std::shared_ptr<::kodlab::IMUData<float>> imu_data_;          /// Robot IMU data
         SoftStart soft_start_;                                        /// Soft Start object
         int num_joints_ = 0;                                          /// Number of joints
     };

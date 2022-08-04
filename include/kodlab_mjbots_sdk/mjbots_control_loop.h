@@ -173,14 +173,17 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
 {
   lcm_sub_->AddSubscription<input_type>(options.input_channel_name, input_sub_);
 
-  robot_ = std::make_shared<robot_type>(  joint_ptrs,
-                                          options.soft_start_duration,
-                                          options.max_torque);
-  
   mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(joint_ptrs,
                                                                                 options.realtime_params,
                                                                                 options.imu_mounting_deg,
-                                                                                options.attitude_rate_hz);
+                                                                                options.attitude_rate_hz, 
+                                                                                options.imu_world_offset_deg);
+
+  robot_ = std::make_shared<robot_type>(  joint_ptrs,
+                                          options.soft_start_duration,
+                                          options.max_torque,
+                                          mjbots_interface_->GetIMUDataSharedPtr());
+
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
@@ -197,7 +200,8 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
   mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(robot_->joints,
                                                                                 options.realtime_params,
                                                                                 options.imu_mounting_deg,
-                                                                                options.attitude_rate_hz);
+                                                                                options.imu_world_offset_deg,
+                                                                                robot_->GetIMUDataSharedPtr());
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
