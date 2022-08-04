@@ -137,13 +137,14 @@ behavior class can be implemented, and the `SimpleControlIOBehavior` in
 `include/examples/simple_control_io_behavior.h` for an example of implementing
 a behavior with inputs and outputs.
 
-## Mjbots Behavior Loop
-The `MjbotsBehaviorLoop` extends the [`MjbotsControlLoop`](https://github.com/KodlabPenn/kodlab_mjbots_sdk#mjbotscontrolloop)
-to include a `BehaviorManager` which internally manages `Behavior` objects for a
-`RobotBase`-derived class.  The `MjbotsBehaviorLoop` works in much the same way 
-as the `MjbotsControlLoop`, except the user no longer needs to override the 
-`Update()` method.  An example demonstrating usage of the `MjbotsBehaviorLoop`
-is provided in `examples/behavior_robot_example.cpp`.
+# Behavior Manager
+The `BehaviorManager` class is a container for storing and running 
+`Behavior`-derived behaviors.  This class maintains a default behavior at the 
+beginning index in its internal vector. Additional behaviors can be appended to
+the vector and the default behavior can be set by the user. The 
+`BehaviorManager` can be composed into a child class of `MjbotsControlLoop` 
+and used to maintain a series of behaviors running on a`RobotBase`-derived 
+robot. 
 
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
