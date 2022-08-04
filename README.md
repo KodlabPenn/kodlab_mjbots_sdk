@@ -1,4 +1,4 @@
-# Overview
+git # Overview
 The kodlab_mjbots_sdk has a few key key features added to the 
 pi3_hat library developed by mjbots: https://github.com/mjbots/pi3hat
 1. Cross compiling support from ubuntu 20.04 to Raspberry pi
@@ -145,6 +145,14 @@ the vector and the default behavior can be set by the user. The
 `BehaviorManager` can be composed into a child class of `MjbotsControlLoop` 
 and used to maintain a series of behaviors running on a`RobotBase`-derived 
 robot. 
+
+## Mjbots Behavior Loop
+The `MjbotsBehaviorLoop` extends the [`MjbotsControlLoop`](https://github.com/KodlabPenn/kodlab_mjbots_sdk#mjbotscontrolloop)
+to include a `BehaviorManager` which internally manages `Behavior` objects for a
+`RobotBase`-derived class.  The `MjbotsBehaviorLoop` works in much the same way 
+as the `MjbotsControlLoop`, except the user no longer needs to override the 
+`Update()` method.  An example demonstrating usage of the `MjbotsBehaviorLoop`
+is provided in `examples/behavior_robot_example.cpp`.
 
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
