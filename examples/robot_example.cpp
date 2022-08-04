@@ -19,6 +19,9 @@
 
 #include "examples/simple_robot.h"
 
+namespace kodlab::examples
+{
+
 class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog, ModeInput, SimpleRobot>
 {
     using MjbotsControlLoop::MjbotsControlLoop;
@@ -57,6 +60,9 @@ class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMoto
     }
 };
 
+} // kodlab::examples
+
+
 int main(int argc, char **argv)
 {
     // Setup joints with a std::vector or JointSharedVector class
@@ -76,6 +82,7 @@ int main(int argc, char **argv)
 
     // Create control loop
     // Starts the loop, and then join it
+    using kodlab::examples::SimpleRobotControlLoop;
     SimpleRobotControlLoop simple_robot(joints, options);
     simple_robot.Start();
     simple_robot.Join();
