@@ -111,6 +111,14 @@ class MyController : public MjbotsControlLoop<LcmLog, LcmInput, MyRobot>
 Refer to `include/examples/simple_robot.h` for a sample robot class and 
 `examples/robot_example.cpp` for a usage example.
 
+## Mjbots Behavior Loop
+The `MjbotsBehaviorLoop` extends the [`MjbotsControlLoop`](https://github.com/KodlabPenn/kodlab_mjbots_sdk#mjbotscontrolloop)
+to include a `BehaviorManager` which internally manages `Behavior` objects for a
+`RobotBase`-derived class.  The `MjbotsBehaviorLoop` works in much the same way 
+as the `MjbotsControlLoop`, except the user no longer needs to override the 
+`Update()` method.  An example demonstrating usage of the `MjbotsBehaviorLoop`
+is provided in `examples/behavior_robot_example.cpp`.
+
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
 max torque is the maximum torque per motor and the soft Start duration is how long the torque ramp should last
