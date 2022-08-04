@@ -129,6 +129,27 @@ public:
   }
 
   /**
+   * @brief Constructs and initializes a behavior
+   * @tparam BehaviorType `kodlab::Behavior`-derived type
+   * @tparam ConstructorArgs constructor arguments
+   * @param args behavior constructor arguments
+   * @return unique pointer to the behavior if initialization was successful,
+   *         nullptr otherwise
+   */
+  template<class BehaviorType, typename... ConstructorArgs>
+  std::unique_ptr<BehaviorType> InitBehavior(ConstructorArgs &&... args)
+  {
+    static_assert(std::is_base_of<kodlab::Behavior<Robot>, BehaviorType>::value,
+                  "BehaviorType must be a `kodlab::Behavior`-derived type");
+    auto b = std::make_unique<BehaviorType>(args...);
+    if (b->Init())
+    {
+      b->set_initialized();
+      return std::move(b);
+    } else { return nullptr; }
+  }
+
+  /**
    * @brief Add a behavior to the behaviors list and initialize it
    * @tparam BehaviorType `kodlab::Behavior`-derived type
    * @tparam ConstructorArgs constructor arguments
@@ -139,9 +160,17 @@ public:
   {
     static_assert(std::is_base_of<kodlab::Behavior<Robot>, BehaviorType>::value,
                   "BehaviorType must be a `kodlab::Behavior`-derived type");
-    behaviors_.emplace_back(std::make_unique<BehaviorType>(args...));
-    names_.push_back(behaviors_.back()->get_name());
-    behaviors_.back()->Init();
+    auto b = InitBehavior<BehaviorType>(args...);
+    if (b)
+    {
+      names_.push_back(b->get_name());
+      behaviors_.emplace_back(std::move(b));
+    } else
+    {
+      LOG_WARN(
+          "%s behavior could not be initialized and will not be added to behaviors list.",
+          b->get_name().c_str());
+    }
   }
 
   /**
@@ -158,9 +187,17 @@ public:
   {
     static_assert(std::is_base_of<kodlab::Behavior<Robot>, BehaviorType>::value,
                   "BehaviorType must be a `kodlab::Behavior`-derived type");
-    behaviors_[0] = std::make_unique<BehaviorType>(args...);
-    names_[0] = behaviors_.back()->get_name();
-    behaviors_[0]->Init();
+    auto b = InitBehavior<BehaviorType>(args...);
+    if (b)
+    {
+      names_.front() = b->get_name();
+      behaviors_.front() = std::move(b);
+    } else
+    {
+      LOG_WARN(
+          "%s behavior could not be initialized and will not be set as default behavior.",
+          b->get_name().c_str());
+    }
   }
 
   /**
