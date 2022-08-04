@@ -74,12 +74,9 @@ public:
    *          first added to a behavior manager, should be put. This is where
    *          initialization that did not take place in the constructor should
    *          occur, e.g., setting up pointers.
-   * @param robot robot interface
+   * @return true if initialization successful, false otherwise
    */
-  virtual void Init()
-  {
-    set_initialized();
-  }
+  virtual bool Init() { return true; }
 
   /**
    * @brief Begin this behavior for a given robot interface
