@@ -111,6 +111,15 @@ class MyController : public MjbotsControlLoop<LcmLog, LcmInput, MyRobot>
 Refer to `include/examples/simple_robot.h` for a sample robot class and 
 `examples/robot_example.cpp` for a usage example.
 
+## Behaviors
+The `Behavior` abstract class can be derived by the user and used to define 
+custom behaviors.  The abstract class includes functions for behavior 
+initialization, startup, updating, and stopping, as well as methods for 
+declaring whether the behavior is prepared to transition to another behavior.
+Refer to the `SimpleBehavior` class defined in 
+`include/examples/simple_behavior.h` for an example of how the behavior class 
+can be implemented.
+
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
 max torque is the maximum torque per motor and the soft Start duration is how long the torque ramp should last
