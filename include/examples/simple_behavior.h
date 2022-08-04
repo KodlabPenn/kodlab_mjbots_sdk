@@ -93,7 +93,7 @@ public:
    *          read.
    * @param prev_behavior the previously active behavior
    */
-  void Begin(std::unique_ptr<kodlab::Behavior<SimpleRobot>> &prev_behavior) override
+  void Begin(const kodlab::Behavior<SimpleRobot> &prev_behavior) override
   {
     // Update internal state
     state_ = RUNNING;
@@ -147,7 +147,7 @@ public:
    *          state is modified to indicate the behavior should stop.
    * @param next_behavior the upcoming behavior
    */
-  void Stop(std::unique_ptr<kodlab::Behavior<SimpleRobot>> &next_behavior) override
+  void Stop(const kodlab::Behavior<SimpleRobot> &next_behavior) override
   {
     // Indicate that behavior should stop
     state_ = STOPPING;
@@ -173,7 +173,7 @@ public:
    * @param next_behavior the upcoming behavior
    * @return true if behavior is ready to transition, false otherwise
    */
-  bool ReadyToSwitch(std::unique_ptr<kodlab::Behavior<SimpleRobot>> &next_behavior) override
+  bool ReadyToSwitch(const kodlab::Behavior<SimpleRobot> &next_behavior) override
   {
     // Ready to switch if average velocity is below a threshold
     float avg_velocity =

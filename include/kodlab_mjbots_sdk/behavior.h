@@ -87,7 +87,7 @@ public:
    *          functionalities for different prior behaviors.
    * @param prev_behavior previously active behavior
    */
-  virtual void Begin(std::unique_ptr<Behavior<Robot>> &prev_behavior) {}
+  virtual void Begin(const Behavior<Robot> &prev_behavior) {}
 
   /**
    * @brief Update this behavior for a given robot interface
@@ -110,7 +110,7 @@ public:
    *          for different on-deck behaviors.
    * @param next_behavior behavior to be transitioned to
    */
-  virtual void Stop(std::unique_ptr<Behavior<Robot>> &next_behavior) {}
+  virtual void Stop(const Behavior<Robot> &next_behavior) {}
 
   /**
    * @brief Check for whether the behavior is running
@@ -132,7 +132,7 @@ public:
    * @param next_behavior behavior being transitioned to
    * @return true if behavior is ready to switch, false otherwise
    */
-  virtual bool ReadyToSwitch(std::unique_ptr<Behavior<Robot>> &next_behavior)
+  virtual bool ReadyToSwitch(const Behavior<Robot> &next_behavior)
   {
     return true;
   }
