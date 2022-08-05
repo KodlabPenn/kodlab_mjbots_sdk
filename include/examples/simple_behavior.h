@@ -23,7 +23,7 @@
 /**
  * @brief Simple behavior that commands torques to all joints in a SimpleRobot
  */
-class SimpleBehavior : virtual public kodlab::Behavior<SimpleBehavior, SimpleRobot, ManyMotorLog>
+class SimpleBehavior : virtual public kodlab::Behavior<SimpleRobot, ManyMotorLog>
 {
 
 private:
@@ -64,7 +64,7 @@ public:
    */
   // using Behavior::Behavior;
   SimpleBehavior(std::shared_ptr<SimpleRobot> robot_in, std::string name_in = "")
-      : Behavior<SimpleBehavior, SimpleRobot, ManyMotorLog>(robot_in, name_in) {}
+      : Behavior<SimpleRobot, ManyMotorLog>(robot_in, name_in) {}
 
   /**
    * @brief Initializes the behavior

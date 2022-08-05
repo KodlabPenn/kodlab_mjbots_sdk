@@ -25,14 +25,12 @@ namespace kodlab
 {
 
 /**
- * @brief Abstract Behavior class to be use in a CRTP pattern
+ * @brief Abstract Behavior class 
  * 
  * @details This class allows the use of std::vector<*AbstractBehavior<Robot>>
  *          Behavior will be a class template that gets derived from to classes 
  *          with a couple different Logging t-params. Needs every function that 
  *          should be allowed to be called
- *           
- * @note https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern#Polymorphic_copy_construction
  * 
  * @tparam Robot derived `kodlab::RobotBase` class
  */
@@ -62,7 +60,9 @@ public:
  * @tparam Robot[Optional] derived `kodlab::RobotBase` class
  * @tparam LogClass[Optional] A LCMgen Class
  */
-template<class Derived, class Robot = kodlab::RobotBase, class LogClass = VoidLcm>
+template<class Robot = kodlab::RobotBase, 
+         class LogClass = VoidLcm, 
+         class InputClass = VoidLcm>
 class Behavior: public AbstractBehavior<Robot>
 {
 protected:
