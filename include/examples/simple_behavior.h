@@ -19,6 +19,7 @@
 #include "kodlab_mjbots_sdk/behavior.h"  // kodlab::Behavior
 #include "examples/simple_robot.h"  // SimpleRobot
 #include "ManyMotorLog.hpp"
+#include "kodlab_mjbots_sdk/behavior_lcm_subscriber.h"
 
 /**
  * @brief Simple behavior that commands torques to all joints in a SimpleRobot
