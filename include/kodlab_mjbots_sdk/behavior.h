@@ -28,8 +28,9 @@ namespace kodlab
  * @brief Abstract Behavior class to be use in a CRTP pattern
  * 
  * @details This class allows the use of std::vector<*AbstractBehavior<Robot>>
- *          Behavior will be a class template that makes classes with a couple 
- *          different Logging t-params 
+ *          Behavior will be a class template that gets derived from to classes 
+ *          with a couple different Logging t-params. Needs every function that 
+ *          should be allowed to be called
  *           
  * @note https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern#Polymorphic_copy_construction
  * 
@@ -47,8 +48,11 @@ public:
   virtual void Update()=0;
   virtual bool Init()=0;
   virtual void Stop(const AbstractBehavior<Robot> &next_behavior)=0;
-  virtual bool Running() =0;
+  virtual bool Running()=0;
   virtual bool ReadyToSwitch(const AbstractBehavior<Robot> &next_behavior)=0;
+  virtual void PublishLog(lcm::LCM* lcm_in)=0;
+  virtual void PrepareLog()=0;
+  // virtual bool ReadInput() =0;
 
 };
 
@@ -58,7 +62,7 @@ public:
  * @tparam Robot[Optional] derived `kodlab::RobotBase` class
  * @tparam LogClass[Optional] A LCMgen Class
  */
-template<class Derived, class Robot = kodlab::RobotBase>
+template<class Derived, class Robot = kodlab::RobotBase, class LogClass = VoidLcm>
 class Behavior: public AbstractBehavior<Robot>
 {
 protected:
@@ -82,6 +86,17 @@ protected:
    * @brief Active state of this behavior
    */
   bool active_ = false;
+
+  /**
+   * @brief Log data for this behavior
+   */
+  LogClass log_data_;
+
+  /**
+   * @brief Log channel name for this behavior
+   * @todo THIS MAY NOT BE USEFUL IF WE WANT TO STAY ON ONE CHANNEL
+   */
+  std::string log_channel_name_="";
 
 public:
   /**
@@ -167,6 +182,20 @@ public:
     return true;
   }
 
+  /**
+   * @brief Publish log_data_ to lcm_in
+   * @param lcm_in pointer to lcm object
+   */
+  virtual void PublishLog(lcm::LCM* lcm_in) override 
+    {
+      lcm_in->publish(log_channel_name_,&log_data_);
+    };
+
+  /**
+   * @brief Virtual function for Log Preparation
+   */
+  virtual void PrepareLog(){};
+  
   /**
    * @brief Sets this behavior's robot
    * @param robot robot that this behavior operates on

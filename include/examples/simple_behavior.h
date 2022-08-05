@@ -18,11 +18,12 @@
 #include <vector>  // std::vector
 #include "kodlab_mjbots_sdk/behavior.h"  // kodlab::Behavior
 #include "examples/simple_robot.h"  // SimpleRobot
+#include "ManyMotorLog.hpp"
 
 /**
  * @brief Simple behavior that commands torques to all joints in a SimpleRobot
  */
-class SimpleBehavior : virtual public kodlab::Behavior<SimpleBehavior, SimpleRobot>
+class SimpleBehavior : virtual public kodlab::Behavior<SimpleBehavior, SimpleRobot, ManyMotorLog>
 {
 
 private:
@@ -63,7 +64,7 @@ public:
    */
   // using Behavior::Behavior;
   SimpleBehavior(std::shared_ptr<SimpleRobot> robot_in, std::string name_in = "")
-      : Behavior<SimpleBehavior, SimpleRobot>(robot_in, name_in) {}
+      : Behavior<SimpleBehavior, SimpleRobot, ManyMotorLog>(robot_in, name_in) {}
 
   /**
    * @brief Initializes the behavior
@@ -190,5 +191,29 @@ public:
     return false;
   }
 
+  /**
+   * @brief PrepareLog implementation
+   * @todo Probably find a way to pass a log function that maybe is written elsewhere?
+   *       don't want to be rewriting this same function for every behavior
+   * @todo Add some sort of default capability that allows the control to log instead?
+   */
+  void PrepareLog() override
+  {
+    for (int servo = 0; servo < robot_->joints.size(); servo++)
+    {
+        log_data_.positions[servo] = robot_->GetJointPositions()[servo];
+        log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
+        //TODO Can't log mjbots_interface, how do we feel about that?
+        log_data_.modes[servo] = 0; // static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
+        log_data_.torques[servo] = robot_->GetJointTorqueCmd()[servo];
+    }
+    for (int servo = robot_->joints.size(); servo < 13; servo++)
+    {
+        log_data_.positions[servo] = 0;
+        log_data_.velocities[servo] = 0;
+        log_data_.modes[servo] = 0;
+        log_data_.torques[servo] = 0;
+    }
+  }
 };
 
