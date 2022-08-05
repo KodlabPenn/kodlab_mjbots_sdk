@@ -9,6 +9,7 @@
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/thread.hpp"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
+#include <any>
 
 namespace kodlab {
 /*!
@@ -56,8 +57,8 @@ class BehaviorLcmSubscriber : public AbstractRealtimeObject {
   void Run() override;
 
   lcm::LCM lcm_;
-  //This will work, but is likely dangerous? Very C, not C++
-  std::map<std::string, std::shared_ptr<void>> NameToDataPtr; // Map between the channel names and the location of their data
+  
+  std::map<std::string, std::any> NameToDataPtr; // Map between the channel names and the location of their data
   std::map<std::string, lcm::Subscription*> NameToSubscriptionPtr; // Map between the channel names and the Subscription*
 };
 
@@ -78,7 +79,6 @@ void BehaviorLcmSubscriber::AddSubscriber(std::string input_channel_name,
   lcm::Subscription* sub_ptr = lcm_.subscribe(input_channel_name, &BehaviorLcmSubscriber::HandleMsg<MessageClass>, this);
   NameToSubscriptionPtr.emplace (input_channel_name,sub_ptr);
   NameToDataPtr.emplace (input_channel_name,behavior_input_data);
-
 }
 
 BehaviorLcmSubscriber::BehaviorLcmSubscriber(int realtime_priority, int cpu)
@@ -96,9 +96,14 @@ void BehaviorLcmSubscriber::HandleMsg(const lcm::ReceiveBuffer *rbuf,
   // Lock mutex
   mutex_.lock();
   // Copy data
-  *static_cast<msg_type*>(NameToDataPtr[chan]) = *msg;
-  // Let user know new message
-  new_message_ = true;
+  try{
+    *(std::any_cast<std::shared_ptr<msg_type>>(NameToDataPtr[chan])) = *msg;
+    // Let user know new message
+    new_message_ = true;
+  }
+  catch(const std::bad_any_cast& e) {
+    std::cout << e.what() << std::endl;
+  }
   // Unlock mutex
   mutex_.unlock();
 }
