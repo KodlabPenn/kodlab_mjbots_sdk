@@ -17,20 +17,50 @@
 #include <utility>
 #include "kodlab_mjbots_sdk/robot_base.h"
 #include "kodlab_mjbots_sdk/log.h"
+#include "VoidLcm.hpp"
+#include "kodlab_mjbots_sdk/lcm_subscriber.h"
+#include "lcm/lcm-cpp.hpp"
 
 namespace kodlab
 {
 
 /**
- * @brief Robot behavior object
- * @tparam Robot[optional] derived `kodlab::RobotBase` class
+ * @brief Abstract Behavior class to be use in a CRTP pattern
+ * 
+ * @details This class allows the use of std::vector<*AbstractBehavior<Robot>>
+ *          Behavior will be a class template that makes classes with a couple 
+ *          different Logging t-params 
+ *           
+ * @note https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern#Polymorphic_copy_construction
+ * 
+ * @tparam Robot derived `kodlab::RobotBase` class
  */
-template<class Robot = kodlab::RobotBase>
-class Behavior
+template<class Robot>
+class AbstractBehavior
 {
   static_assert(std::is_base_of<kodlab::RobotBase, Robot>::value,
                 "Robot must have base kodlab::RobotBase.");
+public:
+  virtual ~AbstractBehavior() = default;
+  
+  virtual void Begin(const AbstractBehavior<Robot> &prev_behavior)=0;
+  virtual void Update()=0;
+  virtual bool Init()=0;
+  virtual void Stop(const AbstractBehavior<Robot> &next_behavior)=0;
+  virtual bool Running() =0;
+  virtual bool ReadyToSwitch(const AbstractBehavior<Robot> &next_behavior)=0;
 
+};
+
+/**
+ * @brief Robot behavior object
+ * @tparam Derived derived Behavior Class
+ * @tparam Robot[Optional] derived `kodlab::RobotBase` class
+ * @tparam LogClass[Optional] A LCMgen Class
+ */
+template<class Derived, class Robot = kodlab::RobotBase>
+class Behavior: public AbstractBehavior<Robot>
+{
 protected:
   /**
    * @brief Robot that this behavior runs on
@@ -76,7 +106,7 @@ public:
    *          occur, e.g., setting up pointers.
    * @return true if initialization successful, false otherwise
    */
-  virtual bool Init() { return true; }
+  virtual bool Init() override { return true; }
 
   /**
    * @brief Begin this behavior for a given robot interface
@@ -87,7 +117,7 @@ public:
    *          functionalities for different prior behaviors.
    * @param prev_behavior previously active behavior
    */
-  virtual void Begin(const Behavior<Robot> &prev_behavior) {}
+  virtual void Begin(const AbstractBehavior<Robot> &prev_behavior) override {}
 
   /**
    * @brief Update this behavior for a given robot interface
@@ -99,7 +129,7 @@ public:
    *          appropriately.
    * @param robot robot interface
    */
-  virtual void Update() = 0;
+  // virtual void Update() = 0;
 
   /**
    * @brief Stop this behavior
@@ -110,7 +140,7 @@ public:
    *          for different on-deck behaviors.
    * @param next_behavior behavior to be transitioned to
    */
-  virtual void Stop(const Behavior<Robot> &next_behavior) {}
+  virtual void Stop(const AbstractBehavior<Robot> &next_behavior) override {}
 
   /**
    * @brief Check for whether the behavior is running
@@ -119,7 +149,7 @@ public:
    *          behavior manager.
    * @return true if this behavior is active, false otherwise
    */
-  virtual bool Running() { return active_; }
+  virtual bool Running() override { return active_; }
 
   /**
    * @brief Check for whether this behavior is prepared to switch to a new
@@ -132,7 +162,7 @@ public:
    * @param next_behavior behavior being transitioned to
    * @return true if behavior is ready to switch, false otherwise
    */
-  virtual bool ReadyToSwitch(const Behavior<Robot> &next_behavior)
+  virtual bool ReadyToSwitch(const AbstractBehavior<Robot> &next_behavior) override
   {
     return true;
   }

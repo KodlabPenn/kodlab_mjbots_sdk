@@ -22,7 +22,7 @@
 /**
  * @brief Simple behavior that commands torques to all joints in a SimpleRobot
  */
-class SimpleBehavior : virtual public kodlab::Behavior<SimpleRobot>
+class SimpleBehavior : virtual public kodlab::Behavior<SimpleBehavior, SimpleRobot>
 {
 
 private:
@@ -61,7 +61,9 @@ public:
   /**
    * @brief Using default Behavior constructor
    */
-  using Behavior::Behavior;
+  // using Behavior::Behavior;
+  SimpleBehavior(std::shared_ptr<SimpleRobot> robot_in, std::string name_in = "")
+      : Behavior<SimpleBehavior, SimpleRobot>(robot_in, name_in) {}
 
   /**
    * @brief Initializes the behavior
@@ -93,7 +95,7 @@ public:
    *          read.
    * @param prev_behavior the previously active behavior
    */
-  void Begin(const kodlab::Behavior<SimpleRobot> &prev_behavior) override
+  void Begin(const kodlab::AbstractBehavior<SimpleRobot> &prev_behavior) override
   {
     // Update internal state
     state_ = RUNNING;
@@ -147,7 +149,7 @@ public:
    *          state is modified to indicate the behavior should stop.
    * @param next_behavior the upcoming behavior
    */
-  void Stop(const kodlab::Behavior<SimpleRobot> &next_behavior) override
+  void Stop(const kodlab::AbstractBehavior<SimpleRobot> &next_behavior) override
   {
     // Indicate that behavior should stop
     state_ = STOPPING;
@@ -173,7 +175,7 @@ public:
    * @param next_behavior the upcoming behavior
    * @return true if behavior is ready to transition, false otherwise
    */
-  bool ReadyToSwitch(const kodlab::Behavior<SimpleRobot> &next_behavior) override
+  bool ReadyToSwitch(const kodlab::AbstractBehavior<SimpleRobot> &next_behavior) override
   {
     // Ready to switch if average velocity is below a threshold
     float avg_velocity =

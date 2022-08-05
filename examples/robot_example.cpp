@@ -11,6 +11,8 @@
  */
 #include <vector>
 #include <iostream>
+#include <memory>
+#include <string>
 #include "kodlab_mjbots_sdk/common_header.h"
 #include "ManyMotorLog.hpp"
 #include "ModeInput.hpp"
@@ -18,11 +20,17 @@
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 
 #include "examples/simple_robot.h"
+#include "examples/simple_behavior.h"
 
 class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog, ModeInput, SimpleRobot>
 {
     using MjbotsControlLoop::MjbotsControlLoop;
+    std::vector<std::shared_ptr<SimpleBehavior>> behaviors;
 
+    void Init() override
+    {
+        behaviors.push_back(std::make_shared<SimpleBehavior>(robot_,"SIMPLE"));
+    }
     void Update() override
     {
         robot_->Update();
