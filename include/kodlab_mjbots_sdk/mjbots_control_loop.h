@@ -86,6 +86,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    * @brief function to be implemented by child. Must set torques in the robot class
    */
   virtual void Update() = 0;
+  virtual void Init() {};
 
   /*!
    * @brief adds data to m_log_data if logging is being used. To be implemented by child class
@@ -219,6 +220,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   mjbots_interface_->Init();
   robot_->Init();
 
+  Init();
   float prev_msg_duration = 0;
 
   // Create spinner to time loop
