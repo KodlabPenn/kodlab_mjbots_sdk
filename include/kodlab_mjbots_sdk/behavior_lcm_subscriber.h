@@ -45,10 +45,10 @@ class BehaviorLcmSubscriber : public AbstractRealtimeObject {
    * 
    * @tparam MessageClass the lcmgen data struct type
    * @param input_channel_name unique channel name
-   * @param behavior_input_data pointer to behavior lcmgen data struct
+   * @param behavior_input_data shared pointer to behavior lcmgen data struct
    */
   template<class MessageClass>
-  void AddSubscriber(std::string input_channel_name, MessageClass* behavior_input_data);
+  void AddSubscriber(std::string input_channel_name, std::shared_ptr<MessageClass> behavior_input_data);
 
   /*!
    * @brief subscribes to the lcm channel using handle message and handles ctrl c detection
@@ -57,7 +57,7 @@ class BehaviorLcmSubscriber : public AbstractRealtimeObject {
 
   lcm::LCM lcm_;
   //This will work, but is likely dangerous? Very C, not C++
-  std::map<std::string, void*> NameToDataPtr; // Map between the channel names and the location of their data
+  std::map<std::string, std::shared_ptr<void>> NameToDataPtr; // Map between the channel names and the location of their data
   std::map<std::string, lcm::Subscription*> NameToSubscriptionPtr; // Map between the channel names and the Subscription*
 };
 
@@ -72,7 +72,7 @@ void BehaviorLcmSubscriber::Run()
 }
 template<class MessageClass>
 void BehaviorLcmSubscriber::AddSubscriber(std::string input_channel_name, 
-                                          MessageClass* behavior_input_data)
+                                          std::shared_ptr<MessageClass> behavior_input_data)
 {
   std::cout << "Subscribing to " << input_channel_name << std::endl;
   lcm::Subscription* sub_ptr = lcm_.subscribe(input_channel_name, &BehaviorLcmSubscriber::HandleMsg<MessageClass>, this);
@@ -96,7 +96,7 @@ void BehaviorLcmSubscriber::HandleMsg(const lcm::ReceiveBuffer *rbuf,
   // Lock mutex
   mutex_.lock();
   // Copy data
-  (msg_type*)NameToDataPtr[chan] = *msg;
+  *static_cast<msg_type*>(NameToDataPtr[chan]) = *msg;
   // Let user know new message
   new_message_ = true;
   // Unlock mutex
