@@ -18,6 +18,7 @@ namespace kodlab {
 class AbstractRealtimeObject {
  public:
   AbstractRealtimeObject();
+  virtual ~AbstractRealtimeObject() {};
 
   AbstractRealtimeObject(int realtime_priority, int cpu);
 
