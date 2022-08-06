@@ -11,6 +11,7 @@
 #include "kodlab_mjbots_sdk/robot_base.h"
 #include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
+#include "kodlab_mjbots_sdk/lcm_message_handler.h"
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/timer.hpp"
 #include "real_time_tools/hard_spinner.hpp"
