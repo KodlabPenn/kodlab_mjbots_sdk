@@ -1,85 +1,149 @@
-// BSD 3-Clause License
-// Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
-// Authors:
-// Shane Rozen-Levy <srozen01@seas.upenn.edu>
+/**
+ * @file lcm_subscriber.h
+ * @author Ethan Musser (emusser@seas.upenn.edu)
+ * @author J. Diego Caporale (jdcap@seas.upenn.edu)
+ * @author Shane Rozen-Levy (srozen01@seas.upenn.edu)
+ * @brief Provides LCM subscriber and message handler objects.
+ * @date 7/7/22
+ *
+ * @copyright Copyright 2022 The Trustees of the University of Pennsylvania. All
+ * rights reserved. BSD 3-Clause License
+ *
+ */
 
 #pragma once
+
+#include <map>
 #include <string>
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/thread.hpp"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 
-namespace kodlab {
-/*!
- * @brief An template class for an lcm subscriber. Subscribes to just one msg of type msg_type.
- * @tparam MessageClass the lcm msg type
+namespace kodlab
+{
+
+/**
+ * @brief Handler class for incoming LCM messages.
+ * @tparam Message LCM message type
  */
-template<class MessageClass>
-class LcmSubscriber : public AbstractRealtimeObject {
- public:
-  /*!
-   * @brief constructor for lcm subscriber
-   * @param realtime_priority the realtime priority, max is 99
-   * @param cpu the cpu for this process
-   * @param channel_name the string for the channel name
+template<class Message>
+struct LcmMessageHandler
+{
+  /**
+   * @brief Flag indicating that a new message is available.
    */
-  LcmSubscriber(int realtime_priority, int cpu, std::string channel_name);
+  bool new_message = false;
 
-  std::mutex mutex_;         /// Mutex for if m_data
-  bool new_message_ =
-      false; /// True if there is new data, false if data is old, used to prevent user for checking too often
-  MessageClass data_;            /// A copy of the most recent lcm data
- protected:
-  /*!
-   * @brief callback function when msg is received. Copies the message to m_data
-   * @param rbuf unknown, but not used
-   * @param chan channel name
-   * @param msg ptr to the incoming message data
+  /**
+   * @brief Data for the most-recently received message.
    */
-  void HandleMsg(const lcm::ReceiveBuffer *rbuf,
-                 const std::string &chan,
-                 const MessageClass *msg);
+  Message data;
 
-  /*!
-   * @brief subscribes to the lcm channel using handle message and handles ctrl c detection
+  /**
+   * @brief Mutex for the message handler.
    */
-  void Run() override;
+  std::mutex mutex_;
 
-  std::string channel_name_;
-  lcm::LCM lcm_;
+  /**
+   * @brief Constructs an `LcmMessageHandler` and ensures the mutex is unlocked.
+   */
+  LcmMessageHandler()
+  {
+    mutex_.unlock();  // ensures mutex is unlocked
+  }
+
+  /**
+   * @brief Callback function for when an LCM message is received.
+   * @details This function serves as a callback for incoming LCM messages on
+   * `channel`.  It copies the decoded message data to `data`, and sets
+   * `new_message` to `true`.
+   * @param rbuf LCM recieve buffer containing raw bytes and timestamp
+   * @param channel channel name
+   * @param msg pointer to the incoming message data
+   */
+  void HandleMessage(const lcm::ReceiveBuffer *rbuf,
+                     const std::string &channel,
+                     const Message *msg)
+  {
+    mutex_.lock();
+    data = *msg;
+    new_message = true;
+    mutex_.unlock();
+  }
 };
 
-/************************************Implementation********************************************************************/
-template<class msg_type>
-void LcmSubscriber<msg_type>::Run() {
-  lcm_.subscribe(channel_name_, &LcmSubscriber::HandleMsg, this);
-  mutex_.unlock(); // Ensures mutex is unlocked
-  std::cout << "Subscribing to " << channel_name_ << std::endl;
-  while (!CTRL_C_DETECTED) {
-    lcm_.handleTimeout(1000);
-  }
-}
+/**
+ * @brief LCM subscriber capable of subscribing to multiple channels
+ * @todo Implement subscription removal (i.e., unsubscribing)
+ */
+class LcmSubscriber : public AbstractRealtimeObject
+{
+public:
 
-template<class msg_type>
-LcmSubscriber<msg_type>::LcmSubscriber(int realtime_priority, int cpu, std::string channel_name):
-    channel_name_(channel_name) {
-  cpu_ = cpu;
-  realtime_priority_ = realtime_priority;
-  if (!channel_name_.empty())
+  /*!
+   * @brief Constructor an lcm subscriber
+   * @param realtime_priority realtime priority in range [1, 99]
+   * @param cpu cpu for this process
+   */
+  LcmSubscriber(int realtime_priority, int cpu)
+  {
+    cpu_ = cpu;
+    realtime_priority_ = realtime_priority;
     Start();
-}
+  }
 
-template<class msg_type>
-void LcmSubscriber<msg_type>::HandleMsg(const lcm::ReceiveBuffer *rbuf,
-                                        const std::string &chan,
-                                        const msg_type *msg) {
-  // Lock mutex
-  mutex_.lock();
-  // Copy data
-  data_ = *msg;
-  // Let user know new message
-  new_message_ = true;
-  // Unlock mutex
-  mutex_.unlock();
-}
-} // namespace kodlab
+  /**
+   * @brief Add a new LCM channel to the the LCM object's subscriptions
+   * @tparam Message LCM message type for channel
+   * @param channel_name channel name
+   * @param handler `LcmMessageHandler`-inherited message handler object
+   * @return generated `lcm::Subscription` object
+   */
+  template<class Message>
+  lcm::Subscription *AddSubscription(std::string channel_name,
+                                     LcmMessageHandler<Message> &handler)
+  {
+    auto sub = lcm_.subscribe(channel_name,
+                              &LcmMessageHandler<Message>::HandleMessage,
+                              &handler);
+    subs_.emplace(channel_name, sub);
+    return sub;
+  }
+
+  /**
+   * @brief Accessor for `lcm::Subscription` objects
+   * @param channel_name channel name
+   * @return `lcm::Subscription` object on corresponding channel
+   */
+  [[nodiscard]] const lcm::Subscription *get_subscription(const std::string &channel_name) const
+  {
+    return subs_.at(channel_name);
+  }
+
+protected:
+
+  /**
+   * @brief LCM object
+   */
+  lcm::LCM lcm_;
+
+  /**
+   * @brief Map of channel names to corresponding `lcm::Subscription` objects
+   */
+  std::map<std::string, lcm::Subscription *> subs_;
+
+  /**
+   * @brief Waits for LCM messages and exits when ctrl+c detected
+   */
+  void Run() override
+  {
+    while (!CTRL_C_DETECTED)
+    {
+      lcm_.handleTimeout(1000);
+    }
+  }
+
+};
+
+} // kodlab
+
