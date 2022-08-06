@@ -26,6 +26,9 @@ namespace kodlab {
 
 /**
  * @brief LCM subscriber capable of subscribing to multiple channels
+ * @warning Running multiple `LcmSubscriber` objects on a single CPU can result
+ * in concurrency issues.  The authors do not endorse this usage, do so at your
+ * own risk.
  * @todo Implement subscription removal (i.e., unsubscribing)
  */
 class LcmSubscriber : public AbstractRealtimeObject {
