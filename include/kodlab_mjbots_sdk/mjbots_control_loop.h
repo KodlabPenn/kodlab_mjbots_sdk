@@ -125,8 +125,9 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   void SafeProcessInput();
 
   /*!
-   * @brief virtual class to be implemented when logging. Process data in m_lcm_sub.m_data; This function is threadsafe
-   * and won't run if the LCM thread holds the mutex
+   * @brief virtual class to be implemented when logging. Process data in
+   * `input_sub_.data`; This function is threadsafe and won't run if the LCM
+   * thread holds the mutex
    */
   virtual void ProcessInput() {};
 
@@ -147,7 +148,8 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   std::string logging_channel_name_;      /// Channel name to publish logs to, leave empty if not publishing
   lcm::LCM lcm_;                          /// LCM object
   LogClass log_data_;                     /// object containing log data
-  LcmSubscriber<InputClass> lcm_sub_;     /// LCM subscriber object
+  LcmSubscriber lcm_sub_;                 /// LCM subscriber object
+  LcmMessageHandler<InputClass> input_sub_;    /// LCM input subscription
   float time_now_ = 0;                    /// Time since start in micro seconds
 };
 
@@ -160,8 +162,10 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
   : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
-    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) 
+    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu)
 {
+  lcm_sub_.AddSubscription<input_type>(options.input_channel_name, input_sub_);
+
   robot_ = std::make_shared<robot_type>(  joint_ptrs,
                                           options.soft_start_duration,
                                           options.max_torque);
@@ -177,7 +181,10 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shared_ptr<robot_type>robot_in, const ControlLoopOptions &options)
   : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
-    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) {
+    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu)
+{
+  lcm_sub_.AddSubscription<input_type>(options.input_channel_name, input_sub_);
+
   // Create robot object
   robot_ = robot_in;
   mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(robot_->joints,
@@ -310,14 +317,14 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::SafeProcessInput() {
   // Check to make sure using input
   if (input_) {
     // Try to unlock mutex, if you can't don't worry and try next time
-    if (lcm_sub_.mutex_.try_lock()) {
+    if (input_sub_.mutex_.try_lock()) {
       // If new message process
-      if (lcm_sub_.new_message_) {
+      if (input_sub_.new_message) {
         ProcessInput();
       }
       // Set new message to false and unlock mutex
-      lcm_sub_.new_message_ = false;
-      lcm_sub_.mutex_.unlock();
+      input_sub_.new_message = false;
+      input_sub_.mutex_.unlock();
     }
   }
 }
