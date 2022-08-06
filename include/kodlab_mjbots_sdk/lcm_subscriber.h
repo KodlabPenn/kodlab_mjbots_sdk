@@ -22,28 +22,21 @@
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 #include "kodlab_mjbots_sdk/lcm_message_handler.h"
 
-namespace kodlab
-{
+namespace kodlab {
 
 /**
  * @brief LCM subscriber capable of subscribing to multiple channels
  * @todo Implement subscription removal (i.e., unsubscribing)
  */
-class LcmSubscriber : public AbstractRealtimeObject
-{
-public:
+class LcmSubscriber : public AbstractRealtimeObject {
+ public:
 
   /*!
    * @brief Constructor an lcm subscriber
    * @param realtime_priority realtime priority in range [1, 99]
    * @param cpu cpu for this process
    */
-  LcmSubscriber(int realtime_priority, int cpu)
-  {
-    cpu_ = cpu;
-    realtime_priority_ = realtime_priority;
-    Start();
-  }
+  LcmSubscriber(int realtime_priority, int cpu);
 
   /**
    * @brief Add a new LCM channel to the the LCM object's subscriptions
@@ -54,8 +47,7 @@ public:
    */
   template<class Message>
   lcm::Subscription *AddSubscription(std::string channel_name,
-                                     LcmMessageHandler<Message> &handler)
-  {
+                                     LcmMessageHandler<Message> &handler) {
     auto sub = lcm_.subscribe(channel_name,
                               &LcmMessageHandler<Message>::HandleMessage,
                               &handler);
@@ -68,12 +60,9 @@ public:
    * @param channel_name channel name
    * @return `lcm::Subscription` object on corresponding channel
    */
-  [[nodiscard]] const lcm::Subscription *get_subscription(const std::string &channel_name) const
-  {
-    return subs_.at(channel_name);
-  }
+  [[nodiscard]] const lcm::Subscription *get_subscription(const std::string &channel_name) const;
 
-protected:
+ protected:
 
   /**
    * @brief LCM object
@@ -88,13 +77,7 @@ protected:
   /**
    * @brief Waits for LCM messages and exits when ctrl+c detected
    */
-  void Run() override
-  {
-    while (!CTRL_C_DETECTED)
-    {
-      lcm_.handleTimeout(1000);
-    }
-  }
+  void Run() override;
 
 };
 
