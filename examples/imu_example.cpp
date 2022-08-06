@@ -125,8 +125,7 @@ int main(int argc, char **argv)
   options.imu_world_offset_deg.yaw = 0;
 
   // Create Control Loop
-  using kodlab::examples::AttitudeExample;
-  AttitudeExample control_loop(joints, options);
+  kodlab::examples::AttitudeExample control_loop(joints, options);
 
   // Starts the Loop, Then Joins It
   control_loop.Start();

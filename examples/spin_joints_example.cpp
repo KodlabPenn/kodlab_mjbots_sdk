@@ -66,8 +66,7 @@ int main(int argc, char **argv) {
 
   // Create control loop
   LOG_INFO("Constructing Spin_Joint with %zu joints.", joints.size());
-  using kodlab::examples::Spin_Joint;
-  Spin_Joint control_loop(std::move(joints), options);
+  kodlab::examples::Spin_Joint control_loop(std::move(joints), options);
   // Starts the loop, and then join it
   control_loop.Start();
   control_loop.Join();

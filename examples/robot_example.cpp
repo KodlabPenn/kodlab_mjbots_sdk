@@ -82,8 +82,7 @@ int main(int argc, char **argv)
 
     // Create control loop
     // Starts the loop, and then join it
-    using kodlab::examples::SimpleRobotControlLoop;
-    SimpleRobotControlLoop simple_robot(joints, options);
+    kodlab::examples::SimpleRobotControlLoop simple_robot(joints, options);
     simple_robot.Start();
     simple_robot.Join();
 }

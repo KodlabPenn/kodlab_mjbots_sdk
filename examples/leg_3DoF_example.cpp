@@ -80,8 +80,7 @@ int main(int argc, char **argv) {
   options.parallelize_control_loop = true; 
 
   // Create control loop
-  using kodlab::examples::Joints3DoF;
-  Joints3DoF control_loop(std::move(joints), options);
+  kodlab::examples::Joints3DoF control_loop(std::move(joints), options);
 
   // Starts the loop, and then join it
   control_loop.Start();
