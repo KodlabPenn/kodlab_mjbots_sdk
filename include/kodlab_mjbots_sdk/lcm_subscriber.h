@@ -62,7 +62,7 @@ class LcmSubscriber : public AbstractRealtimeObject {
    */
   [[nodiscard]] const lcm::Subscription *get_subscription(const std::string &channel_name) const;
 
- protected:
+ private:
 
   /**
    * @brief LCM object
