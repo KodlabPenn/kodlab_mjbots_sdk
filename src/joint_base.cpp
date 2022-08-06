@@ -11,6 +11,9 @@
 #include <iostream>
 #include "kodlab_mjbots_sdk/joint_base.h"
 
+namespace kodlab
+{
+
 JointBase::JointBase(std::string name,
                      int direction,
                      float zero_offset,
@@ -69,4 +72,4 @@ void JointBase::UpdateState(float servo_pos, float servo_vel){
     velocity_= direction_ * servo_vel / gear_ratio_ ;
 }
 
-
+} // kodlab
