@@ -85,19 +85,20 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
   }
 
   void PrepareLog() override {
+    // Populate log message with data from current control loop cycle
     for (int servo = 0; servo < 2; servo++) {
-      log_data_.positions[servo] = robot_->GetJointPositions()[servo];
-      log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
-      log_data_.modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
-      log_data_.torque_cmd[servo] = robot_->GetJointTorqueCmd()[servo];
+      log_data_->positions[servo] = robot_->GetJointPositions()[servo];
+      log_data_->velocities[servo] = robot_->GetJointVelocities()[servo];
+      log_data_->modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
+      log_data_->torque_cmd[servo] = robot_->GetJointTorqueCmd()[servo];
     }
-    log_data_.limb_position[0] = z_ - z0_;
-    log_data_.limb_position[1] = x_;
-    log_data_.limb_vel[0] = d_z_;
-    log_data_.limb_vel[1] = d_x_;
-    log_data_.limb_wrench[0] = f_z_;
-    log_data_.limb_wrench[1] = f_x_;
-    log_data_.hybrid_mode = mode_;
+    log_data_->limb_position[0] = z_ - z0_;
+    log_data_->limb_position[1] = x_;
+    log_data_->limb_vel[0] = d_z_;
+    log_data_->limb_vel[1] = d_x_;
+    log_data_->limb_wrench[0] = f_z_;
+    log_data_->limb_wrench[1] = f_x_;
+    log_data_->hybrid_mode = mode_;
   }
 
   void ProcessInput() override {
