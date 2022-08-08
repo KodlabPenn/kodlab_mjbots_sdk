@@ -149,7 +149,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   std::string logging_channel_name_;      /// Channel name to publish logs to, leave empty if not publishing
   lcm::LCM lcm_;                          /// LCM object
   LogClass log_data_;                     /// object containing log data
-  LcmSubscriber lcm_sub_;                 /// LCM subscriber object
+  std::shared_ptr<LcmSubscriber> lcm_sub_;     /// LCM subscriber object
   LcmMessageHandler<InputClass> input_sub_;    /// LCM input subscription
   float time_now_ = 0;                    /// Time since start in micro seconds
 };
@@ -163,9 +163,9 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
   : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
-    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu)
+    lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu))
 {
-  lcm_sub_.AddSubscription<input_type>(options.input_channel_name, input_sub_);
+  lcm_sub_->AddSubscription<input_type>(options.input_channel_name, input_sub_);
 
   robot_ = std::make_shared<robot_type>(  joint_ptrs,
                                           options.soft_start_duration,
@@ -182,9 +182,9 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shared_ptr<robot_type>robot_in, const ControlLoopOptions &options)
   : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
-    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu)
+    lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu))
 {
-  lcm_sub_.AddSubscription<input_type>(options.input_channel_name, input_sub_);
+  lcm_sub_->AddSubscription<input_type>(options.input_channel_name, input_sub_);
 
   // Create robot object
   robot_ = robot_in;
@@ -309,7 +309,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   // try to Shutdown, but fail
   mjbots_interface_->Shutdown();
   if (input_) {
-    lcm_sub_.Join();
+    lcm_sub_->Join();
   }
 }
 
