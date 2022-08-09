@@ -21,6 +21,7 @@
 #include "real_time_tools/thread.hpp"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 #include "kodlab_mjbots_sdk/lcm_message_handler.h"
+#include "kodlab_mjbots_sdk/log.h"
 
 namespace kodlab {
 
@@ -66,14 +67,18 @@ class LcmSubscriber : public AbstractRealtimeObject {
 
   /**
    * @brief Remove a subscription by channel name
+   * @note Warns and continues if channel does not exist.
    * @param channel_name channel name of subscription to be removed
+   * @return 0 if unsubscribe successful, -1 if `channel_name` is not a valid
+   * subscription
    */
-  void RemoveSubscription(const std::string& channel_name);
+  int RemoveSubscription(const std::string &channel_name);
 
   /**
    * @brief Accessor for `lcm::Subscription` objects
    * @param channel_name channel name
-   * @return `lcm::Subscription` object on corresponding channel
+   * @return `lcm::Subscription` object on corresponding channel if subscription
+   * exists, `nullptr` otherwise
    */
   [[nodiscard]] const lcm::Subscription *get_subscription(const std::string &channel_name) const;
 
@@ -110,13 +115,27 @@ void LcmSubscriber::Init() {
   Start();
 }
 
-void LcmSubscriber::RemoveSubscription(const std::string& channel_name) {
-  lcm_.unsubscribe(subs_[channel_name]);
-  subs_.erase(subs_.find(channel_name));
+int LcmSubscriber::RemoveSubscription(const std::string &channel_name) {
+  auto it = subs_.find(channel_name);
+  if (it != subs_.end()) {
+    int success = lcm_.unsubscribe(subs_[channel_name]);
+    subs_.erase(it);
+    return success;
+  } else {
+    LOG_WARN("Channel \"%s\" is not in subscription list.",
+             channel_name.c_str());
+  }
+  return -1;
 }
 
 [[nodiscard]] const lcm::Subscription *LcmSubscriber::get_subscription(const std::string &channel_name) const {
-  return subs_.at(channel_name);
+  if (subs_.count(channel_name) == 1) {
+    return subs_.at(channel_name);
+  } else {
+    LOG_ERROR("Channel \"%s\" is not in subscription list.",
+             channel_name.c_str());
+    return nullptr;
+  }
 }
 
 void LcmSubscriber::Run() {
