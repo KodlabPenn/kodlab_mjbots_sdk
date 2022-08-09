@@ -241,6 +241,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
 
   mjbots_interface_->Init();
   robot_->Init();
+  lcm_sub_->Init();
   Init();
 
   float prev_msg_duration = 0;

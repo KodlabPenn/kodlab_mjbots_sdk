@@ -43,6 +43,11 @@ class LcmSubscriber : public AbstractRealtimeObject {
   LcmSubscriber(int realtime_priority, int cpu);
 
   /**
+   * @brief Initialize the LCM subscriber thread.
+   */
+  void Init();
+
+  /**
    * @brief Add a new LCM channel to the the LCM object's subscriptions
    * @tparam Message LCM message type for channel
    * @param channel_name channel name
@@ -99,7 +104,10 @@ class LcmSubscriber : public AbstractRealtimeObject {
 LcmSubscriber::LcmSubscriber(int realtime_priority, int cpu) {
   cpu_ = cpu;
   realtime_priority_ = realtime_priority;
-  Start();  // FIXME: Call outside constructor
+}
+
+void LcmSubscriber::Init() {
+  Start();
 }
 
 void LcmSubscriber::RemoveSubscription(const std::string& channel_name) {
