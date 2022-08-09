@@ -29,7 +29,6 @@ namespace kodlab {
  * @warning Running multiple `LcmSubscriber` objects on a single CPU can result
  * in concurrency issues.  The authors do not endorse this usage, do so at your
  * own risk.
- * @todo Implement subscription removal (i.e., unsubscribing)
  * @todo Move implementation to source file once `CTRL_C_DETECTED` global
  *       variable made available to TU.
  */
@@ -59,6 +58,12 @@ class LcmSubscriber : public AbstractRealtimeObject {
     subs_.emplace(channel_name, sub);
     return sub;
   }
+
+  /**
+   * @brief Remove a subscription by channel name
+   * @param channel_name channel name of subscription to be removed
+   */
+  void RemoveSubscription(const std::string& channel_name);
 
   /**
    * @brief Accessor for `lcm::Subscription` objects
@@ -95,6 +100,11 @@ LcmSubscriber::LcmSubscriber(int realtime_priority, int cpu) {
   cpu_ = cpu;
   realtime_priority_ = realtime_priority;
   Start();  // FIXME: Call outside constructor
+}
+
+void LcmSubscriber::RemoveSubscription(const std::string& channel_name) {
+  lcm_.unsubscribe(subs_[channel_name]);
+  subs_.erase(subs_.find(channel_name));
 }
 
 [[nodiscard]] const lcm::Subscription *LcmSubscriber::get_subscription(const std::string &channel_name) const {
