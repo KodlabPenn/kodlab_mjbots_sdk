@@ -39,7 +39,7 @@ class LcmMessageHandler {
     mutex_.unlock();  // ensures mutex is unlocked
   }
 
-  /**struct
+  /**
    * @brief Virtual destructor for clean inherited class destruction
    */
   virtual ~LcmMessageHandler() = default;
@@ -66,12 +66,12 @@ class LcmMessageHandler {
    * @brief Retrieve new data, if available.
    * @details Retrieve a `std::optional` object containing new data if the
    * internal `new_message_` flag evaluates to `true`, or `std::nullopt_t`
-   * otherwise. If new data is retireved, the new message flag is reset to
+   * otherwise. If new data is retrieved, the new message flag is reset to
    * `false`.
-   * @return std::optional containing message data if new message available,
-   * std::nullopt_t otherwise
+   * @return `std::optional` containing message data if new message available,
+   * `std::nullopt_t` otherwise
    */
-  std::optional<Message> GetNewData() {
+  std::optional<Message> GetDataIfNew() {
     if (new_message_ && mutex_.try_lock()) {
       Message data_out = data_;
       new_message_ = false;
@@ -83,7 +83,7 @@ class LcmMessageHandler {
 
   /**
    * @brief Check if new message is available.
-     * @return `true` if new message available, `false` otherwise
+   * @return `true` if new message available, `false` otherwise
    */
   [[nodiscard]] bool is_new_message() const { return new_message_; }
 

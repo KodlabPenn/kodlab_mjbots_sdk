@@ -320,7 +320,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::SafeProcessInput() {
   // Check to make sure using input
   if (input_) {
     // Retrieve new data if available, std::nullopt_t otherwise
-    auto data_in = input_sub_.GetNewData();
+    auto data_in = input_sub_.GetDataIfNew();
     // If new data is present, pass as input
     if (data_in) {
       // Pass new data as input
