@@ -11,6 +11,7 @@
 #include "kodlab_mjbots_sdk/robot_base.h"
 #include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
+#include "kodlab_mjbots_sdk/lcm_message_handler.h"
 #include "kodlab_mjbots_sdk/lcm_publisher.h"
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/timer.hpp"
@@ -126,10 +127,12 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   void SafeProcessInput();
 
   /*!
-   * @brief virtual class to be implemented when logging. Process data in m_lcm_sub.m_data; This function is threadsafe
-   * and won't run if the LCM thread holds the mutex
+   * @brief virtual method to be implemented when logging. Process data in
+   * `input_sub_.data`; This function is threadsafe and won't run if the LCM
+   * thread holds the mutex
+   * @param input_data input data to be processed
    */
-  virtual void ProcessInput() {};
+  virtual void ProcessInput(const InputClass &input_data) {};
 
   /*!
    * @brief Construct a new Setup Options object
@@ -149,7 +152,8 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   std::shared_ptr<lcm::LCM> lcm_;         /// LCM object shared pointer
   LcmPublisher<LogClass> log_pub_;        /// log LCM publisher
   std::shared_ptr<LogClass> log_data_;    /// LCM log message data shared pointer
-  LcmSubscriber<InputClass> lcm_sub_;     /// LCM subscriber object
+  std::shared_ptr<LcmSubscriber> lcm_sub_;     /// LCM subscriber object
+  LcmMessageHandler<InputClass> input_sub_;    /// LCM input subscription
   float time_now_ = 0;                    /// Time since start in micro seconds
 };
 
@@ -165,8 +169,10 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
     lcm_(std::make_shared<lcm::LCM>()),
     log_pub_(lcm_, options.log_channel_name),
     log_data_(log_pub_.get_message_shared_ptr()),
-    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) 
+    lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu))
 {
+  lcm_sub_->AddSubscription<input_type>(options.input_channel_name, input_sub_);
+
   robot_ = std::make_shared<robot_type>(  joint_ptrs,
                                           options.soft_start_duration,
                                           options.max_torque);
@@ -185,7 +191,7 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
     lcm_(std::make_shared<lcm::LCM>()),
     log_pub_(lcm_, options.log_channel_name),
     log_data_(log_pub_.get_message_shared_ptr()),
-    lcm_sub_(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu, options.input_channel_name) {
+    lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu)) {
   // Create robot object
   robot_ = robot_in;
   mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(robot_->joints,
@@ -240,6 +246,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
 
   mjbots_interface_->Init();
   robot_->Init();
+  lcm_sub_->Init();
   Init();
 
   float prev_msg_duration = 0;
@@ -309,7 +316,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   // try to Shutdown, but fail
   mjbots_interface_->Shutdown();
   if (input_) {
-    lcm_sub_.Join();
+    lcm_sub_->Join();
   }
 }
 
@@ -317,15 +324,12 @@ template<class log_type, class input_type, class robot_type>
 void MjbotsControlLoop<log_type, input_type, robot_type>::SafeProcessInput() {
   // Check to make sure using input
   if (input_) {
-    // Try to unlock mutex, if you can't don't worry and try next time
-    if (lcm_sub_.mutex_.try_lock()) {
-      // If new message process
-      if (lcm_sub_.new_message_) {
-        ProcessInput();
-      }
-      // Set new message to false and unlock mutex
-      lcm_sub_.new_message_ = false;
-      lcm_sub_.mutex_.unlock();
+    // Retrieve new data if available, std::nullopt_t otherwise
+    auto data_in = input_sub_.GetDataIfNew();
+    // If new data is present, pass as input
+    if (data_in) {
+      // Pass new data as input
+      ProcessInput(data_in.value());
     }
   }
 }
