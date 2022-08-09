@@ -45,7 +45,7 @@ class LcmPublisher {
    * @param channel channel name for publishing
    */
   LcmPublisher(std::shared_ptr<lcm::LCM> lcm, const std::string &channel)
-      : lcm_(lcm), channel_(channel), message_(std::make_shared<Message>()) {}
+      : lcm_(lcm), channel_(channel) {}
 
   /**
    * @brief Construct an LCM publisher object with an owned LCM object.
@@ -132,7 +132,7 @@ class LcmPublisher {
   /**
    * @brief Internal message that is published on calls to `Publish`.
    */
-  std::shared_ptr<Message> message_;
+  std::shared_ptr<Message> message_ = std::make_shared<Message>();
 
 };
 
