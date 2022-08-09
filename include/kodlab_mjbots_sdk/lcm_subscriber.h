@@ -30,6 +30,8 @@ namespace kodlab {
  * in concurrency issues.  The authors do not endorse this usage, do so at your
  * own risk.
  * @todo Implement subscription removal (i.e., unsubscribing)
+ * @todo Move implementation to source file once `CTRL_C_DETECTED` global
+ *       variable made available to TU.
  */
 class LcmSubscriber : public AbstractRealtimeObject {
  public:
@@ -83,6 +85,27 @@ class LcmSubscriber : public AbstractRealtimeObject {
   void Run() override;
 
 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Implementation                                                             //
+////////////////////////////////////////////////////////////////////////////////
+
+LcmSubscriber::LcmSubscriber(int realtime_priority, int cpu) {
+  cpu_ = cpu;
+  realtime_priority_ = realtime_priority;
+  Start();  // FIXME: Call outside constructor
+}
+
+[[nodiscard]] const lcm::Subscription *LcmSubscriber::get_subscription(const std::string &channel_name) const {
+  return subs_.at(channel_name);
+}
+
+void LcmSubscriber::Run() {
+  while (!CTRL_C_DETECTED) {
+    lcm_.handleTimeout(1000);
+  }
+}
 
 } // kodlab
 
