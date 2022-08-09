@@ -126,11 +126,12 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   void SafeProcessInput();
 
   /*!
-   * @brief virtual class to be implemented when logging. Process data in
+   * @brief virtual method to be implemented when logging. Process data in
    * `input_sub_.data`; This function is threadsafe and won't run if the LCM
    * thread holds the mutex
+   * @param input_data input data to be processed
    */
-  virtual void ProcessInput() {};
+  virtual void ProcessInput(const InputClass &input_data) {};
 
   /*!
    * @brief Construct a new Setup Options object
@@ -317,15 +318,12 @@ template<class log_type, class input_type, class robot_type>
 void MjbotsControlLoop<log_type, input_type, robot_type>::SafeProcessInput() {
   // Check to make sure using input
   if (input_) {
-    // Try to unlock mutex, if you can't don't worry and try next time
-    if (input_sub_.mutex_.try_lock()) {
-      // If new message process
-      if (input_sub_.new_message) {
-        ProcessInput();
-      }
-      // Set new message to false and unlock mutex
-      input_sub_.new_message = false;
-      input_sub_.mutex_.unlock();
+    // Retrieve new data if available, std::nullopt_t otherwise
+    auto data_in = input_sub_.GetNewData();
+    // If new data is present, pass as input
+    if (data_in) {
+      // Pass new data as input
+      ProcessInput(data_in.value());
     }
   }
 }

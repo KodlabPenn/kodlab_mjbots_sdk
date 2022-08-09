@@ -14,6 +14,7 @@
 
 #include <string>
 #include <mutex>
+#include <optional>
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/thread.hpp"
 
@@ -28,28 +29,20 @@ namespace kodlab {
  * @tparam Message LCM message type
  */
 template<class Message>
-struct LcmMessageHandler {
-  /**
-   * @brief Flag indicating that a new message is available.
-   */
-  bool new_message = false;
+class LcmMessageHandler {
 
-  /**
-   * @brief Data for the most-recently received message.
-   */
-  Message data;
-
-  /**
-   * @brief Mutex for the message handler.
-   */
-  std::mutex mutex_;
-
+ public:
   /**
    * @brief Constructs an `LcmMessageHandler` and ensures the mutex is unlocked.
    */
   LcmMessageHandler() {
     mutex_.unlock();  // ensures mutex is unlocked
   }
+
+  /**struct
+   * @brief Virtual destructor for clean inherited class destruction
+   */
+  virtual ~LcmMessageHandler() = default;
 
   /**
    * @brief Callback function for when an LCM message is received.
@@ -64,10 +57,52 @@ struct LcmMessageHandler {
                      const std::string &channel,
                      const Message *msg) {
     mutex_.lock();
-    data = *msg;
-    new_message = true;
+    data_ = *msg;
+    new_message_ = true;
     mutex_.unlock();
   }
+
+  /**
+   * @brief Retrieve new data, if available.
+   * @details Retrieve a `std::optional` object containing new data if the
+   * internal `new_message_` flag evaluates to `true`, or `std::nullopt_t`
+   * otherwise. If new data is retireved, the new message flag is reset to
+   * `false`.
+   * @return std::optional containing message data if new message available,
+   * std::nullopt_t otherwise
+   */
+  std::optional<Message> GetNewData() {
+    if (new_message_ && mutex_.try_lock()) {
+      Message data_out = data_;
+      new_message_ = false;
+      mutex_.unlock();
+      return data_out;
+    }
+    return {};
+  }
+
+  /**
+   * @brief Check if new message is available.
+     * @return `true` if new message available, `false` otherwise
+   */
+  [[nodiscard]] bool is_new_message() const { return new_message_; }
+
+ private:
+
+  /**
+   * @brief Flag indicating that a new message is available.
+   */
+  bool new_message_ = false;
+
+  /**
+   * @brief Data for the most-recently received message.
+   */
+  Message data_;
+
+  /**
+   * @brief Mutex for the message handler.
+   */
+  std::mutex mutex_;
 
 };
 

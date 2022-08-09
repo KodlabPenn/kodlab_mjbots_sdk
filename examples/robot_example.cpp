@@ -45,9 +45,9 @@ class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMoto
         }
     }
 
-    void ProcessInput() override
+    void ProcessInput(const ModeInput &input_data) override
     {
-        robot_->mode = input_sub_.data.mode;
+        robot_->mode = input_data.mode;
         std::cout << "Switching to behavior " << robot_->mode << std::endl;
         // If the kill robot mode is detected kill robot using CTRL_C flag handler.
         if (robot_->mode == robot_->KILL_ROBOT)

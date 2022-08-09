@@ -100,14 +100,14 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
     log_data_.hybrid_mode = mode_;
   }
 
-  void ProcessInput() override {
-    kv_ = input_sub_.data.kv;
-    k_ = input_sub_.data.k;
-    k_stiff_ = input_sub_.data.k_stiff;
-    b_ = input_sub_.data.b;
-    b_stiff_ = input_sub_.data.b_stiff;
-    kp_ = input_sub_.data.kp;
-    kd_ = input_sub_.data.kd;
+  void ProcessInput(const LegGains &input_data) override {
+    kv_ = input_data.kv;
+    k_ = input_data.k;
+    k_stiff_ = input_data.k_stiff;
+    b_ = input_data.b;
+    b_stiff_ = input_data.b_stiff;
+    kp_ = input_data.kp;
+    kd_ = input_data.kd;
     LOG_INFO(
         "Response received: { kv = % 5.2f, k = % 5.2f, k_stiff = % 5.2f, "
         "b = % 5.2f, b_stiff = % 5.2f, kp = % 5.2f, kd = % 5.2f }",
