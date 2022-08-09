@@ -12,6 +12,7 @@
 #include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "kodlab_mjbots_sdk/lcm_message_handler.h"
+#include "kodlab_mjbots_sdk/lcm_publisher.h"
 #include "lcm/lcm-cpp.hpp"
 #include "real_time_tools/timer.hpp"
 #include "real_time_tools/hard_spinner.hpp"
@@ -148,8 +149,9 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   bool logging_ = false;                  /// Boolean to determine if logging is in use
   bool input_ = false;                    /// Boolean to determine if input is in use
   std::string logging_channel_name_;      /// Channel name to publish logs to, leave empty if not publishing
-  lcm::LCM lcm_;                          /// LCM object
-  LogClass log_data_;                     /// object containing log data
+  std::shared_ptr<lcm::LCM> lcm_;         /// LCM object shared pointer
+  LcmPublisher<LogClass> log_pub_;        /// log LCM publisher
+  std::shared_ptr<LogClass> log_data_;    /// LCM log message data shared pointer
   std::shared_ptr<LcmSubscriber> lcm_sub_;     /// LCM subscriber object
   LcmMessageHandler<InputClass> input_sub_;    /// LCM input subscription
   float time_now_ = 0;                    /// Time since start in micro seconds
@@ -164,6 +166,9 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
   : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
+    lcm_(std::make_shared<lcm::LCM>()),
+    log_pub_(lcm_, options.log_channel_name),
+    log_data_(log_pub_.get_message_shared_ptr()),
     lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu))
 {
   lcm_sub_->AddSubscription<input_type>(options.input_channel_name, input_sub_);
@@ -183,10 +188,10 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shared_ptr<robot_type>robot_in, const ControlLoopOptions &options)
   : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
-    lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu))
-{
-  lcm_sub_->AddSubscription<input_type>(options.input_channel_name, input_sub_);
-
+    lcm_(std::make_shared<lcm::LCM>()),
+    log_pub_(lcm_, options.log_channel_name),
+    log_data_(log_pub_.get_message_shared_ptr()),
+    lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu)) {
   // Create robot object
   robot_ = robot_in;
   mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(robot_->joints,
@@ -223,16 +228,16 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::SetupOptions(const Con
 template<class log_type, class input_type, class robot_type>
 void MjbotsControlLoop<log_type, input_type, robot_type>::AddTimingLog(float t, float margin, float message_duration) {
   if (logging_) {
-    log_data_.timestamp = t;
-    log_data_.margin = margin;
-    log_data_.message_duration = message_duration;
+    log_data_->timestamp = t;
+    log_data_->margin = margin;
+    log_data_->message_duration = message_duration;
   }
 }
 
 template<class log_type, class input_type, class robot_type>
 void MjbotsControlLoop<log_type, input_type, robot_type>::PublishLog() {
   if (logging_)
-    lcm_.publish(logging_channel_name_, &log_data_);
+    log_pub_.Publish();
 }
 
 template<class log_type, class input_type, class robot_type>
