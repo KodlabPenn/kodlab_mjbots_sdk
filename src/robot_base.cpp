@@ -50,12 +50,3 @@ void kodlab::RobotBase::SetTorques(std::vector<float> torques) {
     torque_cmd = joints[joint_ind]->UpdateTorque(torques[joint_ind]);
   }
 }
-
-const ::kodlab::IMUData<float>& kodlab::RobotBase::GetIMUData() {
-  return *imu_data_;
-}
-
-const std::shared_ptr<::kodlab::IMUData<float>> kodlab::RobotBase::GetIMUDataSharedPtr() {
-  return imu_data_;
-}
-

@@ -77,8 +77,7 @@ MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<Joi
   if(imu_data_ptr){
     imu_data_ = imu_data_ptr;
   }
-  else
-  {
+  else{
     imu_data_ = std::make_shared<::kodlab::IMUData<float>>();
   }
   kodlab::rotations::EulerAngles<float> imu_world_offset =

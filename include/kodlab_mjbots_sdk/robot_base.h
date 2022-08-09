@@ -115,18 +115,17 @@ namespace kodlab
          */
         std::vector<float> GetJointTorqueCmd();
 
-        
         /*!
         * @brief accessor for the IMU data of the robot
         * @return const reference to the IMU data object for the robot
         */
-        const ::kodlab::IMUData<float>& GetIMUData();
+        const ::kodlab::IMUData<float>& GetIMUData(){return *imu_data_;}
 
         /*!
         * @brief accessor for the IMU data of the robot
         * @return const IMU data shared pointer for the robot
         */
-        const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();  
+        const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr(){return imu_data_;}
 
         /*!
         * @brief Setter for the robot's IMU data pointer. Releases the previously owned IMU data object
