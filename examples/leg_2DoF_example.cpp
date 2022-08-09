@@ -85,29 +85,30 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
   }
 
   void PrepareLog() override {
+    // Populate log message with data from current control loop cycle
     for (int servo = 0; servo < 2; servo++) {
-      log_data_.positions[servo] = robot_->GetJointPositions()[servo];
-      log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
-      log_data_.modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
-      log_data_.torque_cmd[servo] = robot_->GetJointTorqueCmd()[servo];
+      log_data_->positions[servo] = robot_->GetJointPositions()[servo];
+      log_data_->velocities[servo] = robot_->GetJointVelocities()[servo];
+      log_data_->modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
+      log_data_->torque_cmd[servo] = robot_->GetJointTorqueCmd()[servo];
     }
-    log_data_.limb_position[0] = z_ - z0_;
-    log_data_.limb_position[1] = x_;
-    log_data_.limb_vel[0] = d_z_;
-    log_data_.limb_vel[1] = d_x_;
-    log_data_.limb_wrench[0] = f_z_;
-    log_data_.limb_wrench[1] = f_x_;
-    log_data_.hybrid_mode = mode_;
+    log_data_->limb_position[0] = z_ - z0_;
+    log_data_->limb_position[1] = x_;
+    log_data_->limb_vel[0] = d_z_;
+    log_data_->limb_vel[1] = d_x_;
+    log_data_->limb_wrench[0] = f_z_;
+    log_data_->limb_wrench[1] = f_x_;
+    log_data_->hybrid_mode = mode_;
   }
 
-  void ProcessInput() override {
-    kv_ = lcm_sub_.data_.kv;
-    k_ = lcm_sub_.data_.k;
-    k_stiff_ = lcm_sub_.data_.k_stiff;
-    b_ = lcm_sub_.data_.b;
-    b_stiff_ = lcm_sub_.data_.b_stiff;
-    kp_ = lcm_sub_.data_.kp;
-    kd_ = lcm_sub_.data_.kd;
+  void ProcessInput(const LegGains &input_data) override {
+    kv_ = input_data.kv;
+    k_ = input_data.k;
+    k_stiff_ = input_data.k_stiff;
+    b_ = input_data.b;
+    b_stiff_ = input_data.b_stiff;
+    kp_ = input_data.kp;
+    kd_ = input_data.kd;
     LOG_INFO(
         "Response received: { kv = % 5.2f, k = % 5.2f, k_stiff = % 5.2f, "
         "b = % 5.2f, b_stiff = % 5.2f, kp = % 5.2f, kd = % 5.2f }",

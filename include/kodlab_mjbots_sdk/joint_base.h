@@ -16,6 +16,8 @@
 #include <type_traits>
 #include <string>
 
+namespace kodlab
+{
 
 /**
  * Abstract joint state class with torque and joint pose limiting capabilities.
@@ -253,3 +255,5 @@ public:
      */
     joint_type & operator[](size_t i) {return *(v_[i]);}
 };
+
+} // kodlab
