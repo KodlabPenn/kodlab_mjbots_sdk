@@ -56,6 +56,9 @@ protected:
 public:
   /**
    * @brief Construct a Behavior object
+   * @note Constructors for inherited classes must preserve `robot` as the first
+   * argument in order to be used with the behavior manager in
+   * `MjbotsBehaviorLoop`-inherited control loops.
    * @param robot robot behavior is executing on
    * @param name[optional] behavior name
    */
@@ -136,6 +139,27 @@ public:
   {
     return true;
   }
+
+  /**
+   * @brief Processes input data, if available
+   * @details This method should be implemented by child classes wishing to
+   * handle input processing internally. For supported LCM behavior inputs,
+   * please inherit `IOBehavior`.
+   * @note If using a behavior manager, this method is called every update
+   * cycle, and should implement checking to determine if a new input is
+   * available prior to using the data.
+   */
+  virtual void ProcessInput() {}
+
+  /**
+   * @brief Prepares and transmits output data message
+   * @details This method should be implemented by child classes wishing to
+   * handle output processing internally. For supported LCM behavior outputs,
+   * please inherit `IOBehavior`.
+   * @note If using a behavior manager, this method is called every update
+   * cycle.
+   */
+  virtual void ProcessOutput() {}
 
   /**
    * @brief Sets this behavior's robot
