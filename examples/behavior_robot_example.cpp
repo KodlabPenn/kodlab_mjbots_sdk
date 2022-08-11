@@ -44,18 +44,18 @@ class SimpleRobotBehaviorLoop : public kodlab::mjbots::MjbotsBehaviorLoop<
   {
     for (int servo = 0; servo < num_joints_; servo++)
     {
-      log_data_.positions[servo] = robot_->GetJointPositions()[servo];
-      log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
-      log_data_.modes[servo] =
+      log_data_->positions[servo] = robot_->GetJointPositions()[servo];
+      log_data_->velocities[servo] = robot_->GetJointVelocities()[servo];
+      log_data_->modes[servo] =
           static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
-      log_data_.torques[servo] = robot_->GetJointTorqueCmd()[servo];
+      log_data_->torques[servo] = robot_->GetJointTorqueCmd()[servo];
     }
     for (int servo = num_joints_; servo < 13; servo++)
     {
-      log_data_.positions[servo] = 0;
-      log_data_.velocities[servo] = 0;
-      log_data_.modes[servo] = 0;
-      log_data_.torques[servo] = 0;
+      log_data_->positions[servo] = 0;
+      log_data_->velocities[servo] = 0;
+      log_data_->modes[servo] = 0;
+      log_data_->torques[servo] = 0;
     }
   }
 
@@ -65,10 +65,10 @@ class SimpleRobotBehaviorLoop : public kodlab::mjbots::MjbotsBehaviorLoop<
    *          LCM to the behavior loop's internal behavior manager. The behavior
    *          manager then handles the actual behavior switching.
    */
-  void ProcessInput() override
+  void ProcessInput(const ModeInput &input_data) override
   {
     // Set input behavior on internal behavior manager
-    behavior_mgr.SetBehavior(lcm_sub_.data_.mode);
+    behavior_mgr.SetBehavior(input_data.mode);
   }
 };
 
