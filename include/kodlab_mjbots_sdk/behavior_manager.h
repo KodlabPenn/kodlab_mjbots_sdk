@@ -218,7 +218,9 @@ public:
    */
   virtual void Update()
   {
+    behaviors_[selected_idx]->ProcessInput();
     behaviors_[selected_idx]->Update();
+    behaviors_[selected_idx]->ProcessOutput();
     if (switching_behaviors_
         && behaviors_[selected_idx]->ReadyToSwitch(*behaviors_[next_idx_]))
     {
