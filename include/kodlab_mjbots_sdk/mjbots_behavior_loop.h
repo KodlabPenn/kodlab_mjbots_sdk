@@ -10,17 +10,21 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 #include "kodlab_mjbots_sdk/behavior_manager.h"
 #include "kodlab_mjbots_sdk/behavior.h"
 #include "kodlab_mjbots_sdk/off_behavior.h"
+#include "kodlab_mjbots_sdk/io_behavior.h"
 #include "kodlab_mjbots_sdk/log.h"
+#include "kodlab_mjbots_sdk/type_traits.h"
 
 namespace kodlab::mjbots
 {
 
 /**
- * @brief
+ * @brief MjbotsControlLoop with behavior suppport.
  * @tparam Log[optional] data type for logging
  * @tparam Input[optional] class for input data
  * @tparam Robot[optional] `RobotBase`-Derived class that contains state and
@@ -88,28 +92,77 @@ public:
   BehaviorManager<Robot> behavior_mgr;
 
   /**
-   * @brief Wrapper for behavior manager AddBehavior function
+   * @brief Add a `Behavior` child to the behavior manager
+   * @note Parameters `args` should omit the first parameter,
+   * `robot`.
    * @tparam BehaviorType `kodlab::Behavior`-derived type
    * @tparam ConstructorArgs constructor arguments
-   * @param args behavior constructor arguments
+   * @param constructor_args behavior constructor arguments subsequent to
+   * `robot`
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  void AddBehavior(ConstructorArgs &&... args)
+  void AddBehavior(ConstructorArgs &&... constructor_args)
   {
-    behavior_mgr.template AddBehavior<BehaviorType>(this->robot_, args...);
+    static_assert(kodlab::type_traits::is_base_of_template<BehaviorType,
+                                                           Behavior>::value);
+    behavior_mgr.template AddBehavior<BehaviorType>(this->robot_,
+                                                    constructor_args...);
   }
 
   /**
-   * @brief Wrapper for behavior manager SetDefaultBehavior function
-   * @tparam BehaviorType `kodlab::Behavior`-derived type
+   * @brief Add an `IOBehavior` child to the behavior manager
+   * @note Parameters `ConstructorArgs` should omit the first three parameters:
+   * `robot`, `subscriber`, and `publish_lcm`.
+   * @tparam BehaviorType `kodlab::IOBehavior`-derived type
    * @tparam ConstructorArgs constructor arguments
-   * @param args behavior constructor arguments
+   * @param constructor_args behavior constructor arguments subsequent to `lcm`
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  void SetDefaultBehavior(ConstructorArgs &&... args)
+  void AddIOBehavior(ConstructorArgs &&... constructor_args)
   {
+    static_assert(kodlab::type_traits::is_base_of_template<BehaviorType,
+                                                           IOBehavior>::value);
+    behavior_mgr.template AddBehavior<BehaviorType>(this->robot_,
+                                                    this->lcm_sub_,
+                                                    this->lcm_,
+                                                    constructor_args...);
+  }
+
+  /**
+   * @brief Add a `Behavior` child as the default behavior in the behavior
+   * manager
+   * @tparam BehaviorType `kodlab::Behavior`-derived type
+   * @tparam ConstructorArgs constructor arguments
+   * @param constructor_args behavior constructor arguments subsequent to
+   * `robot`
+   */
+  template<class BehaviorType, typename... ConstructorArgs>
+  void SetDefaultBehavior(ConstructorArgs &&... constructor_args)
+  {
+    static_assert(kodlab::type_traits::is_base_of_template<BehaviorType,
+                                                           Behavior>::value);
     behavior_mgr.template SetDefaultBehavior<BehaviorType>(this->robot_,
-                                                           args...);
+                                                           constructor_args...);
+  }
+
+  /**
+   * @brief Add an `IOBehavior` child as the default behavior in the behavior
+   * manager
+   * @note Parameters `ConstructorArgs` should omit the first three parameters:
+   * `robot`, `subscriber`, and `publish_lcm`.
+   * @tparam BehaviorType `kodlab::IOBehavior`-derived type
+   * @tparam ConstructorArgs constructor arguments
+   * @param constructor_args behavior constructor arguments subsequent to `lcm`
+   */
+  template<class BehaviorType, typename... ConstructorArgs>
+  void SetDefaultIOBehavior(ConstructorArgs &&... constructor_args)
+  {
+    static_assert(kodlab::type_traits::is_base_of_template<BehaviorType,
+                                                           IOBehavior>::value);
+    behavior_mgr.template SetDefaultBehavior<BehaviorType>(this->robot_,
+                                                           this->lcm_sub_,
+                                                           this->lcm_,
+                                                           constructor_args...);
   }
 
 };
