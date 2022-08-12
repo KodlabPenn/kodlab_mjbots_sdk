@@ -29,12 +29,12 @@ private:
   /**
    * @brief The torque to be commanded while motors are running fully
    */
-  const float RUN_TORQUE = 0;
+  const float RUN_TORQUE = 0.1;
 
   /**
    * @brief The torque to be commanded while motors are being slowed
    */
-  const float SLOW_TORQUE = 0;
+  const float SLOW_TORQUE = 0.0;
 
   /**
    * @brief Enumeration of valid states while behavior is active
