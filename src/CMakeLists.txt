@@ -24,7 +24,9 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/behavior.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/io_behavior.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/off_behavior.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_robot.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_behavior.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_io_behavior.h"
         )
 
 set(SOURCE_LIST "pi3hat.cpp" 
