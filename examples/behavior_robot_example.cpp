@@ -20,6 +20,7 @@
 #include "kodlab_mjbots_sdk/mjbots_behavior_loop.h"  // kodlab::mjbots::MjbotsBehaviorLoop
 #include "examples/simple_robot.h"  // SimpleBehavior
 #include "examples/simple_behavior.h"  // SimpleRobot
+#include "examples/simple_io_behavior.h" // SimpleIOBehavior
 
 /**
  * @brief Behavior loop for a simple robot
@@ -80,8 +81,8 @@ int main(int argc, char **argv)
 {
   // Setup joints with a std::vector
   std::vector<kodlab::mjbots::JointMoteus> joints;
-  joints.emplace_back(100, 4, 1, 0, 1, 0);
-  joints.emplace_back(101, 4, -1, 0, 5.0 / 3.0, 0);
+  joints.emplace_back(22, 1, 1, 0, 1.0, 5.0);
+//  joints.emplace_back(101, 4, -1, 0, 5.0 / 3.0, 0);
 
   // Define robot options
   kodlab::mjbots::ControlLoopOptions options;
@@ -91,6 +92,7 @@ int main(int argc, char **argv)
   options.frequency = 1000;  // control loop frequency
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu = 2;
+  options.max_torque = 20;
 
   // Create control loop
   SimpleRobotBehaviorLoop simple_robot(joints, options);
@@ -100,10 +102,11 @@ int main(int argc, char **argv)
   // element by default. This can be replaced with an alternative default
   // behavior via SetDefaultBehavior, as follows. See the BehaviorManager
   // definition for details.
-  simple_robot.SetDefaultBehavior<kodlab::OffBehavior<SimpleRobot>>("MY_OFF");
-  simple_robot.AddBehavior<SimpleBehavior>("SIMPLE");
-  simple_robot.AddBehavior<SimpleBehavior>("ANOTHER_SIMPLE");
-  simple_robot.AddBehavior<kodlab::OffBehavior<SimpleRobot>>("ANOTHER_OFF");
+  simple_robot.SetDefaultBehavior<kodlab::OffBehavior<SimpleRobot>>("SIMPLE OFF");
+  simple_robot.AddBehavior<SimpleBehavior>("SIMPLE BEHAVIOR");
+  simple_robot.AddIOBehavior<SimpleIOBehavior>("pd_gain_input",
+                                               "motor_position_output",
+                                               "SIMPLE I/O BEHAVIOR");
 
   // Display completed behaviors list
   simple_robot.behavior_mgr.PrintBehaviorList();
