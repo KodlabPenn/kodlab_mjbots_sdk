@@ -60,17 +60,20 @@ class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   }
 
   void PrepareLog() override {
+    // Populate log message with data from current control loop cycle
     for (int servo = 0; servo < num_joints_; servo++) {
-      log_data_.positions[servo]  = robot_->GetJointPositions()[servo];
-      log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
-      log_data_.modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
-      log_data_.torques[servo] = robot_->GetJointTorqueCmd()[servo];
+      log_data_->positions[servo]  = robot_->GetJointPositions()[servo];
+      log_data_->velocities[servo] = robot_->GetJointVelocities()[servo];
+      log_data_->modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
+      log_data_->torques[servo] = robot_->GetJointTorqueCmd()[servo];
     }
+
+    // Fill remaining log message fields with zeros
     for (int servo = num_joints_; servo < 13; servo++) {
-      log_data_.positions[servo] = 0;
-      log_data_.velocities[servo] = 0;
-      log_data_.modes[servo] = 0;
-      log_data_.torques[servo] = 0;
+      log_data_->positions[servo] = 0;
+      log_data_->velocities[servo] = 0;
+      log_data_->modes[servo] = 0;
+      log_data_->torques[servo] = 0;
     }
   }
 };

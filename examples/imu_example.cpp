@@ -64,30 +64,30 @@ private:
   }
 
   /**
-   * @brief Prepares log
+   * @brief Populates log message with data from current control loop cycle
    */
   void PrepareLog() override
   {
     // IMUData Quaternion
-    log_data_.attitude_quaternion[0] = imu_->get_quat().x();
-    log_data_.attitude_quaternion[1] = imu_->get_quat().y();
-    log_data_.attitude_quaternion[2] = imu_->get_quat().z();
-    log_data_.attitude_quaternion[3] = imu_->get_quat().w();
+    log_data_->attitude_quaternion[0] = imu_->get_quat().x();
+    log_data_->attitude_quaternion[1] = imu_->get_quat().y();
+    log_data_->attitude_quaternion[2] = imu_->get_quat().z();
+    log_data_->attitude_quaternion[3] = imu_->get_quat().w();
 
     // IMUData Euler Angles
-    log_data_.attitude_euler[0] = imu_->get_euler().roll();
-    log_data_.attitude_euler[1] = imu_->get_euler().pitch();
-    log_data_.attitude_euler[2] = imu_->get_euler().yaw();
+    log_data_->attitude_euler[0] = imu_->get_euler().roll();
+    log_data_->attitude_euler[1] = imu_->get_euler().pitch();
+    log_data_->attitude_euler[2] = imu_->get_euler().yaw();
 
     // Angular Velocity
-    log_data_.angular_velocity[0] = imu_->get_ang_rate().x();
-    log_data_.angular_velocity[1] = imu_->get_ang_rate().y();
-    log_data_.angular_velocity[2] = imu_->get_ang_rate().z();
+    log_data_->angular_velocity[0] = imu_->get_ang_rate().x();
+    log_data_->angular_velocity[1] = imu_->get_ang_rate().y();
+    log_data_->angular_velocity[2] = imu_->get_ang_rate().z();
 
     // Linear Acceleration
-    log_data_.linear_acceleration[0] = imu_->get_accel().x();
-    log_data_.linear_acceleration[1] = imu_->get_accel().y();
-    log_data_.linear_acceleration[2] = imu_->get_accel().z();
+    log_data_->linear_acceleration[0] = imu_->get_accel().x();
+    log_data_->linear_acceleration[1] = imu_->get_accel().y();
+    log_data_->linear_acceleration[2] = imu_->get_accel().z();
   }
 
 };
