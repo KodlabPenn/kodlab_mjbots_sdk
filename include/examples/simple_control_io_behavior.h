@@ -27,9 +27,9 @@
  * joint in a SimpleRobot with gains adjustable via LCM input and motor state
  * logged via LCM output
  */
-class SimpleIOBehavior : public kodlab::IOBehavior<SimpleRobot,
-                                                   PDGains,
-                                                   MotorLog> {
+class SimpleControlIOBehavior : public kodlab::IOBehavior<SimpleRobot,
+                                                          PDGains,
+                                                          MotorLog> {
 
  public:
 
@@ -110,7 +110,7 @@ class SimpleIOBehavior : public kodlab::IOBehavior<SimpleRobot,
     gains.kp = input_msg.kp;
     gains.kd = input_msg.kd;
     std::fprintf(stdout,
-                 "[INFO][SimpleIOBehavior] Setting kp = %.3f, kd = %.3f\n",
+                 "[INFO][SimpleControlIOBehavior] Setting kp = %.3f, kd = %.3f\n",
                  gains.kp,
                  gains.kd);
   }
