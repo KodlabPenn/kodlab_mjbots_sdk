@@ -38,7 +38,7 @@ protected:
   std::shared_ptr<Robot> robot_;
 
   /**
-   * @brief Behavior name, default is "OFF"
+   * @brief Behavior name
    */
   std::string name_;
 
@@ -72,7 +72,8 @@ public:
 
   /**
    * @brief Initialize this behavior for a given robot interface
-   * @note Must set `initialized_` to true for integration with BehaviorManager
+   * @note Must return `true` on successful initialization for integration with
+   * `BehaviorManager`.
    * @details This is where initialization code, which runs when a behavior is
    *          first added to a behavior manager, should be put. This is where
    *          initialization that did not take place in the constructor should
@@ -129,9 +130,9 @@ public:
    *        behavior
    * @details This function indicates to the behavior manager whether the
    *          behavior is prepared to terminate and transition to the next
-   *          behavior. In its simplest form, this function accesses the
-   *          internal behavior active flag. This function can be used as a mode
-   *          switch guard.
+   *          behavior. In its simplest form, this function simply returns
+   *          `true`, indicating that the behavior is ready to transition
+   *          immediately. This function can be used as a mode switch guard.
    * @param next_behavior behavior being transitioned to
    * @return true if behavior is ready to switch, false otherwise
    */
@@ -146,8 +147,9 @@ public:
    * handle input processing internally. For supported LCM behavior inputs,
    * please inherit `IOBehavior`.
    * @note If using a behavior manager, this method is called every update
-   * cycle, and should implement checking to determine if a new input is
-   * available prior to using the data.
+   * cycle before the `Update` method. This can be used to implement checking
+   * and reading of new input data for inputs other than those over LCM, which
+   * is provided in the `IOBehavior` abstract class.
    */
   virtual void ProcessInput() {}
 
