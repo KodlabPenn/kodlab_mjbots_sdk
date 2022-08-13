@@ -21,6 +21,9 @@
 
 /**
  * @brief Simple behavior that commands torques to all joints in a SimpleRobot
+ * @warning Running this behavior will spin **ALL** of the joints in your robot!
+ * @warning Change the running torque to a safe value for your motor or motors
+ * before running this behavior!
  */
 class SimpleBehavior : virtual public kodlab::Behavior<SimpleRobot>
 {
@@ -28,6 +31,8 @@ class SimpleBehavior : virtual public kodlab::Behavior<SimpleRobot>
 private:
   /**
    * @brief The torque to be commanded while motors are running fully
+   * @warning Change this torque to a safe value for your motor or motors before
+   * running!
    */
   const float RUN_TORQUE = 0.1;
 
@@ -85,12 +90,12 @@ public:
   /**
    * @brief Starts the behavior
    * @details This code runs a single time when the behavior starts up. This is
-   *          a good place to read in the initial robot state and set the
+   *          a good place to read in the beginning robot state and set the
    *          appropriate variables to begin the behavior. The previously active
    *          behavior is passed as an argument, permitting different
    *          functionalities for different prior behaviors. In this example,
-   *          the behavior is marked as active and the initial robot state is
-   *          read.
+   *          the behavior is marked as active and the beginning robot state is
+   *          read and saved.
    * @param prev_behavior the previously active behavior
    */
   void Begin(const kodlab::Behavior<SimpleRobot> &prev_behavior) override
