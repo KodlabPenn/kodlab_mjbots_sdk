@@ -46,27 +46,6 @@ class IOBehavior : public Behavior<Robot> {
    * @brief Construct an I/O Behavior object
    * @param robot robot that behavior is executing on
    * @param subscriber realtime LCM subscriber to monitor for inputs
-   * @param publisher LCM publisher object to publish outputs with
-   * @param subscribe_channel LCM channel to subscribe to
-   * @param name behavior name
-   */
-  IOBehavior(std::shared_ptr<Robot> robot,
-             std::shared_ptr<LcmSubscriber> subscriber,
-             LcmPublisher<Output> publisher,
-             std::string subscribe_channel,
-             std::string name = "")
-      : Behavior<Robot>(robot, std::move(name)),
-        subscriber_(subscriber),
-        publisher_(publisher),
-        publisher_data_(publisher_.get_message_shared_ptr()) {
-    subscriber_->AddSubscription<Input>(subscribe_channel,
-                                        input_handler_);
-  }
-
-  /**
-   * @brief Construct an I/O Behavior object
-   * @param robot robot that behavior is executing on
-   * @param subscriber realtime LCM subscriber to monitor for inputs
    * @param publish_lcm LCM object used for publishing
    * @param subscribe_channel LCM channel to subscribe to
    * @param publish_channel LCM channel to publish on
@@ -78,11 +57,13 @@ class IOBehavior : public Behavior<Robot> {
              std::string subscribe_channel,
              std::string publish_channel,
              std::string name = "")
-      : IOBehavior(robot,
-                   subscriber,
-                   std::move(LcmPublisher<Output>(publish_lcm, publish_channel)),
-                   subscribe_channel,
-                   name) {}
+      : Behavior<Robot>(robot, std::move(name)),
+        subscriber_(subscriber),
+        publisher_(LcmPublisher<Output>(publish_lcm, publish_channel)),
+        publisher_data_(publisher_.get_message_shared_ptr()) {
+    subscriber_->AddSubscription<Input>(subscribe_channel,
+                                        input_handler_);
+  }
 
   /**
    * Virtual destructor for clean destruction of child class instances
@@ -91,12 +72,14 @@ class IOBehavior : public Behavior<Robot> {
 
   /**
    * @brief Processes input data, if available
+   * @note This method simply returns if the `Input` type is `VoidLcm`.
    */
   void ProcessInput() final {
+    if (std::is_same_v<VoidLcm, Input>) { return; }
     auto input_msg = input_handler_.GetDataIfNew();
     if (input_msg.has_value()) {
       ProcessInput(input_msg.value());
-      input_data_ = input_msg.value();
+      input_data_cache_ = input_msg.value();
     }
   }
 
@@ -105,6 +88,7 @@ class IOBehavior : public Behavior<Robot> {
    * @details Virtual method to be implemented when utilizing inputs. Called
    * when new input data is available, this method processes the new data
    * provided in `input_msg`.
+   * @note This method simply returns if the `Output` type is `VoidLcm`.
    * @param input_msg[in] input data to be processed
    */
   virtual void ProcessInput(const Input &input_msg) {}
@@ -113,6 +97,7 @@ class IOBehavior : public Behavior<Robot> {
    * @brief Prepares output data message
    */
   void ProcessOutput() final {
+    if (std::is_same_v<VoidLcm, Output>) { return; }
     PrepareOutput(*publisher_data_);
     PublishOutput();
   }
@@ -139,7 +124,7 @@ class IOBehavior : public Behavior<Robot> {
    * @param output_msg output message to be published
    */
   void PublishOutput(const Output &output_msg) {
-    publisher_data_ = *output_msg;
+    *publisher_data_ = output_msg;
     PublishOutput();
   }
 
@@ -164,7 +149,7 @@ class IOBehavior : public Behavior<Robot> {
   /**
    * @brief Cache storing the most recent input data.
    */
-  [[maybe_unused]] Input input_data_;
+  [[maybe_unused]] Input input_data_cache_;
 
  private:
 
