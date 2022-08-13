@@ -10,6 +10,7 @@
 #include <map>
 #include <future>
 #include <memory>
+#include <optional>
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
@@ -44,14 +45,16 @@ class MjbotsHardwareInterface  {
    * @param realtime_params the realtime parameters defining cpu and realtime priority
    * @param imu_mounting_deg Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
    * @param imu_rate_hz Frequency of the imu updates from the pi3hat
-   * @param imu_world_offset_deg IMU orientation offset. Useful for re-orienting gravity, etc.
+   * @param imu_data_ptr Shared pointer to imu_data to use or nullptr if it should make its own
+   * @param imu_world_offset_deg [Optional] IMU orientation offset. Useful for re-orienting gravity, etc.
    */
   MjbotsHardwareInterface(std::vector<std::shared_ptr<JointMoteus>> joint_list,
                        const RealtimeParams &realtime_params,
                        ::mjbots::pi3hat::Euler imu_mounting_deg = ::mjbots::pi3hat::Euler(),
                        int imu_rate_hz = 1000,
-                       ::mjbots::pi3hat::Euler imu_world_offset_deg = ::mjbots::pi3hat::Euler(),
-                       std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr = nullptr);
+                       std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr = nullptr,
+                       std::optional<::mjbots::pi3hat::Euler > imu_world_offset_deg = std::nullopt
+                       );
 
   /**
    * @brief Send and recieve initial communications effectively starting the robot

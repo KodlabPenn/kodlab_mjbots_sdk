@@ -7,6 +7,7 @@
 
 #pragma once
 #include <type_traits>
+#include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 #include "kodlab_mjbots_sdk/robot_base.h"
 #include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
@@ -148,7 +149,6 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   ControlLoopOptions options_;            /// Options struct
   bool logging_ = false;                  /// Boolean to determine if logging is in use
   bool input_ = false;                    /// Boolean to determine if input is in use
-  std::string logging_channel_name_;      /// Channel name to publish logs to, leave empty if not publishing
   std::shared_ptr<lcm::LCM> lcm_;         /// LCM object shared pointer
   LcmPublisher<LogClass> log_pub_;        /// log LCM publisher
   std::shared_ptr<LogClass> log_data_;    /// LCM log message data shared pointer
@@ -164,29 +164,9 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
   : MjbotsControlLoop<log_type, input_type,robot_type>( make_share_vector(joints), options){}
 
 template<class log_type, class input_type, class robot_type>
-MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
-  : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
-    lcm_(std::make_shared<lcm::LCM>()),
-    log_pub_(lcm_, options.log_channel_name),
-    log_data_(log_pub_.get_message_shared_ptr()),
-    lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu))
-{
-  lcm_sub_->AddSubscription<input_type>(options.input_channel_name, input_sub_);
-
-  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(joint_ptrs,
-                                                                                options.realtime_params,
-                                                                                options.imu_mounting_deg,
-                                                                                options.attitude_rate_hz, 
-                                                                                options.imu_world_offset_deg);
-
-  robot_ = std::make_shared<robot_type>(  joint_ptrs,
-                                          options.soft_start_duration,
-                                          options.max_torque,
-                                          mjbots_interface_->GetIMUDataSharedPtr());
-
-  num_joints_ = robot_->joints.size();
-  SetupOptions(options);
-}
+MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(
+    std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
+  : MjbotsControlLoop(std::make_shared<robot_type>(joint_ptrs,options.soft_start_duration, options.max_torque),options) {}
 
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shared_ptr<robot_type>robot_in, const ControlLoopOptions &options)
@@ -195,13 +175,20 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
     log_pub_(lcm_, options.log_channel_name),
     log_data_(log_pub_.get_message_shared_ptr()),
     lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu)) {
-  // Create robot object
+  // Copy robot pointer
   robot_ = robot_in;
-  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(robot_->joints,
-                                                                                options.realtime_params,
-                                                                                options.imu_mounting_deg,
-                                                                                options.imu_world_offset_deg,
-                                                                                robot_->GetIMUDataSharedPtr());
+  
+  // Cast joints to JointMoteus (currently JointBase)
+  std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joints_moteus;
+  for (auto &j : robot_->joints) {
+    joints_moteus.push_back(
+        std::dynamic_pointer_cast<kodlab::mjbots::JointMoteus>(j));
+  }
+  // Initialize mjbots_interface
+  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(
+      std::move(joints_moteus), options.realtime_params,
+      options.imu_mounting_deg, options.attitude_rate_hz,
+      robot_->GetIMUDataSharedPtr(), options.imu_world_offset_deg);
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
@@ -213,18 +200,24 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::SetupOptions(const Con
   cpu_ = options.realtime_params.main_cpu;
   realtime_priority_ = options.realtime_params.main_rtp;
   frequency_ = options.frequency;
-  // Setup logging info and confirm template is provided if logging
-  logging_channel_name_ = options.log_channel_name;
-  logging_ = !logging_channel_name_.empty();
+  // Setup logging info and confirm template is provided if logging is named
+  logging_ = !log_pub_.get_channel().empty();
   if (logging_ && std::is_same<log_type, VoidLcm>()) {
     std::cout << "Warning, log_type is default, but logging is enabled" << std::endl;
     logging_ = false;
   }
-
+  //Add input subscriber if not VoidLcm
   input_ = !options.input_channel_name.empty();
-  if (input_ && std::is_same<input_type, VoidLcm>()) {
-    std::cout << "Warning, input_type is default, but input is enabled" << std::endl;
-    input_ = false;
+  if (input_) {
+    if (std::is_same<input_type, VoidLcm>()) {
+      std::cout << "Warning, input_type is default, but input is enabled"
+                << std::endl;
+      input_ = false;
+    } else {
+      // Add control loop input subscriber
+      lcm_sub_->AddSubscription<input_type>(options.input_channel_name,
+                                            input_sub_);
+    }
   }
 }
 

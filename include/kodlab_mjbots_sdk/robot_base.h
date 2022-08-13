@@ -34,6 +34,7 @@ namespace kodlab
          * @param joint_vect a vector of shared pointers to jointbase defining the motors in the robot
          * @param soft_start_duration how long in dt to spend ramping the torque
          * @param robot_max_torque the maximum torque to allow per motor in the robot
+         * @param imu_data_ptr [Optional] Shared pointer to imu_data to use or nullptr if robot should make its own
          */
         template <class JointDerived = JointBase>
         RobotBase(std::vector<std::shared_ptr<JointDerived>> joint_vect,
