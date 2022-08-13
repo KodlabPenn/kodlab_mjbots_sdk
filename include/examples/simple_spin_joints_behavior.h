@@ -25,7 +25,7 @@
  * @warning Change the running torque to a safe value for your motor or motors
  * before running this behavior!
  */
-class SimpleBehavior : virtual public kodlab::Behavior<SimpleRobot>
+class SimpleSpinJointsBehavior : virtual public kodlab::Behavior<SimpleRobot>
 {
 
 private:
