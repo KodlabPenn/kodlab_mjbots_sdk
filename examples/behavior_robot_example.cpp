@@ -3,7 +3,7 @@
  * @author Ethan J. Musser (emusser@seas.upenn.edu)
  * @brief Example demonstrating the usage of the `MjbotsBehaviorLoop` class with
  *        a SimpleRobot (derived from `kodlab::RobotBase`) and a
- *        `SimpleBehavior` (derived from `kodlab::Behavior`). This file
+ *        `SimpleSpinJointsBehavior` (derived from `kodlab::Behavior`). This file
  *        constructs the control loop, which contains a behavior manager, for a
  *        `SimpleRobot` and provides several behaviors which can be switched
  *        between via LCM broadcast.
@@ -18,9 +18,9 @@
 #include "ManyMotorLog.hpp"  // ManyMotorLog
 #include "ModeInput.hpp"  // ModeInput
 #include "kodlab_mjbots_sdk/mjbots_behavior_loop.h"  // kodlab::mjbots::MjbotsBehaviorLoop
-#include "examples/simple_robot.h"  // SimpleBehavior
-#include "examples/simple_behavior.h"  // SimpleRobot
-#include "examples/simple_io_behavior.h" // SimpleIOBehavior
+#include "examples/simple_robot.h"  // SimpleRobot
+#include "examples/simple_spin_joints_behavior.h"  // SimpleSpinJointsBehavior
+#include "examples/simple_control_io_behavior.h" // SimpleControlIOBehavior
 
 /**
  * @brief Behavior loop for a simple robot
@@ -103,10 +103,10 @@ int main(int argc, char **argv)
   // behavior via SetDefaultBehavior, as follows. See the BehaviorManager
   // definition for details.
   simple_robot.SetDefaultBehavior<kodlab::OffBehavior<SimpleRobot>>("SIMPLE OFF");
-  simple_robot.AddBehavior<SimpleBehavior>("SIMPLE BEHAVIOR");
-  simple_robot.AddIOBehavior<SimpleIOBehavior>("pd_gain_input",
-                                               "motor_position_output",
-                                               "SIMPLE I/O BEHAVIOR");
+  simple_robot.AddBehavior<SimpleSpinJointsBehavior>("SIMPLE BEHAVIOR");
+  simple_robot.AddIOBehavior<SimpleControlIOBehavior>("pd_gain_input",
+                                                      "motor_position_output",
+                                                      "SIMPLE I/O BEHAVIOR");
 
   // Display completed behaviors list
   simple_robot.behavior_mgr.PrintBehaviorList();
