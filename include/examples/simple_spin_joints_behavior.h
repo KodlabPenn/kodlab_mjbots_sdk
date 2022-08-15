@@ -21,11 +21,16 @@
 
 /**
  * @brief Simple behavior that commands torques to all joints in a SimpleRobot
+ * @details This behavior spins every joint in a `SimpleRobot` at a torque set
+ * via the `RUN_TORQUE` constant. When a stop is triggered, the joints are spun
+ * instead at the torque set in `SLOW_TORQUE` until the average speed drops
+ * below a minimum threshold.  Once this condition is met, the behavior
+ * is transitioned out of.
  * @warning Running this behavior will spin **ALL** of the joints in your robot!
  * @warning Change the running torque to a safe value for your motor or motors
  * before running this behavior!
  */
-class SimpleSpinJointsBehavior : virtual public kodlab::Behavior<SimpleRobot>
+class SimpleSpinJointsBehavior : public kodlab::Behavior<SimpleRobot>
 {
 
 private:
@@ -181,13 +186,12 @@ public:
   bool ReadyToSwitch(const kodlab::Behavior<SimpleRobot> &next_behavior) override
   {
     // Ready to switch if average velocity is below a threshold
-    float avg_velocity =
-        std::accumulate(joint_velocities_.begin(),
-                        joint_velocities_.end(),
-                        0.0) / static_cast<float>(joint_velocities_.size());
+    float avg_velocity = std::abs(
+        std::accumulate(joint_velocities_.begin(), joint_velocities_.end(), 0.0)
+            / static_cast<float>(joint_velocities_.size()));
     if (avg_velocity <= 0.1)
     {
-      std::fprintf(stdout, "%s is no longer active\n", get_name().c_str());
+      std::fprintf(stdout, "%s is ready to switch.\n", get_name().c_str());
       return true;
     }
     return false;
