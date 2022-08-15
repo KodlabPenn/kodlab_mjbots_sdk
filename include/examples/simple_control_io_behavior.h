@@ -26,6 +26,10 @@
  * @brief Simple behavior that runs a positional PD control loop on the first
  * joint in a SimpleRobot with gains adjustable via LCM input and motor state
  * logged via LCM output
+ * @details This behavior maintains a proportional-derivative control loop on
+ * the position of the first joint in `SimpleRobot`. The behavior receives
+ * inputs via LCM to set the PD gains while the behavior is active. The motor
+ * state is published via LCM output on every update.
  */
 class SimpleControlIOBehavior : public kodlab::IOBehavior<SimpleRobot,
                                                           PDGains,
