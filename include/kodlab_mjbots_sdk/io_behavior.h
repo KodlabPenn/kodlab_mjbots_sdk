@@ -74,7 +74,7 @@ class IOBehavior : public Behavior<Robot> {
    * @brief Processes input data, if available
    * @note This method simply returns if the `Input` type is `VoidLcm`.
    */
-  void ProcessInput() final {
+  void ThreadSafeProcessInput() final {
     if (std::is_same_v<VoidLcm, Input>) { return; }
     auto input_msg = input_handler_.GetDataIfNew();
     if (input_msg.has_value()) {
