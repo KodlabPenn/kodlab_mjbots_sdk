@@ -50,3 +50,4 @@ void kodlab::RobotBase::SetTorques(std::vector<float> torques) {
     torque_cmd = joints[joint_ind]->UpdateTorque(torques[joint_ind]);
   }
 }
+

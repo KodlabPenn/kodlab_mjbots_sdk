@@ -29,7 +29,7 @@ public:
     void Update() override {
         std::vector<float> torques(num_joints_, 0);
         // Get states you want to use.
-        auto& imu_data = GetIMUData();
+        const auto& imu_data = GetIMUData();
         auto pos = GetJointPositions();
         auto vel = GetJointVelocities();
 

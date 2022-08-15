@@ -58,12 +58,10 @@ namespace kodlab
             num_joints_ = joint_vect.size();
             
             // Initialize attitude shared pointer
-            if (imu_data_ptr)
-            {
+            if (imu_data_ptr) {
                 imu_data_ = imu_data_ptr;
             }
-            else
-            {
+            else {
                 imu_data_ = std::make_shared<::kodlab::IMUData<float>>();
             }
         }
