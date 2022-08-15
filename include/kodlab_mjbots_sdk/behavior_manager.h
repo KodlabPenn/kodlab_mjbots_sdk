@@ -218,7 +218,7 @@ public:
    */
   virtual void Update()
   {
-    behaviors_[selected_idx]->ProcessInput();
+    behaviors_[selected_idx]->ThreadSafeProcessInput();
     behaviors_[selected_idx]->Update();
     behaviors_[selected_idx]->ProcessOutput();
     if (switching_behaviors_
