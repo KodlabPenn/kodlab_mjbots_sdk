@@ -151,7 +151,7 @@ public:
    * and reading of new input data for inputs other than those over LCM, which
    * is provided in the `IOBehavior` abstract class.
    */
-  virtual void ProcessInput() {}
+  virtual void ThreadSafeProcessInput() {}
 
   /**
    * @brief Prepares and transmits output data message
