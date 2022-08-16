@@ -28,7 +28,7 @@ struct ControlLoopOptions {
   RealtimeParams realtime_params;  /// Set of parameters for robot's realtimeness
 
   float max_torque = 20;             /// Maximum torque in Nm
-  int soft_start_duration = 1000;    /// Duration of the soft Start in cycles
+  float soft_start_duration_ms = 1000;    /// Duration of the soft Start in ms
   int frequency = 1000;              /// Frequency of the control loop in Hz
   std::string log_channel_name;         /// LCM channel name for logging data. Leave empty to not log
   std::string input_channel_name;       /// LCM channel name for input data. Leave empty to not use input
@@ -166,7 +166,7 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vect
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(
     std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
-  : MjbotsControlLoop(std::make_shared<robot_type>(joint_ptrs,options.soft_start_duration, options.max_torque),options) {}
+  : MjbotsControlLoop(std::make_shared<robot_type>(joint_ptrs, options.max_torque, options.soft_start_duration_ms),options) {}
 
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shared_ptr<robot_type>robot_in, const ControlLoopOptions &options)
