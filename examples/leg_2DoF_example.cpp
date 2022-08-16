@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
   kodlab::mjbots::ControlLoopOptions options;
   options.log_channel_name = "leg_data";
   options.input_channel_name = "leg_gains";
-  options.soft_start_duration = 5000;
+  options.soft_start_duration_ms = 5000;
 
   // Create control loop
   Hopping control_loop(std::move(joints), options);

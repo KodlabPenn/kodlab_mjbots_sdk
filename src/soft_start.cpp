@@ -17,16 +17,15 @@ float SoftStart::Constrain(float values, float min_val, float max_val) {
   return fmin(fmax(values, min_val), max_val);
 }
 
-void SoftStart::ConstrainTorques(std::vector<float> &torques, int count) {
-  if (count > duration_) {
+void SoftStart::ConstrainTorques(std::vector<float> &torques, float time_since_start_ms) {
+  if ((time_since_start_ms) > duration_ms_) { // ramp_timer returns in us
     Constrain(torques, -max_torque_, max_torque_);
   } else {
-    float max_val = count * slope_;
+    float max_val = (time_since_start_ms) * slope_;
     Constrain(torques, -max_val, max_val);
-
   }
 
 }
-SoftStart::SoftStart(float max_torque, int duration)
-    : max_torque_(fabs(max_torque)), duration_(duration), slope_(fabs(max_torque) / (fmax(duration, 1))) {}
+SoftStart::SoftStart(float max_torque, float duration_ms)
+    : max_torque_(fabs(max_torque)), duration_ms_(duration_ms), slope_(fabs(max_torque) / (fmax(duration_ms, 1.0))) {}
 } // namespace kodlab
