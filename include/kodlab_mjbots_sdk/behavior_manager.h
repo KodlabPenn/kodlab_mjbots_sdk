@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 #include "kodlab_mjbots_sdk/robot_base.h"
@@ -163,11 +164,9 @@ class BehaviorManager {
     if (name == KILL_BEHAVIOR_NAME) { SetBehavior(KILL_ROBOT_IDX); }
     else {
       auto idx = get_behavior_index(name);
-      if (idx >= 0) { SetBehavior(idx); }
+      if (idx) { SetBehavior(idx.value()); }
       else {
-        LOG_WARN("Invalid behavior selected: %s at index %d",
-                 name.c_str(),
-                 idx);
+        LOG_WARN("Invalid behavior selected: %s", name.c_str());
       }
     }
   }
@@ -177,11 +176,11 @@ class BehaviorManager {
    * @tparam BehaviorType `kodlab::Behavior`-derived type
    * @tparam ConstructorArgs constructor arguments
    * @param args behavior constructor arguments
-   * @return index of behavior in behaviors list if added successfully, -1
-   * otherwise
+   * @return index of behavior in behaviors list if added successfully,
+   * `std::nullopt` otherwise
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  int AddBehavior(ConstructorArgs &&... args) {
+  std::optional<int> AddBehavior(ConstructorArgs &&... args) {
     static_assert(std::is_base_of<kodlab::Behavior<Robot>, BehaviorType>::value,
                   "BehaviorType must be a `kodlab::Behavior`-derived type");
     auto b = ConstructBehavior<BehaviorType>(args...);
@@ -196,7 +195,7 @@ class BehaviorManager {
       LOG_WARN(
           "%s behavior could not be initialized and will not be added to behaviors list.",
           b->get_name().c_str());
-      return -1;
+      return {};
     }
   }
 
@@ -296,15 +295,16 @@ class BehaviorManager {
   /**
    * @brief Lookup for behavior index by name
    * @param name behavior name
-   * @return index of behavior if behavior is in the behavior list, -1 otherwise
+   * @return index of behavior if behavior is in the behavior list,
+   * `std::nullopt` otherwise
    */
-  [[nodiscard]] int get_behavior_index(const std::string &name) {
+  [[nodiscard]] std::optional<int> get_behavior_index(const std::string &name) {
     auto it = name_to_idx_map_.find(name);
     if (it != name_to_idx_map_.end()) {
       return it->second;
     } else {
       LOG_WARN("%s is not in behavior list.", name.c_str());
-      return -1;
+      return {};
     }
   }
 
