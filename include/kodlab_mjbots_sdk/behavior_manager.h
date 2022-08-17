@@ -14,13 +14,14 @@
 
 #include <iostream>
 #include <memory>
+#include <unordered_map>
+#include <utility>
 #include "kodlab_mjbots_sdk/robot_base.h"
 #include "kodlab_mjbots_sdk/behavior.h"
 #include "kodlab_mjbots_sdk/off_behavior.h"
 #include "kodlab_mjbots_sdk/log.h"
 
-namespace kodlab
-{
+namespace kodlab {
 
 /**
  * @brief Manager for `Behavior` objects
@@ -34,12 +35,11 @@ namespace kodlab
  * @tparam Robot[optional] derived `kodlab::RobotBase` class
  */
 template<class Robot = kodlab::RobotBase>
-class BehaviorManager
-{
+class BehaviorManager {
   static_assert(std::is_base_of<kodlab::RobotBase, Robot>::value,
                 "Robot must have base kodlab::RobotBase.");
 
-private:
+ private:
   /**
    * @brief Robot that behaviors run on
    */
@@ -48,12 +48,22 @@ private:
   /**
    * @brief Behavior command that kills robot, default -1
    */
-  static const int KILL_ROBOT_IDX = -1;
+  const int KILL_ROBOT_IDX = -1;
+
+  /**
+   * @brief Name of the kill behavior
+   */
+  const std::string KILL_BEHAVIOR_NAME = "KILL";
 
   /**
    * @brief Behavior command that turns robot off, always 0
    */
-  static const int DEFAULT_IDX = 0;
+  const int DEFAULT_IDX = 0;
+
+  /**
+   * @brief Name of the default behavior
+   */
+  std::string default_name_;
 
   /**
    * @brief Behaviors available to the robot
@@ -61,6 +71,11 @@ private:
    *       behaviors are appended to the end.
    */
   std::vector<std::unique_ptr<Behavior<Robot>>> behaviors_;
+
+  /**
+   * @brief Map from behavior name to index in `behaviors_`
+   */
+  std::unordered_map<std::string, int> name_to_idx_map_;
 
   /**
    * @brief Names of behaviors in `behaviors_`
@@ -83,51 +98,6 @@ private:
    */
   bool switching_behaviors_ = false;
 
-public:
-  /**
-   * @brief Construct a behavior manager object
-   * @param robot pointer to robot that the behavior is executing on
-   */
-  BehaviorManager(std::shared_ptr<Robot> robot) : robot_(robot)
-  {
-    AddBehavior<OffBehavior<Robot>>(robot_, "OFF");
-  }
-
-  /**
-   * @brief Destructor
-   */
-  virtual ~BehaviorManager() {}
-
-  /**
-   * @brief Set the current behavior
-   * @param next_idx index in `behaviors_`
-   */
-  virtual void SetBehavior(const int &next_idx)
-  {
-    if (next_idx == KILL_ROBOT_IDX)
-    {
-      kodlab::CTRL_C_DETECTED = true; // kill robot
-      LOG_FATAL("Behavior %d received, killing robot.", KILL_ROBOT_IDX);
-    } else if (next_idx == selected_idx)
-    {
-      LOG_INFO("Behavior %d is already active.", next_idx);
-      return;
-    }
-    else if (next_idx < behaviors_.size() && next_idx >= 0)
-    {
-      next_idx_ = next_idx; // update next behavior
-      if (!behaviors_[next_idx_]->is_initialized())
-      {
-        behaviors_[next_idx_]->Init();
-      }
-      behaviors_[selected_idx]->Stop(*behaviors_[next_idx_]); // stop current behavior
-      switching_behaviors_ = true;  // indicate transition is in progress
-    } else
-    {
-      LOG_WARN("Invalid behavior selected: %d", next_idx);
-    }
-  }
-
   /**
    * @brief Constructs and initializes a behavior
    * @tparam BehaviorType `kodlab::Behavior`-derived type
@@ -137,16 +107,69 @@ public:
    *         nullptr otherwise
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  std::unique_ptr<BehaviorType> InitBehavior(ConstructorArgs &&... args)
-  {
+  std::unique_ptr<BehaviorType> ConstructBehavior(ConstructorArgs &&... args) {
     static_assert(std::is_base_of<kodlab::Behavior<Robot>, BehaviorType>::value,
                   "BehaviorType must be a `kodlab::Behavior`-derived type");
     auto b = std::make_unique<BehaviorType>(args...);
-    if (b->Init())
-    {
+    if (b->Init()) {
       b->set_initialized();
       return std::move(b);
     } else { return nullptr; }
+  }
+
+ public:
+  /**
+   * @brief Construct a behavior manager object
+   * @param robot pointer to robot that the behavior is executing on
+   */
+  BehaviorManager(std::shared_ptr<Robot> robot) : robot_(robot) {
+    default_name_ = "OFF";
+    AddBehavior<OffBehavior<Robot>>(robot_, default_name_);
+  }
+
+  /**
+   * @brief Destructor
+   */
+  virtual ~BehaviorManager() = default;
+
+  /**
+   * @brief Set the current behavior
+   * @param next_idx index in `behaviors_`
+   */
+  virtual void SetBehavior(const int &next_idx) {
+    if (next_idx == KILL_ROBOT_IDX) {
+      kodlab::CTRL_C_DETECTED = true; // kill robot
+      LOG_FATAL("Behavior %d received, killing robot.", KILL_ROBOT_IDX);
+    } else if (next_idx == selected_idx) {
+      LOG_INFO("Behavior %d is already active.", next_idx);
+      return;
+    } else if (next_idx < behaviors_.size() && next_idx >= 0) {
+      next_idx_ = next_idx; // update next behavior
+      if (!behaviors_[next_idx_]->is_initialized()) {
+        behaviors_[next_idx_]->Init();
+      }
+      behaviors_[selected_idx]->Stop(*behaviors_[next_idx_]); // stop current behavior
+      switching_behaviors_ = true;  // indicate transition is in progress
+    } else {
+      LOG_WARN("Invalid behavior selected: %d", next_idx);
+    }
+  }
+
+  /**
+   * @brief Set the current behavior
+   * @param name name of behavior in `behaviors_`
+   */
+  virtual void SetBehavior(const std::string &name) {
+    if (name == KILL_BEHAVIOR_NAME) { SetBehavior(KILL_ROBOT_IDX); }
+    else {
+      auto idx = get_behavior_index(name);
+      if (idx >= 0) { SetBehavior(idx); }
+      else {
+        LOG_WARN("Invalid behavior selected: %s at index %d",
+                 name.c_str(),
+                 idx);
+      }
+    }
   }
 
   /**
@@ -154,22 +177,26 @@ public:
    * @tparam BehaviorType `kodlab::Behavior`-derived type
    * @tparam ConstructorArgs constructor arguments
    * @param args behavior constructor arguments
+   * @return index of behavior in behaviors list if added successfully, -1
+   * otherwise
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  void AddBehavior(ConstructorArgs &&... args)
-  {
+  int AddBehavior(ConstructorArgs &&... args) {
     static_assert(std::is_base_of<kodlab::Behavior<Robot>, BehaviorType>::value,
                   "BehaviorType must be a `kodlab::Behavior`-derived type");
-    auto b = InitBehavior<BehaviorType>(args...);
-    if (b)
-    {
-      names_.push_back(b->get_name());
+    auto b = ConstructBehavior<BehaviorType>(args...);
+    if (b) {
+      int idx = behaviors_.size();
+      std::string name = b->get_name();
+      names_.push_back(name);
+      name_to_idx_map_.emplace(std::make_pair(name, idx));
       behaviors_.emplace_back(std::move(b));
-    } else
-    {
+      return idx;
+    } else {
       LOG_WARN(
           "%s behavior could not be initialized and will not be added to behaviors list.",
           b->get_name().c_str());
+      return -1;
     }
   }
 
@@ -183,17 +210,17 @@ public:
    * @param args behavior constructor arguments
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  void SetDefaultBehavior(ConstructorArgs &&... args)
-  {
+  void SetDefaultBehavior(ConstructorArgs &&... args) {
     static_assert(std::is_base_of<kodlab::Behavior<Robot>, BehaviorType>::value,
                   "BehaviorType must be a `kodlab::Behavior`-derived type");
-    auto b = InitBehavior<BehaviorType>(args...);
-    if (b)
-    {
-      names_.front() = b->get_name();
-      behaviors_.front() = std::move(b);
-    } else
-    {
+    auto b = ConstructBehavior<BehaviorType>(args...);
+    if (b) {
+      name_to_idx_map_.erase(default_name_);
+      default_name_ = b->get_name();
+      name_to_idx_map_.emplace(std::pair(default_name_, DEFAULT_IDX));
+      names_[0] = default_name_;
+      behaviors_[0] = std::move(b);
+    } else {
       LOG_WARN(
           "%s behavior could not be initialized and will not be set as default behavior.",
           b->get_name().c_str());
@@ -203,12 +230,13 @@ public:
   /**
    * @brief Reset the behaviors list back to default
    */
-  void ResetBehaviors()
-  {
-    if (behaviors_.size() > 1)
-    {
+  void EraseBehaviors() {
+    if (behaviors_.size() > 1) {
       behaviors_.erase(behaviors_.begin() + 1, behaviors_.end());
       names_.erase(names_.begin() + 1, names_.end());
+      for (const auto &it : name_to_idx_map_) {
+        if (it.first != default_name_) { name_to_idx_map_.erase(it.first); }
+      }
     }
   }
 
@@ -216,14 +244,12 @@ public:
    * @brief Update the current behavior
    * @param robot shared pointer to robot behavior is executing on
    */
-  virtual void Update()
-  {
+  virtual void Update() {
     behaviors_[selected_idx]->ThreadSafeProcessInput();
     behaviors_[selected_idx]->Update();
     behaviors_[selected_idx]->ProcessOutput();
     if (switching_behaviors_
-        && behaviors_[selected_idx]->ReadyToSwitch(*behaviors_[next_idx_]))
-    {
+        && behaviors_[selected_idx]->ReadyToSwitch(*behaviors_[next_idx_])) {
       behaviors_[selected_idx]->set_inactive();  // mark previous behavior as inactive
       behaviors_[next_idx_]->Begin(*behaviors_[selected_idx]);  // begin new behavior
       behaviors_[next_idx_]->set_active();  // mark new behavior as active
@@ -239,13 +265,11 @@ public:
    * @brief Prints a list of behaviors currently in `behaviors_`
    * @param stream output stream
    */
-  void PrintBehaviorList(FILE *stream = stdout) const
-  {
+  void PrintBehaviorList(FILE *stream = stdout) const {
     std::fprintf(stream, "+--------------------------------+\n");
     std::fprintf(stream, "| Control Loop Behaviors         |\n");
     std::fprintf(stream, "| ----------------------         |\n");
-    for (unsigned int i = 0; i < names_.size(); i++)
-    {
+    for (unsigned int i = 0; i < names_.size(); i++) {
       std::fprintf(stream, "| %3d. %-25s |\n",
                    i, names_[i].c_str());
     }
@@ -256,8 +280,7 @@ public:
    * @brief Accessor for index of selected behavior
    * @return selected behavior index
    */
-  [[nodiscard]] unsigned int get_selected_behavior() const
-  {
+  [[nodiscard]] unsigned int get_selected_behavior_index() const {
     return selected_idx;
   }
 
@@ -266,17 +289,30 @@ public:
    * @param behavior_idx index of behavior
    * @return name of behavior at index `behavior_idx` in `behaviors_`
    */
-  [[nodiscard]] std::string get_behavior_name(int behavior_idx) const
-  {
+  [[nodiscard]] std::string get_behavior_name(int behavior_idx) const {
     return behaviors_[behavior_idx]->get_name();
+  }
+
+  /**
+   * @brief Lookup for behavior index by name
+   * @param name behavior name
+   * @return index of behavior if behavior is in the behavior list, -1 otherwise
+   */
+  [[nodiscard]] int get_behavior_index(const std::string &name) {
+    auto it = name_to_idx_map_.find(name);
+    if (it != name_to_idx_map_.end()) {
+      return it->second;
+    } else {
+      LOG_WARN("%s is not in behavior list.", name.c_str());
+      return -1;
+    }
   }
 
   /**
    * @brief Accessor for name of selected behavior
    * @return selected behavior name
    */
-  [[nodiscard]] std::string get_sel_behavior_name() const
-  {
+  [[nodiscard]] std::string get_sel_behavior_name() const {
     return get_behavior_name(selected_idx);
   }
 
@@ -284,8 +320,7 @@ public:
    * @brief Accessor for all behavior names in `behaviors_`
    * @return vector of names of behaviors
    */
-  [[nodiscard]] std::vector<std::string> get_behavior_list() const
-  {
+  [[nodiscard]] std::vector<std::string> get_behavior_names() const {
     return names_;
   }
 
