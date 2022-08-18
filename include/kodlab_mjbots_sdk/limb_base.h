@@ -26,6 +26,11 @@ namespace kodlab
  * @brief Abstract base class for legs consisting of multiple joints to be used in the robot class
  */
 
+struct LimbConfig{
+    std::vector<std::array<float,3>> actuator_offsets;
+    Eigen::MatrixXf selection_matrix;
+};
+
 class LimbBase {
     public: 
 
@@ -34,22 +39,26 @@ class LimbBase {
          * 
          * @param name          /// Sets the limb name
          * @param joints        /// Joints that make up the leg
+         * @param config        /// Configuration of the joints in the leg
          * 
          */
 
         LimbBase(
             std::string name,
-            std::vector<std::shared_ptr<JointBase>> joints
+            std::vector<std::shared_ptr<JointBase>> joints,
+            LimbConfig config
         );
 
         /**
          * @brief Construct a new Limb Base object
          * 
          * @param joints        /// Joints that make up the leg
+         * @param config        /// Configuration of the joints in the leg
          * 
          */
         LimbBase(
-            std::vector<std::shared_ptr<JointBase>> joints
+            std::vector<std::shared_ptr<JointBase>> joints,
+            LimbConfig config
         );
 
 
@@ -62,8 +71,79 @@ class LimbBase {
          */
         virtual void Update(std::vector<float> pos_list, std::vector<float> vel_list);
 
+
+        /**
+         * @brief Calculates the forward kinematics of the leg
+         * 
+         * @return Eigen::VectorXf 
+         */
+        virtual Eigen::VectorXf ForwardKinematics();
+
+        /**
+         * @brief Calculates the Jacobian of the leg
+         * 
+         * @return Eigen::MatrixXf 
+         */
+        virtual Eigen::MatrixXf Jacobian();
+
+        /**
+         * @brief Calculates the Inverse kinematics of a leg given a desired position
+         * measured from the origin of the leg (????)
+         * 
+         * @param x_des desired x position
+         * @param y_des desired y position
+         * @param z_des desired z position
+         * 
+         * @return Eigen::VectorXf 
+         */
+
+        virtual Eigen::VectorXf InverseKinematics(float x_des, float y_des, float z_des);
+
+
+        /**
+         * @brief Get the Positions of each joint in the leg
+         * 
+         * @return std::vector<float> 
+         */
+        std::vector<float> get_positions();
+
+        /**
+         * @brief Get the velocities of each joint in the leg
+         * 
+         * @return std::vector<float> 
+         */
+        std::vector<float> get_velocities();
+
+        /**
+         * @brief Get the Torques of each joint in the leg
+         * 
+         * @return std::vector<float> 
+         */
+        std::vector<float> get_torques();
+
+        /**
+         * @brief Set the positions of each joint in the leg
+         * 
+         * @param positions 
+         */
+
+        void set_positions(std::vector<float> positions);
+
+        /**
+         * @brief Set the velocities of each joint in the leg
+         * 
+         * @param velocities 
+         */
+
+        void set_velocities(std::vector<float> velocities);
+
+
     protected: 
         std::string name_ = ""; // Optional leg name
+
+        // Leg Shape and Size 
+
+        LimbConfig config_;
 
         // Leg State/Commands 
         std::vector<float> positions_;      /// positions of each joint in leg [rad]
