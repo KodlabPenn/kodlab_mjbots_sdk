@@ -27,21 +27,20 @@ namespace kodlab
     public:
         static const int KILL_ROBOT = -1;  // Kill mode/behavior index; used to signal robot E-stop
         std::vector< std::shared_ptr<JointBase> > joints; ///the vector of shared_ptrs to joints 
-        u_int64_t cycle_count_; //TODO Make this time based not cycle based for when the system fails to keep up (i.e. time_us_)
         
         /*!
          * @brief constructs a robot_interface that contains the basic state of a jointed robot with attitude
          * @param joint_vect a vector of shared pointers to jointbase defining the motors in the robot
-         * @param soft_start_duration how long in dt to spend ramping the torque
+         * @param soft_start_duration_ms how long in ms to spend ramping the torque
          * @param robot_max_torque the maximum torque to allow per motor in the robot
          * @param imu_data_ptr [Optional] Shared pointer to imu_data to use or nullptr if robot should make its own
          */
         template <class JointDerived = JointBase>
         RobotBase(std::vector<std::shared_ptr<JointDerived>> joint_vect,
                   float robot_max_torque,
-                  int soft_start_duration,
+                  float soft_start_duration_ms,
                   std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr = nullptr)
-            : soft_start_(robot_max_torque, soft_start_duration)
+            : soft_start_(robot_max_torque, soft_start_duration_ms)
         {
             // Ensure at compile time that the template is JointBase or a child of JointBase
             static_assert(std::is_base_of<JointBase, JointDerived>::value);
@@ -64,6 +63,7 @@ namespace kodlab
             else {
                 imu_data_ = std::make_shared<::kodlab::IMUData<float>>();
             }
+            run_timer_.tic(); // Start timer
         }
 
         /*!
@@ -82,7 +82,7 @@ namespace kodlab
          * @warning All derivative classes overriding this method should include
          *          a cycle count increment (i.e., `cycle_count_++;`).
          */
-        virtual void Update(){cycle_count_++;}; //TODO remove cycle_count and use time or more intelligently set cycle_count or properly handle softstart
+        virtual void Update(){};
 
         /*!
          * @brief Stop the robot by setting torques to zero. Can be overridden
@@ -168,6 +168,7 @@ namespace kodlab
         std::vector<std::reference_wrapper<const float>> velocities_; /// Vector of the motor velocities (references to the members of joints_)
         std::vector<std::reference_wrapper<const float>> torque_cmd_; /// Vector of the torque command sent to motors (references to the members of joints_)
         std::shared_ptr<::kodlab::IMUData<float>> imu_data_;          /// Robot IMU data
+        real_time_tools::Timer run_timer_;                            /// Run timer for robot, started at construction
         SoftStart soft_start_;                                        /// Soft Start object
         int num_joints_ = 0;                                          /// Number of joints
     };
