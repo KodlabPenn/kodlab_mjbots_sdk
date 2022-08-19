@@ -82,7 +82,7 @@ namespace kodlab
          * @warning All derivative classes overriding this method should include
          *          a cycle count increment (i.e., `cycle_count_++;`).
          */
-        virtual void Update(){}; //TODO remove cycle_count and use time or more intelligently set cycle_count or properly handle softstart
+        virtual void Update(){};
 
         /*!
          * @brief Stop the robot by setting torques to zero. Can be overridden

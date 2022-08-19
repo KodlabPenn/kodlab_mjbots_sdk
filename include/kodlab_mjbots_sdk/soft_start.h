@@ -2,6 +2,7 @@
 // Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
 // Authors:
 // Shane Rozen-Levy <srozen01@seas.upenn.edu>
+// J. Diego Caporale <jdcap@seas.upenn.edu>
 
 
 #pragma once
@@ -16,14 +17,15 @@ class SoftStart {
  private:
   float slope_ = 0;        /// Slope of the ramp
   float max_torque_ = 100; /// Max torque allowed in Nm
-  float duration_ms_ = 0;   /// Duration of soft Start in steps
+  float duration_ms_ = 0;   /// Duration of soft start in milliseconds
 
  public:
 
   /*!
    * @brief constrains the vector torques based on soft Start
    * @param torques[in, out] the torques to be constrained
-   * @param count the number of steps it has been
+   * @param time_since_start_ms the number of milliseconds it has been since
+   * start
    */
   void ConstrainTorques(std::vector<float> &torques, float time_since_start_ms);
 
