@@ -15,7 +15,8 @@
 #include <vector>
 #include <type_traits>
 #include <string>
-#include <Eigen>
+#include <Eigen/Core>
+#include <Eigen/Dense>
 #include "kodlab_mjbots_sdk/joint_base.h"
 
 namespace kodlab
@@ -77,14 +78,14 @@ class LimbBase {
          * 
          * @return Eigen::VectorXf 
          */
-        virtual Eigen::VectorXf ForwardKinematics();
+        Eigen::VectorXf ForwardKinematics();
 
         /**
          * @brief Calculates the Jacobian of the leg
          * 
          * @return Eigen::MatrixXf 
          */
-        virtual Eigen::MatrixXf Jacobian();
+        Eigen::MatrixXf Jacobian();
 
         /**
          * @brief Calculates the Inverse kinematics of a leg given a desired position
@@ -97,7 +98,7 @@ class LimbBase {
          * @return Eigen::VectorXf 
          */
 
-        virtual Eigen::VectorXf InverseKinematics(float x_des, float y_des, float z_des);
+        Eigen::VectorXf InverseKinematics(float x_des, float y_des, float z_des);
 
 
         /**
@@ -141,8 +142,11 @@ class LimbBase {
     protected: 
         std::string name_ = ""; // Optional leg name
 
-        // Leg Shape and Size 
+        // Vector of joints within array
+        std::vector<std::shared_ptr<JointBase>> joints_;
 
+        // Leg Shape and Size 
+        int legDOFs_;
         LimbConfig config_;
 
         // Leg State/Commands 
