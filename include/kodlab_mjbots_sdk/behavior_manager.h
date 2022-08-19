@@ -57,7 +57,7 @@ class BehaviorManager {
   const std::string KILL_BEHAVIOR_NAME = "KILL";
 
   /**
-   * @brief Behavior command that turns robot off, always 0
+   * @brief Index for the default behavior (that turns robot off by default)
    */
   const int DEFAULT_IDX = 0;
 
@@ -68,8 +68,8 @@ class BehaviorManager {
 
   /**
    * @brief Behaviors available to the robot
-   * @note The first element of this vector is always `OFF_BEHAVIOR`.  Added
-   *       behaviors are appended to the end.
+   * @note The first element of this vector is always `DEFAULT_BEHAVIOR`
+   * (`OFF_BEHAVIOR` by default).  Added behaviors are appended to the end.
    */
   std::vector<std::unique_ptr<Behavior<Robot>>> behaviors_;
 
@@ -115,7 +115,9 @@ class BehaviorManager {
     if (b->Init()) {
       b->set_initialized();
       return std::move(b);
-    } else { return nullptr; }
+    } else {
+      return nullptr;
+    }
   }
 
  public:
@@ -137,7 +139,7 @@ class BehaviorManager {
    * @brief Set the current behavior
    * @param next_idx index in `behaviors_`
    */
-  virtual void SetBehavior(const int &next_idx) {
+  virtual void SetBehavior(int next_idx) {
     if (next_idx == KILL_ROBOT_IDX) {
       kodlab::CTRL_C_DETECTED = true; // kill robot
       LOG_FATAL("Behavior %d received, killing robot.", KILL_ROBOT_IDX);
@@ -164,8 +166,9 @@ class BehaviorManager {
     if (name == KILL_BEHAVIOR_NAME) { SetBehavior(KILL_ROBOT_IDX); }
     else {
       auto idx = get_behavior_index(name);
-      if (idx) { SetBehavior(idx.value()); }
-      else {
+      if (idx) {
+        SetBehavior(idx.value());
+      } else {
         LOG_WARN("Invalid behavior selected: %s", name.c_str());
       }
     }
@@ -217,8 +220,8 @@ class BehaviorManager {
       name_to_idx_map_.erase(default_name_);
       default_name_ = b->get_name();
       name_to_idx_map_.emplace(std::pair(default_name_, DEFAULT_IDX));
-      names_[0] = default_name_;
-      behaviors_[0] = std::move(b);
+      names_[DEFAULT_IDX] = default_name_;
+      behaviors_[DEFAULT_IDX] = std::move(b);
     } else {
       LOG_WARN(
           "%s behavior could not be initialized and will not be set as default behavior.",
@@ -233,8 +236,8 @@ class BehaviorManager {
     if (behaviors_.size() > 1) {
       behaviors_.erase(behaviors_.begin() + 1, behaviors_.end());
       names_.erase(names_.begin() + 1, names_.end());
-      for (const auto &it : name_to_idx_map_) {
-        if (it.first != default_name_) { name_to_idx_map_.erase(it.first); }
+      for (const auto &el : name_to_idx_map_) {
+        if (el.first != default_name_) { name_to_idx_map_.erase(el.first); }
       }
     }
   }
