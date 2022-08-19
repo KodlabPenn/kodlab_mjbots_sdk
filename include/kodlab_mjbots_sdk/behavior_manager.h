@@ -116,6 +116,7 @@ class BehaviorManager {
       b->set_initialized();
       return std::move(b);
     } else {
+      LOG_WARN("%s behavior could not be initialized.", b->get_name().c_str());
       return nullptr;
     }
   }
@@ -196,8 +197,7 @@ class BehaviorManager {
       return idx;
     } else {
       LOG_WARN(
-          "%s behavior could not be initialized and will not be added to behaviors list.",
-          b->get_name().c_str());
+          "Behavior could not be initialized thus was not added to the behaviors list.");
       return {};
     }
   }
@@ -224,8 +224,7 @@ class BehaviorManager {
       behaviors_[DEFAULT_IDX] = std::move(b);
     } else {
       LOG_WARN(
-          "%s behavior could not be initialized and will not be set as default behavior.",
-          b->get_name().c_str());
+          "Behavior could not be initialized thus was not added to the behaviors list.");
     }
   }
 
