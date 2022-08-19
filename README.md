@@ -111,11 +111,46 @@ class MyController : public MjbotsControlLoop<LcmLog, LcmInput, MyRobot>
 Refer to `include/examples/simple_robot.h` for a sample robot class and 
 `examples/robot_example.cpp` for a usage example.
 
+## Behaviors
+The `Behavior` abstract class can be derived by the user and used to define 
+custom behaviors.  The abstract class includes functions for behavior 
+initialization, startup, updating, and stopping, as well as methods for 
+declaring whether the behavior is prepared to transition to another behavior.  
+For a user-defined behavior, this would look like the following, where 
+`UserBehavior` is the new behavior and `UserRobot` is the user's `RobotBase`
+child robot class.
+```cpp
+class UserBehavior : public kodlab::Behavior<UserRobot>
+```
+If LCM inputs and/or outputs are desired on a behavior level, the user should 
+instead make a child of the `IOBehavior` class.  For example, the following 
+defines `UserIOBehavior` which runs on `UserRobot` from above, receives inputs
+through a `UserInput` LCM message, and logs outputs via a `UserOutput` LCM 
+message.
+```cpp
+class UserIOBehavior : public kodlab::IOBehavior<UserRobot, UserInput, UserOutput>
+```
+
+Refer to the `SimpleSpinJointsBehavior` class defined in 
+`include/examples/simple_spin_joints_behavior.h` for an example of how the 
+behavior class can be implemented, and the `SimpleControlIOBehavior` in 
+`include/examples/simple_control_io_behavior.h` for an example of implementing
+a behavior with inputs and outputs.
+
+## Behavior Manager
+The `BehaviorManager` class is a container for storing and running 
+`Behavior`-derived behaviors.  This class maintains a default behavior at the 
+beginning index in its internal vector. Additional behaviors can be appended to
+the vector and the default behavior can be set by the user. The 
+`BehaviorManager` can be composed into a child class of `MjbotsControlLoop` 
+and used to maintain a series of behaviors running on a`RobotBase`-derived 
+robot. 
+
 ## Mjbots Behavior Loop
 The `MjbotsBehaviorLoop` extends the [`MjbotsControlLoop`](https://github.com/KodlabPenn/kodlab_mjbots_sdk#mjbotscontrolloop)
 to include a `BehaviorManager` which internally manages `Behavior` objects for a
-`RobotBase`-derived class.  The `MjbotsBehaviorLoop` works in much the same way 
-as the `MjbotsControlLoop`, except the user no longer needs to override the 
+`RobotBase`-derived class.  The `MjbotsBehaviorLoop` works in much the same way
+as the `MjbotsControlLoop`, except the user no longer needs to override the
 `Update()` method.  An example demonstrating usage of the `MjbotsBehaviorLoop`
 is provided in `examples/behavior_robot_example.cpp`.
 
