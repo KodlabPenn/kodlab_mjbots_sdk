@@ -137,6 +137,15 @@ behavior class can be implemented, and the `SimpleControlIOBehavior` in
 `include/examples/simple_control_io_behavior.h` for an example of implementing
 a behavior with inputs and outputs.
 
+## Behavior Manager
+The `BehaviorManager` class is a container for storing and running 
+`Behavior`-derived behaviors.  This class maintains a default behavior at the 
+beginning index in its internal vector. Additional behaviors can be appended to
+the vector and the default behavior can be set by the user. The 
+`BehaviorManager` can be composed into a child class of `MjbotsControlLoop` 
+and used to maintain a series of behaviors running on a`RobotBase`-derived 
+robot. 
+
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
 max torque is the maximum torque per motor and the soft Start duration is how long the torque ramp should last
