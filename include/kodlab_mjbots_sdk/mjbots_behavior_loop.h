@@ -20,8 +20,7 @@
 #include "kodlab_mjbots_sdk/log.h"
 #include "kodlab_mjbots_sdk/type_traits.h"
 
-namespace kodlab::mjbots
-{
+namespace kodlab::mjbots {
 
 /**
  * @brief MjbotsControlLoop with behavior suppport.
@@ -32,21 +31,27 @@ namespace kodlab::mjbots
  */
 template<class Log = VoidLcm, class Input = VoidLcm,
     class Robot = kodlab::RobotBase>
-class MjbotsBehaviorLoop : public MjbotsControlLoop<Log, Input, Robot>
-{
+class MjbotsBehaviorLoop : public MjbotsControlLoop<Log, Input, Robot> {
 
-protected:
+ protected:
+  /**
+   * @brief Behavior manager handling robot behaviors and transitions between
+   *        robot behaviors
+   */
+  BehaviorManager<Robot> behavior_manager_;
+
   /**
    * @brief Updates robot state and sets torques based on active behavior in
    *        behavior manager
+   * @note If a derived class chooses to override `Update`, ensure that the
+   *       necessary internal updates are called. This is not recommended.
    */
-  void Update() override
-  {
+  void Update() override {
     this->robot_->Update();
-    behavior_mgr.Update();
+    behavior_manager_.Update();
   }
 
-public:
+ public:
   /**
    * @brief Construct an Mjbots behavior loop based on an options struct
    * @note Does not Start the controller.
@@ -56,7 +61,7 @@ public:
   MjbotsBehaviorLoop(std::vector<kodlab::mjbots::JointMoteus> joints,
                      const ControlLoopOptions &options)
       : MjbotsControlLoop<Log, Input, Robot>(joints, options),
-        behavior_mgr{this->robot_} {}
+        behavior_manager_{this->robot_} {}
 
   /**
    * @brief Construct an Mjbots behavior loop based on an options struct
@@ -67,7 +72,7 @@ public:
   MjbotsBehaviorLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joints,
                      const ControlLoopOptions &options)
       : MjbotsControlLoop<Log, Input, Robot>(joints, options),
-        behavior_mgr{this->robot_} {}
+        behavior_manager_{this->robot_} {}
 
   /**
    * @brief Construct an Mjbots behavior loop based on an options struct
@@ -78,18 +83,12 @@ public:
   MjbotsBehaviorLoop(std::shared_ptr<Robot> robot_in,
                      const ControlLoopOptions &options)
       : MjbotsControlLoop<Log, Input, Robot>(robot_in, options),
-        behavior_mgr{this->robot_} {}
+        behavior_manager_{this->robot_} {}
 
   /**
    * @brief Destructor
    */
-  virtual ~MjbotsBehaviorLoop() {}
-
-  /**
-   * @brief Behavior manager handling robot behaviors and transitions between
-   *        robot behaviors
-   */
-  BehaviorManager<Robot> behavior_mgr;
+  virtual ~MjbotsBehaviorLoop() = default;
 
   /**
    * @brief Add a `Behavior` child to the behavior manager
@@ -101,12 +100,11 @@ public:
    * `robot`
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  void AddBehavior(ConstructorArgs &&... constructor_args)
-  {
+  void AddBehavior(ConstructorArgs &&... constructor_args) {
     static_assert(kodlab::type_traits::is_base_of_template<Behavior,
                                                            BehaviorType>::value);
-    behavior_mgr.template AddBehavior<BehaviorType>(this->robot_,
-                                                    constructor_args...);
+    behavior_manager_.template AddBehavior<BehaviorType>(this->robot_,
+                                                         constructor_args...);
   }
 
   /**
@@ -118,14 +116,13 @@ public:
    * @param constructor_args behavior constructor arguments subsequent to `lcm`
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  void AddIOBehavior(ConstructorArgs &&... constructor_args)
-  {
+  void AddIOBehavior(ConstructorArgs &&... constructor_args) {
     static_assert(kodlab::type_traits::is_base_of_template<IOBehavior,
                                                            BehaviorType>::value);
-    behavior_mgr.template AddBehavior<BehaviorType>(this->robot_,
-                                                    this->lcm_sub_,
-                                                    this->lcm_,
-                                                    constructor_args...);
+    behavior_manager_.template AddBehavior<BehaviorType>(this->robot_,
+                                                         this->lcm_sub_,
+                                                         this->lcm_,
+                                                         constructor_args...);
   }
 
   /**
@@ -137,12 +134,11 @@ public:
    * `robot`
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  void SetDefaultBehavior(ConstructorArgs &&... constructor_args)
-  {
+  void SetDefaultBehavior(ConstructorArgs &&... constructor_args) {
     static_assert(kodlab::type_traits::is_base_of_template<Behavior,
                                                            BehaviorType>::value);
-    behavior_mgr.template SetDefaultBehavior<BehaviorType>(this->robot_,
-                                                           constructor_args...);
+    behavior_manager_.template SetDefaultBehavior<BehaviorType>(this->robot_,
+                                                                constructor_args...);
   }
 
   /**
@@ -155,14 +151,38 @@ public:
    * @param constructor_args behavior constructor arguments subsequent to `lcm`
    */
   template<class BehaviorType, typename... ConstructorArgs>
-  void SetDefaultIOBehavior(ConstructorArgs &&... constructor_args)
-  {
+  void SetDefaultIOBehavior(ConstructorArgs &&... constructor_args) {
     static_assert(kodlab::type_traits::is_base_of_template<IOBehavior,
                                                            BehaviorType>::value);
-    behavior_mgr.template SetDefaultBehavior<BehaviorType>(this->robot_,
-                                                           this->lcm_sub_,
-                                                           this->lcm_,
-                                                           constructor_args...);
+    behavior_manager_.template SetDefaultBehavior<BehaviorType>(this->robot_,
+                                                                this->lcm_sub_,
+                                                                this->lcm_,
+                                                                constructor_args...);
+  }
+
+  /**
+   * @brief Set the current behavior in the behavior manager
+   * @param next_idx index in the behavior manager behaviors list
+   */
+  void SetBehavior(int next_idx) {
+    behavior_manager_.SetBehavior(next_idx);
+  }
+
+  /**
+   * @brief Set the current behavior in the behavior manager
+   * @param name name of behavior in behavior manager
+   */
+  void SetBehavior(const std::string &name) {
+    behavior_manager_.SetBehavior(name);
+  }
+
+
+  /**
+   * @brief Prints a list of behaviors currently stored in the behavior manager
+   * @param stream output stream
+   */
+  void PrintBehaviorList(FILE *stream = stdout) {
+    behavior_manager_.PrintBehaviorList();
   }
 
 };

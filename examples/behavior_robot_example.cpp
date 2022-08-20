@@ -69,7 +69,7 @@ class SimpleRobotBehaviorLoop : public kodlab::mjbots::MjbotsBehaviorLoop<
   void ProcessInput(const ModeInput &input_data) override
   {
     // Set input behavior on internal behavior manager
-    behavior_mgr.SetBehavior(input_data.mode);
+    SetBehavior(input_data.mode);
   }
 };
 
@@ -82,7 +82,6 @@ int main(int argc, char **argv)
   // Setup joints with a std::vector
   std::vector<kodlab::mjbots::JointMoteus> joints;
   joints.emplace_back(22, 1, 1, 0, 1.0, 5.0);
-//  joints.emplace_back(101, 4, -1, 0, 5.0 / 3.0, 0);
 
   // Define robot options
   kodlab::mjbots::ControlLoopOptions options;
@@ -92,7 +91,7 @@ int main(int argc, char **argv)
   options.frequency = 1000;  // control loop frequency
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu = 2;
-  options.max_torque = 20;
+  options.max_torque = 1.0;
 
   // Create control loop
   SimpleRobotBehaviorLoop simple_robot(joints, options);
@@ -109,7 +108,7 @@ int main(int argc, char **argv)
                                                       "SIMPLE I/O BEHAVIOR");
 
   // Display completed behaviors list
-  simple_robot.behavior_mgr.PrintBehaviorList();
+  simple_robot.PrintBehaviorList();
 
   // Starts the loop, and then join it
   simple_robot.Start();
