@@ -22,6 +22,7 @@ Copyright:
 import lcm
 from lcm_types.ModeInput import ModeInput
 import warnings
+import argparse
 
 # Ignore deprecation warnings from ``lcm`` dependencies
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -29,10 +30,20 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 # Constants
 OFF = 0  # OFF behavior integer
 KILL = -1  # KILL behavior integer
-LCM_CHANNEL = "mode_input"  # must match channel name in control loop options
+DEFAULT_LCM_CHANNEL = "mode_input"
 
 
-def publish_mode(mode, print_msg="", lcm_ch=LCM_CHANNEL):
+def parse_args():
+    """Parse input arguments"""
+    parser = argparse.ArgumentParser(
+        description='publish mode input messages via LCM.')
+    parser.add_argument('channel', metavar='channel', type=str, nargs='+',
+                        help='LCM channel name to publish on')
+    args = parser.parse_args()
+    return args
+
+
+def publish_mode(mode, print_msg="", lcm_ch=DEFAULT_LCM_CHANNEL):
     """
     Publish an LCM ``ModeInput`` message with mode value ``mode`` on channel
     ``ch``.  Prints ``print_msg`` to console, if provided.
@@ -60,22 +71,25 @@ def header_str(kill_int):
 
 
 def main():
+    # Parse input
+    channel = parse_args().channel[0]
+
     try:
         # Print header
         print(header_str(OFF))
+        print(f"Publishing to channel \"{channel}\"")
 
         # Initially set mode to be ``OFF``
         mode = OFF
-        publish_mode(mode)
 
         # Repeatedly prompt for mode input
         while True:
             mode = input(f'Enter mode:  ')
             try:
-                publish_mode(int(mode))
+                publish_mode(int(mode), lcm_ch=channel)
             except ValueError:
                 if mode.upper() == 'Q':
-                    publish_mode(OFF, 'Exiting.')
+                    publish_mode(OFF, 'Exiting.', lcm_ch=channel)
                     break
                 else:
                     print('Invalid input.')
@@ -83,8 +97,8 @@ def main():
                 print('Invalid input.')
     except KeyboardInterrupt:
         print('Keyboard interrupt.  Killing Robot and exiting.')
-        for _ in range(5): # ensure KILL message is received
-            publish_mode(KILL)
+        for _ in range(5):  # ensure KILL message is received
+            publish_mode(KILL, lcm_ch=channel)
 
 
 if __name__ == '__main__':
