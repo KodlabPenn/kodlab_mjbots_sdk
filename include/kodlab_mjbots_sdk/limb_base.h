@@ -15,8 +15,7 @@
 #include <vector>
 #include <type_traits>
 #include <string>
-#include <Eigen/Core>
-#include <Eigen/Dense>
+#include <Eigen>
 #include "kodlab_mjbots_sdk/joint_base.h"
 
 namespace kodlab
@@ -29,6 +28,7 @@ namespace kodlab
 
 struct LimbConfig{
     std::vector<std::array<float,3>> actuator_offsets;
+    std::vector<std::array<float,3>> actuator_orientations;
     Eigen::MatrixXf selection_matrix;
 };
 
