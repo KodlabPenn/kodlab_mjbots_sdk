@@ -40,6 +40,7 @@ struct ControlLoopOptions {
   ::mjbots::pi3hat::Euler imu_world_offset_deg; /// IMU orientation offset. Useful for re-orienting gravity, etc.
   int attitude_rate_hz = 1000;              /// Frequency of the imu updates from the pi3hat. Options are limited to 1000
                                             /// 400, 200, 100.
+  bool dry_run = false;  ///< If true, torques will be printed to console and not sent to the joints
 };
 
 /*!
@@ -188,7 +189,8 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
   mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(
       std::move(joints_moteus), options.realtime_params,
       options.imu_mounting_deg, options.attitude_rate_hz,
-      robot_->GetIMUDataSharedPtr(), options.imu_world_offset_deg);
+      robot_->GetIMUDataSharedPtr(), options.imu_world_offset_deg,
+      options.dry_run);
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
