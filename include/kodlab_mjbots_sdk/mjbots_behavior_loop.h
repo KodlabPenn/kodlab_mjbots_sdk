@@ -103,8 +103,8 @@ public:
   template<class BehaviorType, typename... ConstructorArgs>
   void AddBehavior(ConstructorArgs &&... constructor_args)
   {
-    static_assert(kodlab::type_traits::is_base_of_template<BehaviorType,
-                                                           Behavior>::value);
+    static_assert(kodlab::type_traits::is_base_of_template<Behavior,
+                                                           BehaviorType>::value);
     behavior_mgr.template AddBehavior<BehaviorType>(this->robot_,
                                                     constructor_args...);
   }
@@ -120,8 +120,8 @@ public:
   template<class BehaviorType, typename... ConstructorArgs>
   void AddIOBehavior(ConstructorArgs &&... constructor_args)
   {
-    static_assert(kodlab::type_traits::is_base_of_template<BehaviorType,
-                                                           IOBehavior>::value);
+    static_assert(kodlab::type_traits::is_base_of_template<IOBehavior,
+                                                           BehaviorType>::value);
     behavior_mgr.template AddBehavior<BehaviorType>(this->robot_,
                                                     this->lcm_sub_,
                                                     this->lcm_,
@@ -139,8 +139,8 @@ public:
   template<class BehaviorType, typename... ConstructorArgs>
   void SetDefaultBehavior(ConstructorArgs &&... constructor_args)
   {
-    static_assert(kodlab::type_traits::is_base_of_template<BehaviorType,
-                                                           Behavior>::value);
+    static_assert(kodlab::type_traits::is_base_of_template<Behavior,
+                                                           BehaviorType>::value);
     behavior_mgr.template SetDefaultBehavior<BehaviorType>(this->robot_,
                                                            constructor_args...);
   }
@@ -157,8 +157,8 @@ public:
   template<class BehaviorType, typename... ConstructorArgs>
   void SetDefaultIOBehavior(ConstructorArgs &&... constructor_args)
   {
-    static_assert(kodlab::type_traits::is_base_of_template<BehaviorType,
-                                                           IOBehavior>::value);
+    static_assert(kodlab::type_traits::is_base_of_template<IOBehavior,
+                                                           BehaviorType>::value);
     behavior_mgr.template SetDefaultBehavior<BehaviorType>(this->robot_,
                                                            this->lcm_sub_,
                                                            this->lcm_,
