@@ -55,7 +55,23 @@ namespace kodlab
     }
 
     Eigen::Vector3f LimbBase::ForwardKinematics() {
-        
+        Eigen::Vector3f end_effector = {0.0, 0.0, 0.0};
+        float x;
+        float y;
+        float z;
+        for (int i = 0; i < joints_.size(); i++) {
+            x = config_.actuator_offsets.at(i)[0];
+            y = config_.actuator_offsets.at(i)[1];
+            z = config_.actuator_offsets.at(i)[2];
+
+            
+
+            end_effector(0) -= x;
+            end_effector(1) -= y;
+            end_effector(2) -= z;
+        }
+
+        return end_effector;
     }
 
 
