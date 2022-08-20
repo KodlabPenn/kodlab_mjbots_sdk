@@ -33,16 +33,14 @@ KILL = -1  # KILL behavior integer
 DEFAULT_LCM_CHANNEL = "mode_input"
 
 
-def parse_channel():
-    """
-    """
-    # Parse input arguments
+def parse_args():
+    """Parse input arguments"""
     parser = argparse.ArgumentParser(
         description='publish mode input messages via LCM.')
     parser.add_argument('channel', metavar='channel', type=str, nargs='+',
                         help='LCM channel name to publish on')
     args = parser.parse_args()
-    return args.channel[0]
+    return args
 
 
 def publish_mode(mode, print_msg="", lcm_ch=DEFAULT_LCM_CHANNEL):
@@ -74,7 +72,7 @@ def header_str(kill_int):
 
 def main():
     # Parse input
-    channel = parse_channel()
+    channel = parse_args().channel[0]
 
     try:
         # Print header
@@ -83,7 +81,6 @@ def main():
 
         # Initially set mode to be ``OFF``
         mode = OFF
-        publish_mode(mode, lcm_ch=channel)
 
         # Repeatedly prompt for mode input
         while True:
