@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "kodlab_mjbots_sdk/log.h"
+#include "kodlab_mjbots_sdk/string.h"  // kodlab::string::ScalarVectorToString
 
 namespace kodlab::mjbots {
 void MjbotsHardwareInterface::InitializeCommand() {
@@ -130,11 +131,11 @@ void MjbotsHardwareInterface::SendCommand() {
     commands_[servo].position.feedforward_torque = (dry_run_ ? 0 : joints[servo]->get_servo_torque());
   }
   if (print_torques_) {
-    std::fprintf(stdout, "Torques: ");
-    for (int servo = 0; servo < num_joints_; servo++) {
-      std::fprintf(stdout, "% 8.2f, ", joints[servo]->get_servo_torque());
+    std::vector<float> vec;
+    for (const auto& j : joints) {
+      vec.emplace_back(j->get_servo_torque());
     }
-    std::fprintf(stdout, "\n");
+    LOG_INFO("Torques: %s", kodlab::string::ScalarVectorToString(vec).c_str());
   }
 
   moteus_interface_->Cycle(moteus_data_);
