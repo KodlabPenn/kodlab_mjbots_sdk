@@ -47,7 +47,8 @@ class MjbotsHardwareInterface  {
    * @param imu_rate_hz Frequency of the imu updates from the pi3hat
    * @param imu_data_ptr Shared pointer to imu_data to use or nullptr if it should make its own
    * @param imu_world_offset_deg [Optional] IMU orientation offset. Useful for re-orienting gravity, etc.
-   * @param dry_run_in prints torque commands and sends zero-torques to Moteus controllers
+   * @param dry_run if true, sends zero-torques to Moteus controllers
+   * @param print_torques if true, prints torque commands
    */
   MjbotsHardwareInterface(std::vector<std::shared_ptr<JointMoteus>> joint_list,
                        const RealtimeParams &realtime_params,
@@ -55,7 +56,8 @@ class MjbotsHardwareInterface  {
                        int imu_rate_hz = 1000,
                        std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr = nullptr,
                        std::optional<::mjbots::pi3hat::Euler > imu_world_offset_deg = std::nullopt,
-                       bool dry_run_in = false
+                       bool dry_run = false,
+                       bool print_torques = false
                        );
 
   /**
@@ -123,6 +125,7 @@ class MjbotsHardwareInterface  {
   int num_joints_ = 0;                               /// Number of joints
   u_int64_t cycle_count_ = 0;                        /// Number of cycles/commands sent
   bool dry_run_;                                     ///< dry run active flag
+  bool print_torques_;                               ///< print torques active flag
 
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
 
