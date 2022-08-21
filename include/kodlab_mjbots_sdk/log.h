@@ -165,19 +165,19 @@
 #define PRINT(ostream, str, args...) std::fprintf(ostream, str NEWLINE, ##args)
 
 #ifndef NO_COLOR
-/**
- * @brief Print to console in color via an output stream
- * @param ostream output stream
- * @param ansi_fmt ANSI format sequence beginning with `CONSOLE_SEQ_ESC` and
- * `CONSOLE_SEQ_BEG`, and ending with `CONSOLE_SEQ_END`.  Use `FMT_TEXT` or
- * `FMT_TEXT_BG` macros to formulate this argument.
- * @param str string to be formatted and printed
- * @param args string format arguments
- */
-#define PRINT_FMT(ostream, ansi_fmt, str, args...) \
-  std::fprintf(ostream, ansi_fmt str RESET_COLOR NEWLINE, ##args)
+  /**
+   * @brief Print to console in color via an output stream
+   * @param ostream output stream
+   * @param ansi_fmt ANSI format sequence beginning with `CONSOLE_SEQ_ESC` and
+   * `CONSOLE_SEQ_BEG`, and ending with `CONSOLE_SEQ_END`.  Use `FMT_TEXT` or
+   * `FMT_TEXT_BG` macros to formulate this argument.
+   * @param str string to be formatted and printed
+   * @param args string format arguments
+   */
+  #define PRINT_FMT(ostream, ansi_fmt, str, args...) \
+    std::fprintf(ostream, ansi_fmt str RESET_COLOR NEWLINE, ##args)
 #else
-#define PRINT_FMT(ostream, color, str, args...) PRINT(ostream, ##args)
+  #define PRINT_FMT(ostream, color, str, args...) PRINT(ostream, ##args)
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -214,29 +214,29 @@
 #define COLOR_FATAL FMT_TEXT(FONT_BOLD, COLOR_RED_FG)  ///< Fatal ANSI font/color sequence
 
 #ifndef LOG_ARGS
-/**
- * @brief Log arguments
- * @param tag log severity tag
- */
-#define LOG_ARGS(tag) tag
+  /**
+   * @brief Log arguments
+   * @param tag log severity tag
+   */
+  #define LOG_ARGS(tag) tag
 #endif
 #ifndef LOG_FORMAT
-#define LOG_FORMAT "[%-6s] " ///< Log format string
+  #define LOG_FORMAT "[%-6s] " ///< Log format string
 #endif
 
 #ifndef VLOG_ARGS
-/**
- * @brief Verbose log arguments
- * @param tag log severity tag
- */
-#define VLOG_ARGS(tag) tag, __FILE__, __func__, __LINE__
+  /**
+   * @brief Verbose log arguments
+   * @param tag log severity tag
+   */
+  #define VLOG_ARGS(tag) tag, __FILE__, __func__, __LINE__
 #endif
 #ifndef VLOG_FORMAT
-#define VLOG_FORMAT "[%-6s][%-15s | %s:%d] "  ///< Verbose log format string
+  #define VLOG_FORMAT "[%-6s][%-15s | %s:%d] "  ///< Verbose log format string
 #endif
 
 #ifndef LOG_OSTREAM
-#define LOG_OSTREAM STDERR  ///< Logging output stream (default STDERR)
+  #define LOG_OSTREAM STDERR  ///< Logging output stream (default STDERR)
 #endif
 
 /**
@@ -256,323 +256,323 @@
 #define VLOG(msg, tag, args...) PRINT(LOG_OSTREAM, VLOG_FORMAT msg, VLOG_ARGS(tag), ##args)
 
 #ifndef NO_COLOR
-/**
- * @brief Log formatted message with severity tag to console
- * @param msg string to be formatted and logged
- * @param tag log severity tag
- * @param fmt_seq ANSI format sequence
- * @param args string format arguments
- */
-#define LOG_COLOR(msg, tag, fmt_seq, args...) PRINT_FMT(LOG_OSTREAM, fmt_seq, LOG_FORMAT msg RESET_COLOR, LOG_ARGS(tag), ##args)
+  /**
+   * @brief Log formatted message with severity tag to console
+   * @param msg string to be formatted and logged
+   * @param tag log severity tag
+   * @param fmt_seq ANSI format sequence
+   * @param args string format arguments
+   */
+  #define LOG_COLOR(msg, tag, fmt_seq, args...) PRINT_FMT(LOG_OSTREAM, fmt_seq, LOG_FORMAT msg RESET_COLOR, LOG_ARGS(tag), ##args)
 
-/**
- * @brief Verbosely log formatted message with severity tag to console
- * @param msg string to be formatted and logged
- * @param tag log severity tag
- * @param fmt_seq ANSI format sequence
- * @param args string format arguments
- */
-#define VLOG_COLOR(msg, tag, fmt_seq, args...) PRINT_FMT(LOG_OSTREAM, fmt_seq, VLOG_FORMAT msg RESET_COLOR, VLOG_ARGS(tag), ##args)
+  /**
+   * @brief Verbosely log formatted message with severity tag to console
+   * @param msg string to be formatted and logged
+   * @param tag log severity tag
+   * @param fmt_seq ANSI format sequence
+   * @param args string format arguments
+   */
+  #define VLOG_COLOR(msg, tag, fmt_seq, args...) PRINT_FMT(LOG_OSTREAM, fmt_seq, VLOG_FORMAT msg RESET_COLOR, VLOG_ARGS(tag), ##args)
 #else
-#define LOG_COLOR(msg, tag, color, args...) LOG(msg, tag, args)
-#define VLOG_COLOR(msg, tag, color, args...) VLOG(msg, tag, args)
+  #define LOG_COLOR(msg, tag, color, args...) LOG(msg, tag, args)
+  #define VLOG_COLOR(msg, tag, color, args...) VLOG(msg, tag, args)
 #endif
 
 #ifndef LOG_MIN_SEVERITY
-#define LOG_MIN_SEVERITY SEVERITY_ALL  ///< Minimum log severity (default SEVERITY_ALL)
+  #define LOG_MIN_SEVERITY SEVERITY_ALL  ///< Minimum log severity (default SEVERITY_ALL)
 #endif
 
 #if LOG_MIN_SEVERITY <= SEVERITY_TRACE
-/**
- * @brief Log message to console with `TRACE` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_TRACE(message, args...) LOG_COLOR(message, TAG_TRACE, COLOR_TRACE, ##args)
+  /**
+   * @brief Log message to console with `TRACE` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_TRACE(message, args...) LOG_COLOR(message, TAG_TRACE, COLOR_TRACE, ##args)
 
-/**
- * @brief Log verbose message to console with `TRACE` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_TRACE(message, args...) VLOG_COLOR(message, TAG_TRACE, COLOR_TRACE, ##args)
+  /**
+   * @brief Log verbose message to console with `TRACE` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_TRACE(message, args...) VLOG_COLOR(message, TAG_TRACE, COLOR_TRACE, ##args)
 
-/**
- * @brief Conditionally log message to console with `TRACE` severity level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_IF_TRACE(condition, message, args...) \
-    if (condition)                                \
-    LOG_TRACE(message, ##args)
+  /**
+   * @brief Conditionally log message to console with `TRACE` severity level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_IF_TRACE(condition, message, args...) \
+      if (condition)                                \
+      LOG_TRACE(message, ##args)
 
-/**
- * @brief Conditionally log verbose message to console with `TRACE` severity
- * level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_IF_TRACE(condition, message, args...) \
-    if (condition)                                \
-    VLOG_TRACE(message, ##args)
+  /**
+   * @brief Conditionally log verbose message to console with `TRACE` severity
+   * level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_IF_TRACE(condition, message, args...) \
+      if (condition)                                \
+      VLOG_TRACE(message, ##args)
 #else
-#define LOG_TRACE(message, args...)
-#define VLOG_TRACE(message, args...)
-#define LOG_IF_TRACE(condition, message, args...)
-#define VLOG_IF_TRACE(condition, message, args...)
+  #define LOG_TRACE(message, args...)
+  #define VLOG_TRACE(message, args...)
+  #define LOG_IF_TRACE(condition, message, args...)
+  #define VLOG_IF_TRACE(condition, message, args...)
 #endif
 
 #if LOG_MIN_SEVERITY <= SEVERITY_DEBUG
-/**
- * @brief Log message to console with `DEBUG` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_DEBUG(message, args...) LOG_COLOR(message, TAG_DEBUG, COLOR_DEBUG, ##args)
+  /**
+   * @brief Log message to console with `DEBUG` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_DEBUG(message, args...) LOG_COLOR(message, TAG_DEBUG, COLOR_DEBUG, ##args)
 
-/**
- * @brief Log verbose message to console with `DEBUG` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_DEBUG(message, args...) VLOG_COLOR(message, TAG_DEBUG, COLOR_DEBUG, ##args)
+  /**
+   * @brief Log verbose message to console with `DEBUG` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_DEBUG(message, args...) VLOG_COLOR(message, TAG_DEBUG, COLOR_DEBUG, ##args)
 
-/**
- * @brief Conditionally log message to console with `DEBUG` severity level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_IF_DEBUG(condition, message, args...) \
-    if (condition)                                \
-    LOG_DEBUG(message, ##args)
+  /**
+   * @brief Conditionally log message to console with `DEBUG` severity level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_IF_DEBUG(condition, message, args...) \
+      if (condition)                                \
+      LOG_DEBUG(message, ##args)
 
-/**
- * @brief Conditionally log verbose message to console with `DEBUG` severity
- * level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_IF_DEBUG(condition, message, args...) \
-    if (condition)                                \
-    VLOG_DEBUG(message, ##args)
+  /**
+   * @brief Conditionally log verbose message to console with `DEBUG` severity
+   * level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_IF_DEBUG(condition, message, args...) \
+      if (condition)                                \
+      VLOG_DEBUG(message, ##args)
 #else
-#define LOG_DEBUG(message, args...)
-#define VLOG_DEBUG(message, args...)
-#define LOG_IF_DEBUG(condition, message, args...)
-#define VLOG_IF_DEBUG(condition, message, args...)
+  #define LOG_DEBUG(message, args...)
+  #define VLOG_DEBUG(message, args...)
+  #define LOG_IF_DEBUG(condition, message, args...)
+  #define VLOG_IF_DEBUG(condition, message, args...)
 #endif
 
 #if LOG_MIN_SEVERITY <= SEVERITY_INFO
-/**
- * @brief Log message to console with `INFO` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_INFO(message, args...) LOG_COLOR(message, TAG_INFO, COLOR_INFO, ##args)
+  /**
+   * @brief Log message to console with `INFO` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_INFO(message, args...) LOG_COLOR(message, TAG_INFO, COLOR_INFO, ##args)
 
-/**
- * @brief Log verbose message to console with `INFO` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_INFO(message, args...) VLOG_COLOR(message, TAG_INFO, COLOR_INFO, ##args)
+  /**
+   * @brief Log verbose message to console with `INFO` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_INFO(message, args...) VLOG_COLOR(message, TAG_INFO, COLOR_INFO, ##args)
 
-/**
- * @brief Conditionally log message to console with `INFO` severity level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_IF_INFO(condition, message, args...) \
-    if (condition)                               \
-    LOG_INFO(message, ##args)
+  /**
+   * @brief Conditionally log message to console with `INFO` severity level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_IF_INFO(condition, message, args...) \
+      if (condition)                               \
+      LOG_INFO(message, ##args)
 
-/**
- * @brief Conditionally log verbose message to console with `INFO` severity
- * level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_IF_INFO(condition, message, args...) \
-    if (condition)                               \
-    VLOG_INFO(message, ##args)
+  /**
+   * @brief Conditionally log verbose message to console with `INFO` severity
+   * level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_IF_INFO(condition, message, args...) \
+      if (condition)                               \
+      VLOG_INFO(message, ##args)
 #else
-#define LOG_INFO(message, args...)
-#define VLOG_INFO(message, args...)
-#define LOG_IF_INFO(condition, message, args...)
-#define VLOG_IF_INFO(condition, message, args...)
+  #define LOG_INFO(message, args...)
+  #define VLOG_INFO(message, args...)
+  #define LOG_IF_INFO(condition, message, args...)
+  #define VLOG_IF_INFO(condition, message, args...)
 #endif
 
 #if LOG_MIN_SEVERITY <= SEVERITY_NOTICE
-/**
- * @brief Log message to console with `NOTICE` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_NOTICE(message, args...) LOG_COLOR(message, TAG_NOTICE, COLOR_NOTICE, ##args)
+  /**
+   * @brief Log message to console with `NOTICE` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_NOTICE(message, args...) LOG_COLOR(message, TAG_NOTICE, COLOR_NOTICE, ##args)
 
-/**
- * @brief Log verbose message to console with `NOTICE` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_NOTICE(message, args...) VLOG_COLOR(message, TAG_NOTICE, COLOR_NOTICE, ##args)
+  /**
+   * @brief Log verbose message to console with `NOTICE` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_NOTICE(message, args...) VLOG_COLOR(message, TAG_NOTICE, COLOR_NOTICE, ##args)
 
-/**
- * @brief Conditionally log message to console with `NOTICE` severity level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_IF_NOTICE(condition, message, args...) \
-    if (condition)                                \
-    LOG_NOTICE(message, ##args)
+  /**
+   * @brief Conditionally log message to console with `NOTICE` severity level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_IF_NOTICE(condition, message, args...) \
+      if (condition)                                \
+      LOG_NOTICE(message, ##args)
 
-/**
- * @brief Conditionally log verbose message to console with `NOTICE` severity
- * level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_IF_NOTICE(condition, message, args...) \
-    if (condition)                                \
-    VLOG_NOTICE(message, ##args)
+  /**
+   * @brief Conditionally log verbose message to console with `NOTICE` severity
+   * level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_IF_NOTICE(condition, message, args...) \
+      if (condition)                                \
+      VLOG_NOTICE(message, ##args)
 #else
-#define LOG_NOTICE(message, args...)
-#define VLOG_NOTICE(message, args...)
-#define LOG_IF_NOTICE(condition, message, args...)
-#define VLOG_IF_NOTICE(condition, message, args...)
+  #define LOG_NOTICE(message, args...)
+  #define VLOG_NOTICE(message, args...)
+  #define LOG_IF_NOTICE(condition, message, args...)
+  #define VLOG_IF_NOTICE(condition, message, args...)
 #endif
 
 #if LOG_MIN_SEVERITY <= SEVERITY_WARN
-/**
- * @brief Log message to console with `WARN` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_WARN(message, args...) LOG_COLOR(message, TAG_WARN, COLOR_WARN, ##args)
+  /**
+   * @brief Log message to console with `WARN` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_WARN(message, args...) LOG_COLOR(message, TAG_WARN, COLOR_WARN, ##args)
 
-/**
- * @brief Log verbose message to console with `WARN` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_WARN(message, args...) VLOG_COLOR(message, TAG_WARN, COLOR_WARN, ##args)
+  /**
+   * @brief Log verbose message to console with `WARN` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_WARN(message, args...) VLOG_COLOR(message, TAG_WARN, COLOR_WARN, ##args)
 
-/**
- * @brief Conditionally log message to console with `WARN` severity level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_IF_WARN(condition, message, args...) \
-    if (condition)                               \
-    LOG_WARN(message, ##args)
+  /**
+   * @brief Conditionally log message to console with `WARN` severity level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_IF_WARN(condition, message, args...) \
+      if (condition)                               \
+      LOG_WARN(message, ##args)
 
-/**
- * @brief Conditionally log verbose message to console with `WARN` severity
- * level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_IF_WARN(condition, message, args...) \
-    if (condition)                               \
-    VLOG_WARN(message, ##args)
+  /**
+   * @brief Conditionally log verbose message to console with `WARN` severity
+   * level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_IF_WARN(condition, message, args...) \
+      if (condition)                               \
+      VLOG_WARN(message, ##args)
 #else
-#define LOG_WARN(message, args...)
-#define VLOG_WARN(message, args...)
-#define LOG_IF_WARN(condition, message, args...)
-#define VLOG_IF_WARN(condition, message, args...)
+  #define LOG_WARN(message, args...)
+  #define VLOG_WARN(message, args...)
+  #define LOG_IF_WARN(condition, message, args...)
+  #define VLOG_IF_WARN(condition, message, args...)
 #endif
 
 #if LOG_MIN_SEVERITY <= SEVERITY_ERROR
-/**
- * @brief Log message to console with `ERROR` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_ERROR(message, args...) LOG_COLOR(message, TAG_ERROR, COLOR_ERROR, ##args)
+  /**
+   * @brief Log message to console with `ERROR` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_ERROR(message, args...) LOG_COLOR(message, TAG_ERROR, COLOR_ERROR, ##args)
 
-/**
- * @brief Log verbose message to console with `ERROR` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_ERROR(message, args...) VLOG_COLOR(message, TAG_ERROR, COLOR_ERROR, ##args)
+  /**
+   * @brief Log verbose message to console with `ERROR` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_ERROR(message, args...) VLOG_COLOR(message, TAG_ERROR, COLOR_ERROR, ##args)
 
-/**
- * @brief Conditionally log message to console with `ERROR` severity level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_IF_ERROR(condition, message, args...) \
-    if (condition)                                \
-    LOG_ERROR(message, ##args)
+  /**
+   * @brief Conditionally log message to console with `ERROR` severity level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_IF_ERROR(condition, message, args...) \
+      if (condition)                                \
+      LOG_ERROR(message, ##args)
 
-/**
- * @brief Conditionally log verbose message to console with `ERROR` severity
- * level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_IF_ERROR(condition, message, args...) \
-    if (condition)                                \
-    VLOG_ERROR(message, ##args)
+  /**
+   * @brief Conditionally log verbose message to console with `ERROR` severity
+   * level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_IF_ERROR(condition, message, args...) \
+      if (condition)                                \
+      VLOG_ERROR(message, ##args)
 #else
-#define LOG_ERROR(message, args...)
-#define VLOG_ERROR(message, args...)
-#define LOG_IF_ERROR(condition, message, args...)
-#define VLOG_IF_ERROR(condition, message, args...)
+  #define LOG_ERROR(message, args...)
+  #define VLOG_ERROR(message, args...)
+  #define LOG_IF_ERROR(condition, message, args...)
+  #define VLOG_IF_ERROR(condition, message, args...)
 #endif
 
 #if LOG_MIN_SEVERITY <= SEVERITY_FATAL
-/**
- * @brief Log message to console with `FATAL` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_FATAL(message, args...) LOG_COLOR(message, TAG_FATAL, COLOR_FATAL, ##args)
+  /**
+   * @brief Log message to console with `FATAL` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_FATAL(message, args...) LOG_COLOR(message, TAG_FATAL, COLOR_FATAL, ##args)
 
-/**
- * @brief Log verbose message to console with `FATAL` severity level
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_FATAL(message, args...) VLOG_COLOR(message, TAG_FATAL, COLOR_FATAL, ##args)
+  /**
+   * @brief Log verbose message to console with `FATAL` severity level
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_FATAL(message, args...) VLOG_COLOR(message, TAG_FATAL, COLOR_FATAL, ##args)
 
-/**
- * @brief Conditionally log message to console with `FATAL` severity level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define LOG_IF_FATAL(condition, message, args...) \
-    if (condition)                                \
-    LOG_FATAL(message, ##args)
+  /**
+   * @brief Conditionally log message to console with `FATAL` severity level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define LOG_IF_FATAL(condition, message, args...) \
+      if (condition)                                \
+      LOG_FATAL(message, ##args)
 
-/**
- * @brief Conditionally log verbose message to console with `FATAL` severity
- * level
- * @param condition condition dictating whether to log
- * @param message string to be formatted and logged
- * @param args string format arguments
- */
-#define VLOG_IF_FATAL(condition, message, args...) \
-    if (condition)                                \
-    VLOG_FATAL(message, ##args)
+  /**
+   * @brief Conditionally log verbose message to console with `FATAL` severity
+   * level
+   * @param condition condition dictating whether to log
+   * @param message string to be formatted and logged
+   * @param args string format arguments
+   */
+  #define VLOG_IF_FATAL(condition, message, args...) \
+      if (condition)                                \
+      VLOG_FATAL(message, ##args)
 #else
-#define LOG_FATAL(message, args...)
-#define VLOG_FATAL(message, args...)
-#define LOG_IF_FATAL(condition, message, args...)
-#define VLOG_IF_FATAL(condition, message, args...)
+  #define LOG_FATAL(message, args...)
+  #define VLOG_FATAL(message, args...)
+  #define LOG_IF_FATAL(condition, message, args...)
+  #define VLOG_IF_FATAL(condition, message, args...)
 #endif
 
