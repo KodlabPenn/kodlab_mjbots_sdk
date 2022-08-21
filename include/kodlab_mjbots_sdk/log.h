@@ -126,10 +126,18 @@
 // Log arguments & formatting flags
 // TODO(ethanmusser): Add time to log output.
 #ifndef LOG_ARGS
-#define LOG_ARGS(tag) tag, __FILE__, __func__, __LINE__
+#define LOG_ARGS(tag) tag
 #endif
 #ifndef LOG_FORMAT
-#define LOG_FORMAT "[%-6s][%-15s | %s:%d] "
+#define LOG_FORMAT "[%-6s] "
+#endif
+
+// Verbose log arguments & formatting flags
+#ifndef VLOG_ARGS
+#define VLOG_ARGS(tag) tag, __FILE__, __func__, __LINE__
+#endif
+#ifndef VLOG_FORMAT
+#define VLOG_FORMAT "[%-6s][%-15s | %s:%d] "
 #endif
 
 // Default ostream (default STDERR)
@@ -140,13 +148,16 @@
 // Log to console
 // TODO(ethanmusser): Implement logging to file.
 #define LOG(msg, tag, args...) PRINT(LOG_OSTREAM, LOG_FORMAT msg NEWLINE, LOG_ARGS(tag), ##args)
+#define VLOG(msg, tag, args...) PRINT(LOG_OSTREAM, VLOG_FORMAT msg NEWLINE, VLOG_ARGS(tag), ##args)
 #ifndef NO_COLOR
 #define LOG_COLOR(msg, tag, color, args...) PRINT(LOG_OSTREAM, color LOG_FORMAT msg NEWLINE RESET_COLOR, LOG_ARGS(tag), ##args)
+#define VLOG_COLOR(msg, tag, color, args...) PRINT(LOG_OSTREAM, color VLOG_FORMAT msg NEWLINE RESET_COLOR, VLOG_ARGS(tag), ##args)
 #else
 #define LOG_COLOR(msg, tag, color, args...) LOG(msg, tag, args)
+#define VLOG_COLOR(msg, tag, color, args...) VLOG(msg, tag, args)
 #endif
 
-// Minimum log severity (default DEBUG)
+// Minimum log severity (default TRACE)
 #ifndef LOG_MIN_SEVERITY
 #define LOG_MIN_SEVERITY SEVERITY_TRACE
 #endif
@@ -154,77 +165,119 @@
 // Trace logging
 #if LOG_MIN_SEVERITY <= SEVERITY_TRACE
 #define LOG_TRACE(message, args...) LOG_COLOR(message, TAG_TRACE, COLOR_TRACE, ##args)
+#define VLOG_TRACE(message, args...) VLOG_COLOR(message, TAG_TRACE, COLOR_TRACE, ##args)
 #define LOG_IF_TRACE(condition, message, args...) \
     if (condition)                                \
     LOG_TRACE(message, ##args)
+#define VLOG_IF_TRACE(condition, message, args...) \
+    if (condition)                                \
+    VLOG_TRACE(message, ##args)
 #else
 #define LOG_TRACE(message, args...)
+#define VLOG_TRACE(message, args...)
 #define LOG_IF_TRACE(condition, message, args...)
+#define VLOG_IF_TRACE(condition, message, args...)
 #endif
 
 // Debug logging
 #if LOG_MIN_SEVERITY <= SEVERITY_DEBUG
 #define LOG_DEBUG(message, args...) LOG_COLOR(message, TAG_DEBUG, COLOR_DEBUG, ##args)
+#define VLOG_DEBUG(message, args...) VLOG_COLOR(message, TAG_DEBUG, COLOR_DEBUG, ##args)
 #define LOG_IF_DEBUG(condition, message, args...) \
     if (condition)                                \
     LOG_DEBUG(message, ##args)
+#define VLOG_IF_DEBUG(condition, message, args...) \
+    if (condition)                                \
+    VLOG_DEBUG(message, ##args)
 #else
 #define LOG_DEBUG(message, args...)
+#define VLOG_DEBUG(message, args...)
 #define LOG_IF_DEBUG(condition, message, args...)
+#define VLOG_IF_DEBUG(condition, message, args...)
 #endif
 
 // Info logging
 #if LOG_MIN_SEVERITY <= SEVERITY_INFO
 #define LOG_INFO(message, args...) LOG_COLOR(message, TAG_INFO, COLOR_INFO, ##args)
+#define VLOG_INFO(message, args...) VLOG_COLOR(message, TAG_INFO, COLOR_INFO, ##args)
 #define LOG_IF_INFO(condition, message, args...) \
     if (condition)                               \
     LOG_INFO(message, ##args)
+#define VLOG_IF_INFO(condition, message, args...) \
+    if (condition)                               \
+    VLOG_INFO(message, ##args)
 #else
 #define LOG_INFO(message, args...)
+#define VLOG_INFO(message, args...)
 #define LOG_IF_INFO(condition, message, args...)
+#define VLOG_IF_INFO(condition, message, args...)
 #endif
 
 // Notice logging
 #if LOG_MIN_SEVERITY <= SEVERITY_NOTICE
 #define LOG_NOTICE(message, args...) LOG_COLOR(message, TAG_NOTICE, COLOR_NOTICE, ##args)
+#define VLOG_NOTICE(message, args...) VLOG_COLOR(message, TAG_NOTICE, COLOR_NOTICE, ##args)
 #define LOG_IF_NOTICE(condition, message, args...) \
     if (condition)                                \
     LOG_NOTICE(message, ##args)
+#define VLOG_IF_NOTICE(condition, message, args...) \
+    if (condition)                                \
+    VLOG_NOTICE(message, ##args)
 #else
 #define LOG_NOTICE(message, args...)
+#define VLOG_NOTICE(message, args...)
 #define LOG_IF_NOTICE(condition, message, args...)
+#define VLOG_IF_NOTICE(condition, message, args...)
 #endif
 
 // Warn logging
 #if LOG_MIN_SEVERITY <= SEVERITY_WARN
 #define LOG_WARN(message, args...) LOG_COLOR(message, TAG_WARN, COLOR_WARN, ##args)
+#define VLOG_WARN(message, args...) VLOG_COLOR(message, TAG_WARN, COLOR_WARN, ##args)
 #define LOG_IF_WARN(condition, message, args...) \
     if (condition)                               \
     LOG_WARN(message, ##args)
+#define VLOG_IF_WARN(condition, message, args...) \
+    if (condition)                               \
+    VLOG_WARN(message, ##args)
 #else
 #define LOG_WARN(message, args...)
+#define VLOG_WARN(message, args...)
 #define LOG_IF_WARN(condition, message, args...)
+#define VLOG_IF_WARN(condition, message, args...)
 #endif
 
 // Error logging
 #if LOG_MIN_SEVERITY <= SEVERITY_ERROR
 #define LOG_ERROR(message, args...) LOG_COLOR(message, TAG_ERROR, COLOR_ERROR, ##args)
+#define VLOG_ERROR(message, args...) VLOG_COLOR(message, TAG_ERROR, COLOR_ERROR, ##args)
 #define LOG_IF_ERROR(condition, message, args...) \
     if (condition)                                \
     LOG_ERROR(message, ##args)
+#define VLOG_IF_ERROR(condition, message, args...) \
+    if (condition)                                \
+    VLOG_ERROR(message, ##args)
 #else
 #define LOG_ERROR(message, args...)
+#define VLOG_ERROR(message, args...)
 #define LOG_IF_ERROR(condition, message, args...)
+#define VLOG_IF_ERROR(condition, message, args...)
 #endif
 
 // Fatal logging
 #if LOG_MIN_SEVERITY <= SEVERITY_FATAL
 #define LOG_FATAL(message, args...) LOG_COLOR(message, TAG_FATAL, COLOR_FATAL, ##args)
+#define VLOG_FATAL(message, args...) VLOG_COLOR(message, TAG_FATAL, COLOR_FATAL, ##args)
 #define LOG_IF_FATAL(condition, message, args...) \
     if (condition)                                \
     LOG_FATAL(message, ##args)
+#define VLOG_IF_FATAL(condition, message, args...) \
+    if (condition)                                \
+    VLOG_FATAL(message, ##args)
 #else
 #define LOG_FATAL(message, args...)
+#define VLOG_FATAL(message, args...)
 #define LOG_IF_FATAL(condition, message, args...)
+#define VLOG_IF_FATAL(condition, message, args...)
 #endif
 
