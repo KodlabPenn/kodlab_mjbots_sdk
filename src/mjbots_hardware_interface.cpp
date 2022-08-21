@@ -9,6 +9,8 @@
 #include <iostream>
 #include <algorithm>
 
+#include "kodlab_mjbots_sdk/log.h"
+
 namespace kodlab::mjbots {
 void MjbotsHardwareInterface::InitializeCommand() {
   for (const auto &joint : joints) {
@@ -53,10 +55,13 @@ MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<Joi
                                                  int imu_rate_hz,
                                                  std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr,
                                                  std::optional<::mjbots::pi3hat::Euler> imu_world_offset_deg,
-                                                 bool dry_run_in)
+                                                 bool dry_run,
+                                                 bool print_torques)
     : imu_data_(imu_data_ptr ? imu_data_ptr : std::make_shared<::kodlab::IMUData<float>>()),
-      dry_run_(dry_run_in)
+      dry_run_(dry_run),
+      print_torques_(print_torques)
 { 
+  LOG_IF_WARN(dry_run_, "\nDRY RUN: NO TORQUES COMMANDED");
   joints = joint_ptrs;
   num_joints_ = joints.size();
 
@@ -121,14 +126,12 @@ void MjbotsHardwareInterface::ProcessReply() {
 void MjbotsHardwareInterface::SendCommand() {
   cycle_count_++;
 
-  if (!dry_run_) {
-    for (int servo = 0; servo < num_joints_; servo++) {// TODO Move to a seperate update method (allow non-ff torque commands)?
-      commands_[servo].position.feedforward_torque = joints[servo]->get_servo_torque();
-    }
-  } else {
+  for (int servo = 0; servo < num_joints_; servo++) {// TODO Move to a seperate update method (allow non-ff torque commands)?
+    commands_[servo].position.feedforward_torque = (dry_run_ ? 0 : joints[servo]->get_servo_torque());
+  }
+  if (print_torques_) {
     std::fprintf(stdout, "Torques: ");
     for (int servo = 0; servo < num_joints_; servo++) {
-      commands_[servo].position.feedforward_torque = 0.0;
       std::fprintf(stdout, "% 8.2f, ", joints[servo]->get_servo_torque());
     }
     std::fprintf(stdout, "\n");
