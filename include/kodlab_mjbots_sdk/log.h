@@ -154,81 +154,77 @@
 // Trace logging
 #if LOG_MIN_SEVERITY <= SEVERITY_TRACE
 #define LOG_TRACE(message, args...) LOG_COLOR(message, TAG_TRACE, COLOR_TRACE, ##args)
+#define LOG_IF_TRACE(condition, message, args...) \
+    if (condition)                                \
+    LOG_TRACE(message, ##args)
 #else
 #define LOG_TRACE(message, args...)
+#define LOG_IF_TRACE(condition, message, args...)
 #endif
 
 // Debug logging
 #if LOG_MIN_SEVERITY <= SEVERITY_DEBUG
 #define LOG_DEBUG(message, args...) LOG_COLOR(message, TAG_DEBUG, COLOR_DEBUG, ##args)
+#define LOG_IF_DEBUG(condition, message, args...) \
+    if (condition)                                \
+    LOG_DEBUG(message, ##args)
 #else
 #define LOG_DEBUG(message, args...)
+#define LOG_IF_DEBUG(condition, message, args...)
 #endif
 
 // Info logging
 #if LOG_MIN_SEVERITY <= SEVERITY_INFO
 #define LOG_INFO(message, args...) LOG_COLOR(message, TAG_INFO, COLOR_INFO, ##args)
+#define LOG_IF_INFO(condition, message, args...) \
+    if (condition)                               \
+    LOG_INFO(message, ##args)
 #else
 #define LOG_INFO(message, args...)
+#define LOG_IF_INFO(condition, message, args...)
 #endif
 
 // Notice logging
 #if LOG_MIN_SEVERITY <= SEVERITY_NOTICE
 #define LOG_NOTICE(message, args...) LOG_COLOR(message, TAG_NOTICE, COLOR_NOTICE, ##args)
+#define LOG_IF_NOTICE(condition, message, args...) \
+    if (condition)                                \
+    LOG_NOTICE(message, ##args)
 #else
 #define LOG_NOTICE(message, args...)
+#define LOG_IF_NOTICE(condition, message, args...)
 #endif
 
 // Warn logging
 #if LOG_MIN_SEVERITY <= SEVERITY_WARN
 #define LOG_WARN(message, args...) LOG_COLOR(message, TAG_WARN, COLOR_WARN, ##args)
+#define LOG_IF_WARN(condition, message, args...) \
+    if (condition)                               \
+    LOG_WARN(message, ##args)
 #else
 #define LOG_WARN(message, args...)
+#define LOG_IF_WARN(condition, message, args...)
 #endif
 
 // Error logging
 #if LOG_MIN_SEVERITY <= SEVERITY_ERROR
 #define LOG_ERROR(message, args...) LOG_COLOR(message, TAG_ERROR, COLOR_ERROR, ##args)
+#define LOG_IF_ERROR(condition, message, args...) \
+    if (condition)                                \
+    LOG_ERROR(message, ##args)
 #else
 #define LOG_ERROR(message, args...)
+#define LOG_IF_ERROR(condition, message, args...)
 #endif
 
 // Fatal logging
 #if LOG_MIN_SEVERITY <= SEVERITY_FATAL
 #define LOG_FATAL(message, args...) LOG_COLOR(message, TAG_FATAL, COLOR_FATAL, ##args)
-#else
-#define LOG_FATAL(message, args...)
-#endif
-
-// Conditional logs (always defined)
-#if LOG_MIN_SEVERITY <= SEVERITY_NONE
-#define LOG_IF_TRACE(condition, message, args...) \
-    if (condition)                                \
-    LOG_COLOR(message, TAG_TRACE, COLOR_TRACE, ##args)
-#define LOG_IF_DEBUG(condition, message, args...) \
-    if (condition)                                \
-    LOG_COLOR(message, TAG_DEBUG, COLOR_DEBUG, ##args)
-#define LOG_IF_INFO(condition, message, args...) \
-    if (condition)                               \
-    LOG_COLOR(message, TAG_INFO, COLOR_INFO, ##args)
-#define LOG_IF_NOTICE(condition, message, args...) \
-    if (condition)                                \
-    LOG_COLOR(message, TAG_NOTICE, COLOR_NOTICE, ##args)
-#define LOG_IF_WARN(condition, message, args...) \
-    if (condition)                               \
-    LOG_COLOR(message, TAG_WARN, COLOR_WARN, ##args)
-#define LOG_IF_ERROR(condition, message, args...) \
-    if (condition)                                \
-    LOG_COLOR(message, TAG_ERROR, COLOR_ERROR, ##args)
 #define LOG_IF_FATAL(condition, message, args...) \
     if (condition)                                \
-    LOG_COLOR(message, TAG_FATAL, COLOR_FATAL, ##args)
+    LOG_FATAL(message, ##args)
 #else
-#define LOG_IF_TRACE(condition, message, args...)
-#define LOG_IF_DEBUG(condition, message, args...)
-#define LOG_IF_INFO(condition, message, args...)
-#define LOG_IF_NOTICE(condition, message, args...)
-#define LOG_IF_WARN(condition, message, args...)
-#define LOG_IF_ERROR(condition, message, args...)
+#define LOG_FATAL(message, args...)
 #define LOG_IF_FATAL(condition, message, args...)
 #endif
+
