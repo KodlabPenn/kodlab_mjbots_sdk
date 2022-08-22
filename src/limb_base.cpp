@@ -30,16 +30,14 @@ namespace kodlab
 
     void LimbBase::Update(std::vector<float> pos_list, std::vector<float> vel_list) {
         for (int i = 0; i < joints_.size(); i++) {
-            positions_.push_back(joints_[i]->get_position());
+            // update position/velocity/torque vectors
+            positions_[i] = joints_[i]->get_position();
+            velocities_[i] = joints_[i]->get_velocity();
+            torques_[i] = joints_[i]->get_servo_torque();
         }
 
-        for (int i = 0; i < joints_.size(); i++) {
-            velocities_.push_back(joints_[i]->get_velocity());
-        }
-
-        for (int i = 0; i < joints_.size(); i++) {
-            torques_.push_back(joints_[i]->get_servo_torque());
-        }
+        LimbBase::set_positions(pos_list);
+        LimbBase::set_velocities(pos_list);
     }
 
     std::vector<float> LimbBase::get_positions() {
@@ -54,6 +52,18 @@ namespace kodlab
         return torques_;
     }
 
+    void LimbBase::set_positions(std::vector<float> positions) {
+        for (int i = 0; i < joints_.size(); i++) {
+            joints_[i]->set_position(positions[i]);
+        }
+    }
+
+    void LimbBase::set_velocities(std::vector<float> velocities) {
+        for (int i = 0; i < joints_.size(); i++) {
+            joints_[i]->set_velocity(velocities[i]);
+        }
+    }
+
     Eigen::Vector3f LimbBase::ForwardKinematics() {
         Eigen::Vector3f end_effector = {0.0, 0.0, 0.0};
         float x;
@@ -66,9 +76,9 @@ namespace kodlab
 
             
 
-            end_effector(0) -= x;
-            end_effector(1) -= y;
-            end_effector(2) -= z;
+            end_effector(0) += x;
+            end_effector(1) += y;
+            end_effector(2) += z;
         }
 
         return end_effector;

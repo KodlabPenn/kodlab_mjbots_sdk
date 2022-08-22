@@ -15,8 +15,9 @@
 #include <vector>
 #include <type_traits>
 #include <string>
-#include <Eigen>
 #include "kodlab_mjbots_sdk/joint_base.h"
+#include <Eigen/Core>
+#include <Eigen/Dense>
 
 namespace kodlab
 {
@@ -106,21 +107,21 @@ class LimbBase {
          * 
          * @return std::vector<float> 
          */
-        std::vector<float> get_positions();
+        virtual std::vector<float> get_positions();
 
         /**
          * @brief Get the velocities of each joint in the leg
          * 
          * @return std::vector<float> 
          */
-        std::vector<float> get_velocities();
+        virtual std::vector<float> get_velocities();
 
         /**
          * @brief Get the Torques of each joint in the leg
          * 
          * @return std::vector<float> 
          */
-        std::vector<float> get_torques();
+        virtual std::vector<float> get_torques();
 
         /**
          * @brief Set the positions of each joint in the leg
@@ -153,6 +154,5 @@ class LimbBase {
         std::vector<float> positions_;      /// positions of each joint in leg [rad]
         std::vector<float> velocities_;     /// velocities of each joint in leg [rad/s]
         std::vector<float> torques_;        /// Constrained torques for each joint in the leg [N m]
-
 };
 }
