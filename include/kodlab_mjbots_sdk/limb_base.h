@@ -18,6 +18,7 @@
 #include "kodlab_mjbots_sdk/joint_base.h"
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <Eigen/StdVector>
 
 namespace kodlab
 {
@@ -28,8 +29,8 @@ namespace kodlab
  */
 
 struct LimbConfig{
-    std::vector<std::array<float,3>> actuator_offsets;
-    std::vector<std::array<float,3>> actuator_orientations;
+    std::vector<std::array<float,3>> actuator_offsets; // Offset between centers of two joints, in the frame of the first joint
+    std::vector<Eigen::Matrix3f,Eigen::aligned_allocator<Eigen::Matrix3f> > actuator_orientations; // Rotation matrices for each joint with respect to the previous joint (begins with R0_1)
     Eigen::MatrixXf selection_matrix;
 };
 
@@ -79,7 +80,7 @@ class LimbBase {
          * 
          * @return Eigen::VectorXf 
          */
-        Eigen::VectorXf ForwardKinematics();
+        Eigen::MatrixXf ForwardKinematics();
 
         /**
          * @brief Calculates the Jacobian of the leg
