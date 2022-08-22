@@ -287,10 +287,29 @@ Normal build is
 
     cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake
 
+
+
 # Running Code
 To Run code, first scp the binary onto the pi, and then Run it as sudo using:
 
     sudo ./code_binary
+
+# Troubleshooting 
+If you encounter the below a pthread error during Cmake keep the below commands in the main repo directory CMakeLists.txt after the endif()
+
+    set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+    set(CMAKE_HAVE_THREADS_LIBRARY 1)
+    set(CMAKE_USE_WIN32_THREADS_INIT 0)
+    set(CMAKE_USE_PTHREADS_INIT 1)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+
+If you run into another pthread error while running the "make" command then you can run the following command in a terminal to fix it
+   
+    cd <path to rpi folder's rootfs>/usr/lib/arm-linux-gnueabihf; ln -s ../../../lib/arm-linux-gnueabihf/libpthread.so.0 libpthread.so
+
+The reason you could have got an error while making is because there was a broken link on the rpi folders you rsynced or zip file you got.
+
+Fix can be found here: https://github.com/Azure/azure-iot-sdk-c/issues/1093
 
 # Citation
 To cite this repo please use the information in the CITATION.cff file
