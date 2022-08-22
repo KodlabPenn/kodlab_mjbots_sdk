@@ -37,7 +37,7 @@ namespace kodlab
         }
 
         LimbBase::set_positions(pos_list);
-        LimbBase::set_velocities(pos_list);
+        LimbBase::set_velocities(vel_list);
     }
 
     std::vector<float> LimbBase::get_positions() {
@@ -64,26 +64,18 @@ namespace kodlab
         }
     }
 
-    Eigen::Vector3f LimbBase::ForwardKinematics() {
-        Eigen::Vector3f end_effector = {0.0, 0.0, 0.0};
-        float x;
-        float y;
-        float z;
-        for (int i = 0; i < joints_.size(); i++) {
-            x = config_.actuator_offsets.at(i)[0];
-            y = config_.actuator_offsets.at(i)[1];
-            z = config_.actuator_offsets.at(i)[2];
-
-            
-
-            end_effector(0) += x;
-            end_effector(1) += y;
-            end_effector(2) += z;
+    Eigen::Matrix4f LimbBase::ForwardKinematics() {
+        Eigen::Matrix4f trans_matrix;
+        Eigen::Matrix4f temp_trans = Matrix4f::Zero();
+        temp_trans(3,3) = 1;
+        for (int i = 0; i < config_.actuator_offsets.size(); i++) {
+            temp_trans.block<3,3>(0,0) = config_.actuator_orientations[i];
+            temp_trans.block<3,1>(3,0) = config_.actuator_offsets[i];
+            trans_matrix = trans_matrix * temp_trans;
         }
 
-        return end_effector;
+        return trans_matrix;
     }
 
 
 }
-
