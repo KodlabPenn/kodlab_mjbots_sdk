@@ -9,6 +9,9 @@
 #include <iostream>
 #include <algorithm>
 
+#include "kodlab_mjbots_sdk/log.h"
+#include "kodlab_mjbots_sdk/string.h"  // kodlab::string::ScalarVectorToString
+
 namespace kodlab::mjbots {
 void MjbotsHardwareInterface::InitializeCommand() {
   for (const auto &joint : joints) {
@@ -52,9 +55,14 @@ MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<Joi
                                                  ::mjbots::pi3hat::Euler imu_mounting_deg,
                                                  int imu_rate_hz,
                                                  std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr,
-                                                 std::optional<::mjbots::pi3hat::Euler> imu_world_offset_deg) 
-    : imu_data_(imu_data_ptr ? imu_data_ptr : std::make_shared<::kodlab::IMUData<float>>())
+                                                 std::optional<::mjbots::pi3hat::Euler> imu_world_offset_deg,
+                                                 bool dry_run,
+                                                 bool print_torques)
+    : imu_data_(imu_data_ptr ? imu_data_ptr : std::make_shared<::kodlab::IMUData<float>>()),
+      dry_run_(dry_run),
+      print_torques_(print_torques)
 { 
+  LOG_IF_WARN(dry_run_, "\nDRY RUN: NO TORQUES COMMANDED");
   joints = joint_ptrs;
   num_joints_ = joints.size();
 
@@ -118,9 +126,16 @@ void MjbotsHardwareInterface::ProcessReply() {
 
 void MjbotsHardwareInterface::SendCommand() {
   cycle_count_++;
-  
-  for (int servo=0; servo < num_joints_;servo++) {// TODO Move to a seperate update method (allow non-ff torque commands)?
-    commands_[servo].position.feedforward_torque = joints[servo]->get_servo_torque();
+
+  for (int servo = 0; servo < num_joints_; servo++) {// TODO Move to a seperate update method (allow non-ff torque commands)?
+    commands_[servo].position.feedforward_torque = (dry_run_ ? 0 : joints[servo]->get_servo_torque());
+  }
+  if (print_torques_) {
+    std::vector<float> vec;
+    for (const auto& j : joints) {
+      vec.emplace_back(j->get_servo_torque());
+    }
+    LOG_INFO("Torques: %s", kodlab::string::ScalarVectorToString(vec).c_str());
   }
 
   moteus_interface_->Cycle(moteus_data_);
