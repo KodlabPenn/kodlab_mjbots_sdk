@@ -32,25 +32,28 @@ class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMoto
     }
     void PrepareLog() override
     {
+        // Populate log message with data from current control loop cycle
         for (int servo = 0; servo < num_joints_; servo++)
         {
-            log_data_.positions[servo] = robot_->GetJointPositions()[servo];
-            log_data_.velocities[servo] = robot_->GetJointVelocities()[servo];
-            log_data_.modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
-            log_data_.torques[servo] = robot_->GetJointTorqueCmd()[servo];
+            log_data_->positions[servo] = robot_->GetJointPositions()[servo];
+            log_data_->velocities[servo] = robot_->GetJointVelocities()[servo];
+            log_data_->modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
+            log_data_->torques[servo] = robot_->GetJointTorqueCmd()[servo];
         }
+
+        // Fill remaining log message fields with zeros
         for (int servo = num_joints_; servo < 13; servo++)
         {
-            log_data_.positions[servo] = 0;
-            log_data_.velocities[servo] = 0;
-            log_data_.modes[servo] = 0;
-            log_data_.torques[servo] = 0;
+            log_data_->positions[servo] = 0;
+            log_data_->velocities[servo] = 0;
+            log_data_->modes[servo] = 0;
+            log_data_->torques[servo] = 0;
         }
     }
 
-    void ProcessInput() override
+    void ProcessInput(const ModeInput &input_data) override
     {
-        robot_->mode = lcm_sub_.data_.mode;
+        robot_->mode = input_data.mode;
         std::cout << "Switching to behavior " << robot_->mode << std::endl;
         // If the kill robot mode is detected kill robot using CTRL_C flag handler.
         if (robot_->mode == robot_->KILL_ROBOT)
@@ -76,6 +79,7 @@ int main(int argc, char **argv)
     // Define robot options
     kodlab::mjbots::ControlLoopOptions options;
     options.log_channel_name = "motor_data";
+    options.input_channel_name = "mode_input";
     options.frequency = 1000;
     options.realtime_params.main_cpu = 3;
     options.realtime_params.can_cpu = 2;

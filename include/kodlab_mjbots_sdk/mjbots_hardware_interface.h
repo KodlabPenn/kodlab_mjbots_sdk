@@ -10,6 +10,7 @@
 #include <map>
 #include <future>
 #include <memory>
+#include <optional>
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
@@ -44,13 +45,20 @@ class MjbotsHardwareInterface  {
    * @param realtime_params the realtime parameters defining cpu and realtime priority
    * @param imu_mounting_deg Orientation of the imu on the pi3hat. Assumes gravity points in the +z direction
    * @param imu_rate_hz Frequency of the imu updates from the pi3hat
-   * @param imu_world_offset_deg IMU orientation offset. Useful for re-orienting gravity, etc.
+   * @param imu_data_ptr Shared pointer to imu_data to use or nullptr if it should make its own
+   * @param imu_world_offset_deg [Optional] IMU orientation offset. Useful for re-orienting gravity, etc.
+   * @param dry_run if true, sends zero-torques to Moteus controllers
+   * @param print_torques if true, prints torque commands
    */
   MjbotsHardwareInterface(std::vector<std::shared_ptr<JointMoteus>> joint_list,
                        const RealtimeParams &realtime_params,
                        ::mjbots::pi3hat::Euler imu_mounting_deg = ::mjbots::pi3hat::Euler(),
                        int imu_rate_hz = 1000,
-                       ::mjbots::pi3hat::Euler imu_world_offset_deg = ::mjbots::pi3hat::Euler());
+                       std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr = nullptr,
+                       std::optional<::mjbots::pi3hat::Euler > imu_world_offset_deg = std::nullopt,
+                       bool dry_run = false,
+                       bool print_torques = false
+                       );
 
   /**
    * @brief Send and recieve initial communications effectively starting the robot
@@ -103,17 +111,26 @@ class MjbotsHardwareInterface  {
    * @brief accessor for the IMU data of the robot
    * @return const IMU data shared pointer for the robot
    */
-  const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();
+  const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();        
+  
+  /*!
+  * @brief Setter for the robot's IMU data pointer. Releases the previously owned IMU data object
+  *
+  * @param imu_data_ptr a shared pointer to kodlab::IMUData
+  */
+  void SetIMUDataSharedPtr(std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr){imu_data_ = imu_data_ptr;}
 
  private:
   std::vector< std::shared_ptr<JointMoteus>> joints; /// Vector of shared pointers to joints for the robot, shares state information
   int num_joints_ = 0;                               /// Number of joints
   u_int64_t cycle_count_ = 0;                        /// Number of cycles/commands sent
+  bool dry_run_;                                     ///< dry run active flag
+  bool print_torques_;                               ///< print torques active flag
 
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
 
   std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> modes_; /// Vector of current moteus modes (references to the members of joints_)
-  
+
   std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                /// True if communication has timed out
 
   std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> commands_;  /// Vector of servo commands
