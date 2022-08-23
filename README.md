@@ -149,10 +149,29 @@ robot.
 ## Mjbots Behavior Loop
 The `MjbotsBehaviorLoop` extends the [`MjbotsControlLoop`](https://github.com/KodlabPenn/kodlab_mjbots_sdk#mjbotscontrolloop)
 to include a `BehaviorManager` which internally manages `Behavior` objects for a
-`RobotBase`-derived class.  The `MjbotsBehaviorLoop` works in much the same way 
-as the `MjbotsControlLoop`, except the user no longer needs to override the 
-`Update()` method.  An example demonstrating usage of the `MjbotsBehaviorLoop`
-is provided in `examples/behavior_robot_example.cpp`.
+`RobotBase`-derived class.  The `MjbotsBehaviorLoop` works in much the same way
+as the `MjbotsControlLoop`, except the user no longer needs to override the
+`Update` method.  They should still override the `PrepareLog` and `ProcessInput`
+methods if they are using control-loop-level LCM logging or inputs.  A simple
+`MjbotsBehaviorLoop` implementation with behavior selection input would look 
+like the following.
+
+```cpp
+class UserBehaviorLoop : public kodlab::mjbots::MjbotsBehaviorLoop<VoidLcm, 
+    UserInput, UserRobot> {
+  
+  using kodlab::RobotBase::RobotBase;
+  
+  void ProcessInput(const UserInput &input_data) override {
+    // Set behavior from `input_data`
+    SetBehavior(input_data.behavior);
+  }
+  
+};
+```
+
+An example demonstrating usage of the `MjbotsBehaviorLoop` is provided in 
+`examples/behavior_robot_example.cpp`.
 
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
