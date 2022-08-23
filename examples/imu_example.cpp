@@ -15,8 +15,7 @@
 #include "kodlab_mjbots_sdk/imu_data.h"
 #include "IMULog.hpp"
 
-namespace kodlab::examples
-{
+namespace kodlab::examples {
 
 class AttitudeExample : public kodlab::mjbots::MjbotsControlLoop<IMULog,
                                                                  VoidLcm>

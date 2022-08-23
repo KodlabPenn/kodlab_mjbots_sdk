@@ -22,6 +22,8 @@
 #include "examples/simple_spin_joints_behavior.h"  // SimpleSpinJointsBehavior
 #include "examples/simple_control_io_behavior.h" // SimpleControlIOBehavior
 
+namespace kodlab::examples {
+
 /**
  * @brief Behavior loop for a simple robot
  * @note Unlike the `SimpleRobotControlLoop` provided in `robot_example.cpp`,
@@ -29,8 +31,7 @@
  *       handled internally by the `MjbotsBehaviorLoop`.
  */
 class SimpleRobotBehaviorLoop : public kodlab::mjbots::MjbotsBehaviorLoop<
-    ManyMotorLog, ModeInput, SimpleRobot>
-{
+    ManyMotorLog, ModeInput, SimpleRobot> {
   /**
    * @brief Use `MjbotsBehaviorLoop` constructor
    */
@@ -41,18 +42,15 @@ class SimpleRobotBehaviorLoop : public kodlab::mjbots::MjbotsBehaviorLoop<
    * @details This method is called every control loop update, and logs general
    *          joint data to a `ManyMotorLog` via the LCM log data topic.
    */
-  void PrepareLog() override
-  {
-    for (int servo = 0; servo < num_joints_; servo++)
-    {
+  void PrepareLog() override {
+    for (int servo = 0; servo < num_joints_; servo++) {
       log_data_->positions[servo] = robot_->GetJointPositions()[servo];
       log_data_->velocities[servo] = robot_->GetJointVelocities()[servo];
       log_data_->modes[servo] =
           static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
       log_data_->torques[servo] = robot_->GetJointTorqueCmd()[servo];
     }
-    for (int servo = num_joints_; servo < 13; servo++)
-    {
+    for (int servo = num_joints_; servo < 13; servo++) {
       log_data_->positions[servo] = 0;
       log_data_->velocities[servo] = 0;
       log_data_->modes[servo] = 0;
@@ -66,19 +64,20 @@ class SimpleRobotBehaviorLoop : public kodlab::mjbots::MjbotsBehaviorLoop<
    *          LCM to the behavior loop's internal behavior manager. The behavior
    *          manager then handles the actual behavior switching.
    */
-  void ProcessInput(const ModeInput &input_data) override
-  {
+  void ProcessInput(const ModeInput &input_data) override {
     // Set input behavior on internal behavior manager
     SetBehavior(input_data.mode);
   }
 };
 
+} // kodlab::examples
+
+
 /**
  * @brief Main method
  * @return 0 if program exited without issue
  */
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   // Setup joints with a std::vector
   std::vector<kodlab::mjbots::JointMoteus> joints;
   joints.emplace_back(22, 1, 1, 0, 1.0, 5.0);
@@ -94,7 +93,7 @@ int main(int argc, char **argv)
   options.max_torque = 1.0;
 
   // Create control loop
-  SimpleRobotBehaviorLoop simple_robot(joints, options);
+  kodlab::examples::SimpleRobotBehaviorLoop simple_robot(joints, options);
 
   // Build and initialize behaviors list
   // Note: the behaviors list includes a kodlab::OffBehavior as the first

@@ -16,8 +16,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-namespace kodlab::examples
-{
+namespace kodlab::examples {
 
 class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;

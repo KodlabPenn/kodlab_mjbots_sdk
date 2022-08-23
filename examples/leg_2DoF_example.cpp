@@ -15,8 +15,7 @@
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
 #include "kodlab_mjbots_sdk/log.h"  // provides console logging macros
 
-namespace kodlab::examples
-{
+namespace kodlab::examples {
 
 class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
   using MjbotsControlLoop::MjbotsControlLoop;

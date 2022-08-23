@@ -19,8 +19,7 @@
 
 #include "examples/simple_robot.h"
 
-namespace kodlab::examples
-{
+namespace kodlab::examples {
 
 class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog, ModeInput, SimpleRobot>
 {

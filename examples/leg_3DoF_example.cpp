@@ -18,8 +18,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-namespace kodlab::examples
-{
+namespace kodlab::examples {
 
 class Joints3DoF : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
