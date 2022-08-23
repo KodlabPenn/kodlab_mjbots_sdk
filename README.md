@@ -181,11 +181,11 @@ in iterations of the control loop.
 ## Console Logging
 The `log.h` header provides a set of debug logging macros with adjustable
 logging severity levels.  In order of increasing severity, the levels are 
-`DEBUG`, `INFO`, `WARN`, `ERROR`, and `FATAL`.  
+`TRACE`, `DEBUG`, `INFO`, `NOTICE`, `WARN`, `ERROR`, and `FATAL`.  
 
-The minimum level for console output is set by defining `LOG_MIN_SEVERITY` 
-(default is `DEBUG`).  Setting `LOG_MIN_SEVERITY` to `NONE` will disable macro 
-console output.
+The minimum severity level for console output is set by defining the
+`LOG_MIN_SEVERITY` macro (default is `SEVERITY_ALL`).  Setting 
+`LOG_MIN_SEVERITY` to `SEVERITY_NONE` will disable macro console output.
 
 Usage of the `LOG_XXXX` logging macros (where `XXXX` is `DEBUG`, `INFO`,
 etc.) is akin to using [`std::fprintf`](https://en.cppreference.com/w/cpp/io/c/fprintf).
@@ -202,19 +202,23 @@ LOG_IF_INFO(false, "%s", "This info message will not be logged.");
 LOG_IF_FATAL(true, "This fatal message will be logged.");
 ```
 
-The default output of the `LOG_*` macros follows the format 
+Verbose logging commands are provided for all logging macros, and take the form
+`VLOG_XXXX` or `VLOG_IF_XXXX`.  The default output of the log and verbose log 
+macros is as follows. 
 ```
-[SEVERITY][path/to/file | function:line_no] Logged message
+[SEVERITY] Log message
+[SEVERITY][path/to/file | function:line_no] Verbose log message
 ```
-The output behavior can be changed by redefining the `LOG_ARGS` and `LOG_FORMAT` 
-macros.  For example, to produce output of the form 
+The output behavior can be changed by redefining the `LOG_ARGS`, `LOG_FORMAT`,
+`VLOG_ARGS`, and `VLOG_FORMAT` macros.  For example, to produce verbose output 
+of the form 
 ```
-[SEVERITY][path/to/file][line_no][function] Logging message
+[SEVERITY][path/to/file][line_no][function] Verbose log message
 ```
-these macros would be redefined as follows
+the verbose macros would be redefined as follows
 ```cpp
-#define LOG_ARGS(tag) tag, __FILE__, __LINE__, __func__
-#define LOG_FORMAT "[%-5s][%-15s][%d][%s] "
+#define VLOG_ARGS(tag) tag, __FILE__, __LINE__, __func__
+#define VLOG_FORMAT "[%-6s][%-15s][%d][%s] "
 ```
 
 Colored terminal output is provided by default via
