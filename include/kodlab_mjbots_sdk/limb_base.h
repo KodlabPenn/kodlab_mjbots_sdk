@@ -16,9 +16,7 @@
 #include <type_traits>
 #include <string>
 #include "kodlab_mjbots_sdk/joint_base.h"
-#include <Eigen/Core>
 #include <Eigen/Dense>
-#include <Eigen/StdVector>
 
 namespace kodlab
 {
@@ -100,7 +98,7 @@ class LimbBase {
          * @return Eigen::VectorXf 
          */
 
-        Eigen::VectorXf InverseKinematics(float x_des, float y_des, float z_des);
+        Eigen::VectorXf InverseKinematics(std::vector<float> EE_pos);
 
 
         /**
