@@ -73,8 +73,15 @@ namespace kodlab
             temp_trans.block<3,1>(3,0) = config_.actuator_offsets[i];
             trans_matrix = trans_matrix * temp_trans;
         }
-
         return trans_matrix;
+    }
+
+    Eigen::MatrixXf Jacobian() {
+
+    }
+
+    Eigen::VectorXf InverseKinematics(std::vector<float> EE_pos) {
+        
     }
 
 
