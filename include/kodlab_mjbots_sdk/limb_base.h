@@ -78,14 +78,14 @@ class LimbBase {
          * 
          * @return Eigen::VectorXf 
          */
-        Eigen::MatrixXf ForwardKinematics();
+        virtual Eigen::Matrix4f ForwardKinematics() = 0;
 
         /**
          * @brief Calculates the Jacobian of the leg
          * 
          * @return Eigen::MatrixXf 
          */
-        Eigen::MatrixXf Jacobian();
+        virtual Eigen::MatrixXf Jacobian() = 0;
 
         /**
          * @brief Calculates the Inverse kinematics of a leg given a desired position
@@ -98,7 +98,7 @@ class LimbBase {
          * @return Eigen::VectorXf 
          */
 
-        Eigen::VectorXf InverseKinematics(std::vector<float> EE_pos);
+        virtual Eigen::VectorXf InverseKinematics(std::vector<float> EE_pos) = 0;
 
 
         /**
