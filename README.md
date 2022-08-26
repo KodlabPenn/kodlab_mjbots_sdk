@@ -137,6 +137,42 @@ behavior class can be implemented, and the `SimpleControlIOBehavior` in
 `include/examples/simple_control_io_behavior.h` for an example of implementing
 a behavior with inputs and outputs.
 
+## Behavior Manager
+The `BehaviorManager` class is a container for storing and running 
+`Behavior`-derived behaviors.  This class maintains a default behavior at the 
+beginning index in its internal vector. Additional behaviors can be appended to
+the vector and the default behavior can be set by the user. The 
+`BehaviorManager` can be composed into a child class of `MjbotsControlLoop` 
+and used to maintain a series of behaviors running on a`RobotBase`-derived 
+robot. 
+
+## Mjbots Behavior Loop
+The `MjbotsBehaviorLoop` extends the [`MjbotsControlLoop`](https://github.com/KodlabPenn/kodlab_mjbots_sdk#mjbotscontrolloop)
+to include a `BehaviorManager` which internally manages `Behavior` objects for a
+`RobotBase`-derived class.  The `MjbotsBehaviorLoop` works in much the same way
+as the `MjbotsControlLoop`, except the user no longer needs to override the
+`Update` method.  They should still override the `PrepareLog` and `ProcessInput`
+methods if they are using control-loop-level LCM logging or inputs.  A simple
+`MjbotsBehaviorLoop` implementation with behavior selection input would look 
+like the following.
+
+```cpp
+class UserBehaviorLoop : public kodlab::mjbots::MjbotsBehaviorLoop<VoidLcm, 
+    UserInput, UserRobot> {
+  
+  using kodlab::RobotBase::RobotBase;
+  
+  void ProcessInput(const UserInput &input_data) override {
+    // Set behavior from `input_data`
+    SetBehavior(input_data.behavior);
+  }
+  
+};
+```
+
+An example demonstrating usage of the `MjbotsBehaviorLoop` is provided in 
+`examples/behavior_robot_example.cpp`.
+
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
 max torque is the maximum torque per motor and the soft Start duration is how long the torque ramp should last
@@ -145,11 +181,11 @@ in iterations of the control loop.
 ## Console Logging
 The `log.h` header provides a set of debug logging macros with adjustable
 logging severity levels.  In order of increasing severity, the levels are 
-`DEBUG`, `INFO`, `WARN`, `ERROR`, and `FATAL`.  
+`TRACE`, `DEBUG`, `INFO`, `NOTICE`, `WARN`, `ERROR`, and `FATAL`.  
 
-The minimum level for console output is set by defining `LOG_MIN_SEVERITY` 
-(default is `DEBUG`).  Setting `LOG_MIN_SEVERITY` to `NONE` will disable macro 
-console output.
+The minimum severity level for console output is set by defining the
+`LOG_MIN_SEVERITY` macro (default is `SEVERITY_ALL`).  Setting 
+`LOG_MIN_SEVERITY` to `SEVERITY_NONE` will disable macro console output.
 
 Usage of the `LOG_XXXX` logging macros (where `XXXX` is `DEBUG`, `INFO`,
 etc.) is akin to using [`std::fprintf`](https://en.cppreference.com/w/cpp/io/c/fprintf).
@@ -166,19 +202,23 @@ LOG_IF_INFO(false, "%s", "This info message will not be logged.");
 LOG_IF_FATAL(true, "This fatal message will be logged.");
 ```
 
-The default output of the `LOG_*` macros follows the format 
+Verbose logging commands are provided for all logging macros, and take the form
+`VLOG_XXXX` or `VLOG_IF_XXXX`.  The default output of the log and verbose log 
+macros is as follows. 
 ```
-[SEVERITY][path/to/file | function:line_no] Logged message
+[SEVERITY] Log message
+[SEVERITY][path/to/file | function:line_no] Verbose log message
 ```
-The output behavior can be changed by redefining the `LOG_ARGS` and `LOG_FORMAT` 
-macros.  For example, to produce output of the form 
+The output behavior can be changed by redefining the `LOG_ARGS`, `LOG_FORMAT`,
+`VLOG_ARGS`, and `VLOG_FORMAT` macros.  For example, to produce verbose output 
+of the form 
 ```
-[SEVERITY][path/to/file][line_no][function] Logging message
+[SEVERITY][path/to/file][line_no][function] Verbose log message
 ```
-these macros would be redefined as follows
+the verbose macros would be redefined as follows
 ```cpp
-#define LOG_ARGS(tag) tag, __FILE__, __LINE__, __func__
-#define LOG_FORMAT "[%-5s][%-15s][%d][%s] "
+#define VLOG_ARGS(tag) tag, __FILE__, __LINE__, __func__
+#define VLOG_FORMAT "[%-6s][%-15s][%d][%s] "
 ```
 
 Colored terminal output is provided by default via
