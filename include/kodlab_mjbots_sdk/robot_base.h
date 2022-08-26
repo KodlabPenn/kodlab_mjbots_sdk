@@ -28,7 +28,7 @@ namespace kodlab
     public:
         static const int KILL_ROBOT = -1;  // Kill mode/behavior index; used to signal robot E-stop
         std::vector< std::shared_ptr<JointBase> > joints; ///the vector of shared_ptrs to joints 
-        std::vector<std::unique_ptr<LimbBase>> Limbs; /// vector of limbs for the robot, if choosing to not use limbs can be an empty vector always
+        std::vector<std::shared_ptr<LimbBase>> Limbs; /// vector of limbs for the robot, if choosing to not use limbs can be an empty vector always
 
         /*!
          * @brief constructs a robot_interface that contains the basic state of a jointed robot with attitude
@@ -170,7 +170,7 @@ namespace kodlab
          * @brief Add a user generated limb to the vector of limbs for the robot
          * @param Limb the limb to be added to the vector
          */
-        void AddLimb(std::unique_ptr<LimbBase> Limb); 
+        void AddLimb(std::shared_ptr<LimbBase> Limb); 
 
     protected:
         std::vector<std::reference_wrapper<const float>> positions_;  /// Vector of the motor positions (references to the members of joints_)
