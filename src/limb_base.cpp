@@ -64,25 +64,5 @@ namespace kodlab
         }
     }
 
-    Eigen::Matrix4f LimbBase::ForwardKinematics() {
-        Eigen::Matrix4f trans_matrix;
-        Eigen::Matrix4f temp_trans = Matrix4f::Zero();
-        temp_trans(3,3) = 1;
-        for (int i = 0; i < config_.actuator_offsets.size(); i++) {
-            temp_trans.block<3,3>(0,0) = config_.actuator_orientations[i];
-            temp_trans.block<3,1>(3,0) = config_.actuator_offsets[i];
-            trans_matrix = trans_matrix * temp_trans;
-        }
-        return trans_matrix;
-    }
-
-    Eigen::MatrixXf Jacobian() {
-
-    }
-
-    Eigen::VectorXf InverseKinematics(std::vector<float> EE_pos) {
-        
-    }
-
 
 }
