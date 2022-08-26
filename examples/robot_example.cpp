@@ -70,6 +70,8 @@ int main(int argc, char **argv)
     // joints.addJoint(100, 4, 1, 0, 1, 0);
     // joints.addJoint(101, 4, -1, 0, 5.0 / 3.0, 0);
 
+
+
     // Define robot options
     kodlab::mjbots::ControlLoopOptions options;
     options.log_channel_name = "motor_data";
