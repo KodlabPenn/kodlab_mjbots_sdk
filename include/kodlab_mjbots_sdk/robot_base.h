@@ -28,7 +28,7 @@ namespace kodlab
     public:
         static const int KILL_ROBOT = -1;  // Kill mode/behavior index; used to signal robot E-stop
         std::vector< std::shared_ptr<JointBase> > joints; ///the vector of shared_ptrs to joints 
-        std::vector<std::shared_ptr<LimbBase>> Limbs; /// vector of limbs for the robot, if choosing to not use limbs can be an empty vector always
+        std::vector<std::shared_ptr<LimbBase>> limbs; /// vector of limbs for the robot, if choosing to not use limbs can be an empty vector always
 
         /*!
          * @brief constructs a robot_interface that contains the basic state of a jointed robot with attitude
