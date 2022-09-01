@@ -14,6 +14,8 @@
 #include "kodlab_mjbots_sdk/common_header.h"
 #include "ManyMotorLog.hpp"
 #include "ModeInput.hpp"
+#include "kodlab_mjbots_sdk/joint_base.h"
+#include "kodlab_mjbots_sdk/limb_base.h"
 #include "kodlab_mjbots_sdk/robot_base.h"
 #include "kodlab_mjbots_sdk/mjbots_control_loop.h"
 
@@ -60,6 +62,17 @@ class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMoto
     }
 };
 
+class LimbTest : public kodlab::LimbBase {
+    public: 
+        LimbTest(std::vector<std::shared_ptr<kodlab::JointBase>> joints, kodlab::LimbConfig config) : LimbBase(joints, config) {};
+
+        void ForwardKinematics() override {};
+
+        void Jacobian() override {};
+
+        void InverseKinematics(std::vector<float> EE_pos) override {};
+};
+
 int main(int argc, char **argv)
 {
     // Setup joints with a std::vector or JointSharedVector class
@@ -70,6 +83,19 @@ int main(int argc, char **argv)
     // joints.addJoint(100, 4, 1, 0, 1, 0);
     // joints.addJoint(101, 4, -1, 0, 5.0 / 3.0, 0);
 
+    std::vector<std::array<float,3>> offsets_test;
+    std::vector<Eigen::Matrix3f> orientations_test;
+    Eigen::MatrixXf matrix_test;
+
+    std::vector<std::shared_ptr<kodlab::JointBase>> joints_test;
+    kodlab::LimbConfig config = {
+        offsets_test,
+        orientations_test,
+        matrix_test};
+
+    //Limb Base Class sanity check
+    LimbTest limb(joints_test, config);
+    limb.ForwardKinematics();
 
 
     // Define robot options
