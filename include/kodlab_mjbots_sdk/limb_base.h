@@ -28,7 +28,7 @@ namespace kodlab
 
 struct LimbConfig{
     std::vector<std::array<float,3>> actuator_offsets; // Offset between centers of two joints, in the frame of the first joint
-    std::vector<Eigen::Matrix3f,Eigen::aligned_allocator<Eigen::Matrix3f> > actuator_orientations; // Rotation matrices for each joint with respect to the previous joint (begins with R0_1)
+    std::vector<Eigen::Matrix3f> actuator_orientations; // Rotation matrices for each joint with respect to the previous joint (begins with R0_1)
     Eigen::MatrixXf selection_matrix;
 };
 
@@ -57,11 +57,13 @@ class LimbBase {
          * @param config        /// Configuration of the joints in the leg
          * 
          */
+        
         LimbBase(
             std::vector<std::shared_ptr<JointBase>> joints,
             LimbConfig config
         );
 
+        virtual ~LimbBase() {};
 
         /**
          * @brief Update position and velocity of each joint within leg
@@ -70,7 +72,7 @@ class LimbBase {
          * @param vel_list desired velocities of each joint
          * 
          */
-        virtual void Update(std::vector<float> pos_list, std::vector<float> vel_list);
+        void Update(std::vector<float> pos_list, std::vector<float> vel_list);
 
 
         /**
@@ -78,14 +80,14 @@ class LimbBase {
          * 
          * @return Eigen::VectorXf 
          */
-        virtual Eigen::Matrix4f ForwardKinematics() = 0;
+        virtual void ForwardKinematics() = 0;
 
         /**
          * @brief Calculates the Jacobian of the leg
          * 
          * @return Eigen::MatrixXf 
          */
-        virtual Eigen::MatrixXf Jacobian() = 0;
+        virtual void Jacobian() = 0;
 
         /**
          * @brief Calculates the Inverse kinematics of a leg given a desired position
@@ -98,7 +100,7 @@ class LimbBase {
          * @return Eigen::VectorXf 
          */
 
-        virtual Eigen::VectorXf InverseKinematics(std::vector<float> EE_pos) = 0;
+        virtual void InverseKinematics(std::vector<float> EE_pos) = 0;
 
 
         /**
@@ -106,21 +108,21 @@ class LimbBase {
          * 
          * @return std::vector<float> 
          */
-        virtual std::vector<float> get_positions();
+        std::vector<float> get_positions();
 
         /**
          * @brief Get the velocities of each joint in the leg
          * 
          * @return std::vector<float> 
          */
-        virtual std::vector<float> get_velocities();
+        std::vector<float> get_velocities();
 
         /**
          * @brief Get the Torques of each joint in the leg
          * 
          * @return std::vector<float> 
          */
-        virtual std::vector<float> get_torques();
+        std::vector<float> get_torques();
 
         /**
          * @brief Set the positions of each joint in the leg
