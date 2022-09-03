@@ -15,7 +15,7 @@
 #include "kodlab_mjbots_sdk/limb_base.h"
 
 /**
- * @brief A simple 1DOF limb, just 1 joint with an end effector with a specified
+ * @brief A simple 1DOF limb, just 1 joint with a straight end effector with a specified
  * xyz offset, shows implementation of kinematics
  * 
  */
@@ -39,6 +39,14 @@ class SimpleLimb : public kodlab::LimbBase {
             FK(2,3) = config_.actuator_offsets[0][2];
 
             //return FK;
+        }
+
+        void InverseKinematics(std::vector<float> EE_pos) override {
+            std::vector<float> pos;
+            float pos1 = atan(EE_pos[1]/EE_pos[0]);
+            pos.push_back(pos1);
+
+            //return pos;
         }
 
 };
