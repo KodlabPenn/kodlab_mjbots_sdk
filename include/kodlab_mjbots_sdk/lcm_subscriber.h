@@ -106,16 +106,16 @@ class LcmSubscriber : public AbstractRealtimeObject {
 // Implementation                                                             //
 ////////////////////////////////////////////////////////////////////////////////
 
-LcmSubscriber::LcmSubscriber(int realtime_priority, int cpu) {
+inline LcmSubscriber::LcmSubscriber(int realtime_priority, int cpu) {
   cpu_ = cpu;
   realtime_priority_ = realtime_priority;
 }
 
-void LcmSubscriber::Init() {
+inline void LcmSubscriber::Init() {
   Start();
 }
 
-int LcmSubscriber::RemoveSubscription(const std::string &channel_name) {
+inline int LcmSubscriber::RemoveSubscription(const std::string &channel_name) {
   auto it = subs_.find(channel_name);
   if (it != subs_.end()) {
     int success = lcm_.unsubscribe(subs_[channel_name]);
@@ -128,7 +128,7 @@ int LcmSubscriber::RemoveSubscription(const std::string &channel_name) {
   return -1;
 }
 
-[[nodiscard]] const lcm::Subscription *LcmSubscriber::get_subscription(const std::string &channel_name) const {
+[[nodiscard]] inline const lcm::Subscription *LcmSubscriber::get_subscription(const std::string &channel_name) const {
   if (subs_.count(channel_name) == 1) {
     return subs_.at(channel_name);
   } else {
@@ -138,7 +138,7 @@ int LcmSubscriber::RemoveSubscription(const std::string &channel_name) {
   }
 }
 
-void LcmSubscriber::Run() {
+inline void LcmSubscriber::Run() {
   while (!CTRL_C_DETECTED) {
     lcm_.handleTimeout(1000);
   }
