@@ -1,7 +1,7 @@
 /**
  * @file simple_limb.h
  * @author Zac Gong
- * @brief A simple LimbBase derived class example, a 1DOF limb with 1 joint at 
+ * @brief A simple LimbBase derived class example, a 1DOF limb with 1 joint at
  *        the origin and a end effector
  * @date 2022-09-02
  *
@@ -17,50 +17,53 @@
 /**
  * @brief A simple 1DOF limb, just 1 joint with a straight end effector with a specified
  * xyz offset, shows implementation of kinematics
- * 
+ *
  */
 
-class SimpleLimb : public kodlab::LimbBase {
+class SimpleLimb : public kodlab::LimbBase
+{
 
     using kodlab::LimbBase::LimbBase;
 
-    public: 
-        void ForwardKinematics() override {
-            Eigen::Matrix4f FK;
-            float theta = positions_[0];
-            FK(0,0) = cos(theta);
-            FK(0,1) = -sin(theta);
-            FK(1,0) = sin(theta);
-            FK(1,1) = cos(theta);
-            FK(2,2) = 1.0;
-            FK(3,3) = 1.0;
-            FK(0,3) = config_.actuator_offsets[0][0] * cos(theta);
-            FK(1,3) = config_.actuator_offsets[0][1] * sin(theta); //DOUBLE CHECK THESE
-            FK(2,3) = config_.actuator_offsets[0][2];
+public:
+    void ForwardKinematics() override
+    {
+        Eigen::Matrix4f FK;
+        float theta = positions_[0];
+        FK(0, 0) = cos(theta);
+        FK(0, 1) = -sin(theta);
+        FK(1, 0) = sin(theta);
+        FK(1, 1) = cos(theta);
+        FK(2, 2) = 1.0;
+        FK(3, 3) = 1.0;
+        FK(0, 3) = config_.actuator_offsets[0][0] * cos(theta);
+        FK(1, 3) = config_.actuator_offsets[0][1] * sin(theta); // DOUBLE CHECK THESE
+        FK(2, 3) = config_.actuator_offsets[0][2];
 
-            //return FK;
-        }
+        // return FK;
+    }
 
-        void Jacobian() override {
-            Eigen::MatrixXf J;
-            J.resize(6,1);
-            Eigen::Vector3f z;
-            z << 0.0, 0.0, 1.0;
-            Eigen::Vector3f offset;
-            offset << config_.actuator_offsets[0][0], config_.actuator_offsets[0][1], config_.actuator_offsets[0][2];
-            Eigen::MatrixXf cross = z.cross(offset);
-            J.block<3,1>(0,0) = cross;
-            J(5,0) = 1;
+    void Jacobian() override
+    {
+        Eigen::MatrixXf J;
+        J.resize(6, 1);
+        Eigen::Vector3f z;
+        z << 0.0, 0.0, 1.0;
+        Eigen::Vector3f offset;
+        offset << config_.actuator_offsets[0][0], config_.actuator_offsets[0][1], config_.actuator_offsets[0][2];
+        Eigen::MatrixXf cross = z.cross(offset);
+        J.block<3, 1>(0, 0) = cross;
+        J(5, 0) = 1;
 
-            // return J
-        }
+        // return J
+    }
 
-        void InverseKinematics(std::vector<float> EE_pos) override {
-            std::vector<float> pos;
-            float pos1 = atan(EE_pos[1]/EE_pos[0]);
-            pos.push_back(pos1);
+    void InverseKinematics(std::vector<float> EE_pos) override
+    {
+        std::vector<float> pos;
+        float pos1 = atan(EE_pos[1] / EE_pos[0]);
+        pos.push_back(pos1);
 
-            //return pos;
-        }
-
+        // return pos;
+    }
 };
