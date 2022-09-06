@@ -1,16 +1,17 @@
 /*!
  * @file robot_example.cpp
  * @author J. Diego Caporale <jdcap@seas.upenn.edu>
- * @brief Example that uses SimpleRobot(a RobotInterfaceDerived class defined in a seperate header file) separating the 
- *        controller, state update, and state machine from the lower lever control loop. 
+ * @brief Example that uses SimpleRobot(a RobotInterfaceDerived class defined in a seperate header file) separating the
+ *        controller, state update, and state machine from the lower lever control loop.
  * @date 2022-07-17
- * 
+ *
  * @copyright Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
  *            BSD 3-Clause License
- * 
+ *
  */
 #include <vector>
 #include <iostream>
+#include <Eigen/Dense>
 #include "kodlab_mjbots_sdk/common_header.h"
 #include "ManyMotorLog.hpp"
 #include "ModeInput.hpp"
@@ -62,28 +63,31 @@ class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMoto
     }
 };
 
-class LimbTest : public kodlab::LimbBase {
-    public: 
-        LimbTest(std::vector<std::shared_ptr<kodlab::JointBase>> joints, kodlab::LimbConfig config) : LimbBase(joints, config) {};
+class LimbTest : public kodlab::LimbBase
+{
 
-        void ForwardKinematics() override {};
+public:
+    using kodlab::LimbBase::LimbBase;
+    // LimbTest(std::vector<std::shared_ptr<kodlab::JointBase>> joints, kodlab::LimbConfig config) : LimbBase(joints, config) {};
 
-        void Jacobian() override {};
+    void ForwardKinematics() override{};
 
-        void InverseKinematics(std::vector<float> EE_pos) override {};
+    void Jacobian() override{};
+
+    void InverseKinematics(std::vector<float> EE_pos) override{};
 };
 
 int main(int argc, char **argv)
 {
     // Setup joints with a std::vector or JointSharedVector class
     std::vector<kodlab::mjbots::JointMoteus> joints;
-    joints.emplace_back(100, 4, 1, 0,   1, 0);
-    joints.emplace_back(101, 4,-1, 0, 5.0/3.0, 0);
+    joints.emplace_back(100, 4, 1, 0, 1, 0);
+    joints.emplace_back(101, 4, -1, 0, 5.0 / 3.0, 0);
     // JointSharedVector<kodlab::mjbots::JointMoteus> joints;
     // joints.addJoint(100, 4, 1, 0, 1, 0);
     // joints.addJoint(101, 4, -1, 0, 5.0 / 3.0, 0);
 
-    std::vector<std::array<float,3>> offsets_test;
+    std::vector<std::array<float, 3>> offsets_test;
     std::vector<Eigen::Matrix3f> orientations_test;
     Eigen::MatrixXf matrix_test;
 
@@ -93,10 +97,9 @@ int main(int argc, char **argv)
         orientations_test,
         matrix_test};
 
-    //Limb Base Class sanity check
+    // Limb Base Class sanity check
     LimbTest limb(joints_test, config);
     limb.ForwardKinematics();
-
 
     // Define robot options
     kodlab::mjbots::ControlLoopOptions options;
