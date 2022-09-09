@@ -137,7 +137,11 @@ behavior class can be implemented, and the `SimpleControlIOBehavior` in
 `include/examples/simple_control_io_behavior.h` for an example of implementing
 a behavior with inputs and outputs.
 
+<<<<<<< HEAD
 # Behavior Manager
+=======
+## Behavior Manager
+>>>>>>> 0d1ff73e13433e363a016aadcd4a127ab22feefd
 The `BehaviorManager` class is a container for storing and running 
 `Behavior`-derived behaviors.  This class maintains a default behavior at the 
 beginning index in its internal vector. Additional behaviors can be appended to
