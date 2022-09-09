@@ -27,8 +27,7 @@ class SimpleLimb : public kodlab::LimbBase {
     using kodlab::LimbBase::LimbBase;
 
 public:
-    void ForwardKinematics() override
-    {
+    void ForwardKinematics() override {
         Eigen::Matrix4f FK;
         float theta = positions_[0];
         FK(0, 0) = cos(theta);
@@ -44,8 +43,7 @@ public:
         // return FK;
     }
 
-    void Jacobian() override
-    {
+    void Jacobian() override {
         Eigen::MatrixXf J;
         J.resize(6, 1);
         Eigen::Vector3f z;
@@ -59,8 +57,7 @@ public:
         // return J
     }
 
-    void InverseKinematics(std::vector<float> EE_pos) override
-    {
+    void InverseKinematics(std::vector<float> &EE_pos) override {
         std::vector<float> pos;
         float pos1 = atan(EE_pos[1] / EE_pos[0]);
         pos.push_back(pos1);

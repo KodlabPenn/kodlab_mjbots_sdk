@@ -53,8 +53,7 @@ namespace kodlab
      * Contains the kinematics and configurations for a leg
      * @brief Abstract base class for legs consisting of multiple joints to be used in the robot class
      */
-    class LimbBase
-    {
+    class LimbBase {
     public:
         /**
          * @brief Construct a new Limb Base object with a name
