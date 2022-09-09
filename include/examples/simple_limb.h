@@ -57,7 +57,7 @@ public:
         // return J
     }
 
-    void InverseKinematics(std::vector<float> &EE_pos) override {
+    void InverseKinematics(const std::vector<float> &EE_pos) override {
         std::vector<float> pos;
         float pos1 = atan(EE_pos[1] / EE_pos[0]);
         pos.push_back(pos1);

@@ -12,23 +12,24 @@
 
 namespace kodlab
 {
-    LimbBase::LimbBase(std::string name,
-                       std::vector<std::shared_ptr<JointBase>> joints,
-                       LimbConfig config)
+    LimbBase::LimbBase(const std::string &name,
+                       const std::vector<std::shared_ptr<JointBase>> &joints,
+                       const LimbConfig &config)
     {
         joints_ = joints;
         config_ = config;
         legDOFs_ = joints.size();
     }
 
-    LimbBase::LimbBase(std::vector<std::shared_ptr<JointBase>> joints,
-                       LimbConfig config)
+    LimbBase::LimbBase(const std::vector<std::shared_ptr<JointBase>> &joints,
+                       const LimbConfig &config)
     {
         joints_ = joints;
         config_ = config;
     }
 
-    void LimbBase::Update(std::vector<float> pos_list, std::vector<float> vel_list)
+    void LimbBase::Update(const std::vector<float> &pos_list, 
+                          const std::vector<float> &vel_list)
     {
         for (int i = 0; i < joints_.size(); i++)
         {
@@ -57,7 +58,7 @@ namespace kodlab
         return torques_;
     }
 
-    void LimbBase::set_positions(std::vector<float> positions)
+    void LimbBase::set_positions(const std::vector<float> &positions)
     {
         for (int i = 0; i < joints_.size(); i++)
         {
@@ -65,7 +66,7 @@ namespace kodlab
         }
     }
 
-    void LimbBase::set_velocities(std::vector<float> velocities)
+    void LimbBase::set_velocities(const std::vector<float> &velocities)
     {
         for (int i = 0; i < joints_.size(); i++)
         {
