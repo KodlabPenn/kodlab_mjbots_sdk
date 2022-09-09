@@ -10,57 +10,71 @@
  */
 
 #pragma once
+
 #include <limits>
 #include <memory>
-#include <vector>
-#include <type_traits>
 #include <string>
-#include "kodlab_mjbots_sdk/joint_base.h"
+#include <type_traits>
+#include <vector>
+
 #include <Eigen/Dense>
+
+#include "kodlab_mjbots_sdk/joint_base.h"
+
 
 namespace kodlab
 {
+    /**
+     * @brief struct containing structural information to a limb
+     * @details all information provided by user at initialization
+     */
+    struct LimbConfig {
+        /**
+         * @brief Offset between ceneters of two joints, in the frame of the 
+         * first joint
+         */
+        std::vector<std::array<float, 3>> actuator_offsets; 
+
+        /**
+         * @brief Rotation matrix transforming the previous joint frame to 
+         * the current joint frame, beginning with \f${}^0 R_1\f$
+         */
+        std::vector<Eigen::Matrix3f> actuator_orientations; 
+
+        /**
+         * @brief Matrix of zeros and ones for reordering joints in member 
+         * methods 
+         */
+        Eigen::MatrixXf selection_matrix;
+    };
+
     /**
      * Abstract limb class that takes in a series of joints and treats it as an abstract limb
      * Contains the kinematics and configurations for a leg
      * @brief Abstract base class for legs consisting of multiple joints to be used in the robot class
      */
-
-    struct LimbConfig
-    {
-        std::vector<std::array<float, 3>> actuator_offsets; // Offset between centers of two joints, in the frame of the first joint
-        std::vector<Eigen::Matrix3f> actuator_orientations; // Rotation matrices for each joint with respect to the previous joint (begins with R0_1)
-        Eigen::MatrixXf selection_matrix;
-    };
-
     class LimbBase
     {
     public:
         /**
          * @brief Construct a new Limb Base object with a name
          *
-         * @param name          /// Sets the limb name
-         * @param joints        /// Joints that make up the leg
-         * @param config        /// Configuration of the joints in the leg
-         *
+         * @param name Sets the limb name
+         * @param joints Joints that make up the leg
+         * @param config Configuration of the joints in the leg
          */
-
-        LimbBase(
-            std::string name,
-            std::vector<std::shared_ptr<JointBase>> joints,
-            LimbConfig config);
+        LimbBase(const std::string &name,
+                 const std::vector<std::shared_ptr<JointBase>> &joints,
+                 const LimbConfig &config);
 
         /**
          * @brief Construct a new Limb Base object
          *
-         * @param joints        /// Joints that make up the leg
-         * @param config        /// Configuration of the joints in the leg
-         *
+         * @param joints Joints that make up the leg
+         * @param config Configuration of the joints in the leg
          */
-
-        LimbBase(
-            std::vector<std::shared_ptr<JointBase>> joints,
-            LimbConfig config);
+        LimbBase(const std::vector<std::shared_ptr<JointBase>> &joints,
+                 const LimbConfig &config);
 
         virtual ~LimbBase(){};
 
@@ -71,7 +85,8 @@ namespace kodlab
          * @param vel_list desired velocities of each joint
          *
          */
-        void Update(std::vector<float> pos_list, std::vector<float> vel_list);
+        void Update(const std::vector<float> &pos_list, 
+                    const std::vector<float> &vel_list);
 
         /**
          * @brief Calculates the forward kinematics of the leg
@@ -97,8 +112,7 @@ namespace kodlab
          *
          * @return std::vector<float> positions
          */
-
-        virtual void InverseKinematics(std::vector<float> EE_pos) = 0;
+        virtual void InverseKinematics(const std::vector<float> &EE_pos) = 0;
 
         /**
          * @brief Get the Positions of each joint in the leg
@@ -126,16 +140,14 @@ namespace kodlab
          *
          * @param positions
          */
-
-        void set_positions(std::vector<float> positions);
+        void set_positions(const std::vector<float> &positions);
 
         /**
          * @brief Set the velocities of each joint in the leg
          *
          * @param velocities
          */
-
-        void set_velocities(std::vector<float> velocities);
+        void set_velocities(const std::vector<float> &velocities);
 
     protected:
         std::string name_ = ""; // Optional leg name

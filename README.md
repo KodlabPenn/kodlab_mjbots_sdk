@@ -137,11 +137,7 @@ behavior class can be implemented, and the `SimpleControlIOBehavior` in
 `include/examples/simple_control_io_behavior.h` for an example of implementing
 a behavior with inputs and outputs.
 
-<<<<<<< HEAD
 # Behavior Manager
-=======
-## Behavior Manager
->>>>>>> 0d1ff73e13433e363a016aadcd4a127ab22feefd
 The `BehaviorManager` class is a container for storing and running 
 `Behavior`-derived behaviors.  This class maintains a default behavior at the 
 beginning index in its internal vector. Additional behaviors can be appended to
@@ -176,6 +172,7 @@ class UserBehaviorLoop : public kodlab::mjbots::MjbotsBehaviorLoop<VoidLcm,
 
 An example demonstrating usage of the `MjbotsBehaviorLoop` is provided in 
 `examples/behavior_robot_example.cpp`.
+
 
 ## Soft Start
 To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
