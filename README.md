@@ -263,7 +263,7 @@ Extract the toolchain on your laptop
 
     sudo tar xfz raspi-toolchain.tar.gz --strip-components=1 -C /opt
 
-Create the rootfs folder in `$HOME/raspberry/rootfs`
+Create the rootfs folder in `$HOME/raspberrypi/rootfs`
 
 Get the libraries
 
