@@ -14,3 +14,15 @@
 #include <Eigen/Dense>
 
 #include "kodlab_mjbots_sdk/limb_base.h"
+
+/**
+ * @brief A simple 1-DOF limb consisting of a single joint with a striaght
+ * end-effector
+ * @details A simple, single-degree-of-greedom limb implementation demonstrating 
+ * the specification of a Cartesian offset and implementation of kinematics
+ * methods
+ */
+class SimpleLimb : public kodlab::LimbBase {
+
+    using kodlab::LimbBase::LimbBase;
+}
