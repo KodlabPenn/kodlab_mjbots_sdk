@@ -75,4 +75,14 @@ namespace kodlab
          * 
          */
         virtual ~LimbBase(){};
+
+        /**
+         * @brief Update position and velocity of each joint within leg
+         *
+         * @param pos_list desired positions of each joint
+         * @param vel_list desired velocities of each joint
+         *
+         */
+        void Update(const std::vector<float> &pos_list, 
+                    const std::vector<float> &vel_list);
 }
