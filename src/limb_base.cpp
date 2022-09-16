@@ -27,4 +27,19 @@ namespace kodlab
         joints_ = joints;
         config_ = config;
     }
+
+    void LimbBase::Update(const std::vector<float> &pos_list, 
+                          const std::vector<float> &vel_list)
+    {
+        for (int i = 0; i < joints_.size(); i++)
+        {
+            // update position/velocity/torque vectors
+            positions_[i] = joints_[i]->get_position();
+            velocities_[i] = joints_[i]->get_velocity();
+            torques_[i] = joints_[i]->get_servo_torque();
+        }
+
+        LimbBase::set_positions(pos_list);
+        LimbBase::set_velocities(vel_list);
+    }
 }
