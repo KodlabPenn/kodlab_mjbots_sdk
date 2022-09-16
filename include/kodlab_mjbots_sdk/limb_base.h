@@ -146,4 +146,20 @@ namespace kodlab
          * @param velocities
          */
         void set_velocities(const std::vector<float> &velocities);
+
+    protected:
+        std::string name_ = ""; // Optional leg name
+
+        // Vector of joints within array
+        std::vector<std::shared_ptr<JointBase>> joints_;
+
+        // Leg Shape and Size
+        int legDOFs_;
+        LimbConfig config_;
+
+        // Leg State/Commands
+        std::vector<float> positions_;  /// positions of each joint in leg [rad]
+        std::vector<float> velocities_; /// velocities of each joint in leg [rad/s]
+        std::vector<float> torques_;    /// Constrained torques for each joint in the leg [N m]
+    };
 }
