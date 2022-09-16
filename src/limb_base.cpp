@@ -9,3 +9,22 @@
  */
 
 #include "kodlab_mjbots_sdk/limb_base.h"
+
+namespace kodlab
+{
+    LimbBase::LimbBase(const std::string &name,
+                       const std::vector<std::shared_ptr<JointBase>> &joints,
+                       const LimbConfig &config)
+    {
+        joints_ = joints;
+        config_ = config;
+        legDOFs_ = joints.size();
+    }
+
+    LimbBase::LimbBase(const std::vector<std::shared_ptr<JointBase>> &joints,
+                       const LimbConfig &config)
+    {
+        joints_ = joints;
+        config_ = config;
+    }
+}
