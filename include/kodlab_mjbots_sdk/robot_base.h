@@ -16,6 +16,8 @@
 #include "kodlab_mjbots_sdk/joint_base.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
 #include "kodlab_mjbots_sdk/imu_data.h"
+#include "kodlab_mjbots_sdk/limb_base.h"
+
 
 namespace kodlab
 {
