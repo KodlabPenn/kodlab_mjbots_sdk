@@ -56,4 +56,12 @@ class SimpleLimb : public kodlab::LimbBase {
 
             // return J
         }
+
+        void InverseKinematics(const std::vector<float> &EE_pos) override {
+            std::vector<float> pos;
+            float pos1 = atan(EE_pos[1] / EE_pos[0]);
+            pos.push_back(pos1);
+
+            // return pos;
+        }
 };
