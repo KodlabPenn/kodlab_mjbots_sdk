@@ -111,4 +111,39 @@ namespace kodlab
          * @return std::vector<float> positions
          */
         virtual void InverseKinematics(const std::vector<float> &EE_pos) = 0;
+
+        /**
+         * @brief Get the Positions of each joint in the leg
+         *
+         * @return std::vector<float>
+         */
+        std::vector<float> get_positions();
+
+        /**
+         * @brief Get the velocities of each joint in the leg
+         *
+         * @return std::vector<float>
+         */
+        std::vector<float> get_velocities();
+
+        /**
+         * @brief Get the Torques of each joint in the leg
+         *
+         * @return std::vector<float>
+         */
+        std::vector<float> get_torques();
+
+        /**
+         * @brief Set the positions of each joint in the leg
+         *
+         * @param positions
+         */
+        void set_positions(const std::vector<float> &positions);
+
+        /**
+         * @brief Set the velocities of each joint in the leg
+         *
+         * @param velocities
+         */
+        void set_velocities(const std::vector<float> &velocities);
 }
