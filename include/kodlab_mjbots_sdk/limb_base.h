@@ -85,4 +85,30 @@ namespace kodlab
          */
         void Update(const std::vector<float> &pos_list, 
                     const std::vector<float> &vel_list);
+
+        /**
+         * @brief Calculates the forward kinematics of the leg
+         *
+         * @return Eigen::VectorXf
+         */
+        virtual void ForwardKinematics() = 0;
+
+        /**
+         * @brief Calculates the Jacobian of the leg
+         *
+         * @return Eigen::MatrixXf
+         */
+        virtual void Jacobian() = 0;
+
+        /**
+         * @brief Calculates the Inverse kinematics of a leg given a desired position
+         * measured from the origin of the leg (????)
+         *
+         * @param x_des desired x position
+         * @param y_des desired y position
+         * @param z_des desired z position
+         *
+         * @return std::vector<float> positions
+         */
+        virtual void InverseKinematics(const std::vector<float> &EE_pos) = 0;
 }
