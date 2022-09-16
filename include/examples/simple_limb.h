@@ -41,5 +41,19 @@ class SimpleLimb : public kodlab::LimbBase {
             FK(2, 3) = config_.actuator_offsets[0][2];
 
             // return FK;
-    }
-}
+        }
+
+        void Jacobian() override {
+            Eigen::MatrixXf J;
+            J.resize(6, 1);
+            Eigen::Vector3f z;
+            z << 0.0, 0.0, 1.0;
+            Eigen::Vector3f offset;
+            offset << config_.actuator_offsets[0][0], config_.actuator_offsets[0][1], config_.actuator_offsets[0][2];
+            Eigen::MatrixXf cross = z.cross(offset);
+            J.block<3, 1>(0, 0) = cross;
+            J(5, 0) = 1;
+
+            // return J
+        }
+};
