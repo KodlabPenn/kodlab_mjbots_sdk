@@ -42,4 +42,36 @@ namespace kodlab
         LimbBase::set_positions(pos_list);
         LimbBase::set_velocities(vel_list);
     }
+
+    std::vector<float> LimbBase::get_positions()
+    {
+        return positions_;
+    }
+
+    std::vector<float> LimbBase::get_velocities()
+    {
+        return velocities_;
+    }
+
+    std::vector<float> LimbBase::get_torques()
+    {
+        return torques_;
+    }
+
+    void LimbBase::set_positions(const std::vector<float> &positions)
+    {
+        for (int i = 0; i < joints_.size(); i++)
+        {
+            joints_[i]->set_position(positions[i]);
+        }
+    }
+
+    void LimbBase::set_velocities(const std::vector<float> &velocities)
+    {
+        for (int i = 0; i < joints_.size(); i++)
+        {
+            joints_[i]->set_velocity(velocities[i]);
+        }
+    }
+
 }
