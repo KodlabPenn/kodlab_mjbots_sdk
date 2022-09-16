@@ -46,4 +46,33 @@ namespace kodlab
          */
         Eigen::MatrixXf selection_matrix;
     };
+
+    class LimbBase {
+    public:
+        /**
+         * @brief Construct a new Limb Base object with a name
+         *
+         * @param name Sets the limb name
+         * @param joints Joints that make up the leg
+         * @param config Configuration of the joints in the leg
+         */
+        LimbBase(const std::string &name,
+                 const std::vector<std::shared_ptr<JointBase>> &joints,
+                 const LimbConfig &config);
+
+        /**
+         * @brief Construct a new Limb Base object
+         *
+         * @param joints Joints that make up the leg
+         * @param config Configuration of the joints in the leg
+         */
+        LimbBase(const std::vector<std::shared_ptr<JointBase>> &joints,
+                 const LimbConfig &config);
+
+
+        /**
+         * @brief Destroy the Limb Base object
+         * 
+         */
+        virtual ~LimbBase(){};
 }
