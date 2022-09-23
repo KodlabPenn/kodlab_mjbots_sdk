@@ -181,6 +181,6 @@ namespace kodlab
         real_time_tools::Timer run_timer_;                            /// Run timer for robot, started at construction
         SoftStart soft_start_;                                        /// Soft Start object
         int num_joints_ = 0;                                          /// Number of joints
-        std::unordered_map<std::string, int> joint_name_to_index_;    /// Map from joint name to joint index
+        std::unordered_map<std::string, int> joint_name_to_index_;    ///< Map from joint name to joint index
     };
 } // namespace kodlab
