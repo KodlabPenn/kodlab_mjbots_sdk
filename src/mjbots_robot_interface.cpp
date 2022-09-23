@@ -171,7 +171,7 @@ void MjbotsRobotInterface::ProcessReply() {
         encoder_wrap_[encoder]+=M_PI*2;
       }
       float vel = (raw_position - raw_encoder_positions_[encoder])* 1000;
-      if((vel > 100 or vel < -100) && not first_update_ and encoder_repeat_drop_count_[encoder] < 1) {
+      if((vel > 80 or vel < -80) && not first_update_ and encoder_repeat_drop_count_[encoder] < 1) {
 //        std::cout<<"Woops, something funky is up with encode "<< encoder  <<std::endl;
 //        std::cout<<"Old pos "<<raw_encoder_positions_[encoder]<< " New Pos " << raw_position <<" Measurment" << measurment << std::endl;
 //        std::cout<<vel<<std::endl;
@@ -184,6 +184,7 @@ void MjbotsRobotInterface::ProcessReply() {
         raw_encoder_positions_[encoder] = raw_position;
         encoder_repeat_drop_count_[encoder] = 0;
       }
+
     }
     // Filter position and velocity
     positions_[num_servos_ + encoder] = (1 - encoder_alpha_[encoder]) * positions_[num_servos_ + encoder] +
