@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description='create plot from log.')
 parser.add_argument('log', metavar='L', type=str, nargs='+',
                     help='log file name')
 args = parser.parse_args()
-file_name = 'logs/'+args.log[0]
+file_name = args.log[0]
 print(file_name)
 
 log = lcm.EventLog(file_name, "r")
