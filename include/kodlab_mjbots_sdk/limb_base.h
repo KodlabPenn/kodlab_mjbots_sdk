@@ -12,12 +12,14 @@
 
 #pragma once
 
-#include <Eigen/Dense>
+
 #include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
+
+#include <Eigen/Dense>
 
 #include "kodlab_mjbots_sdk/joint_base.h"
 

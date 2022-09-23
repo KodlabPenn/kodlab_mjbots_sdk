@@ -25,7 +25,7 @@
 class SimpleLimb : public kodlab::LimbBase {
   using kodlab::LimbBase::LimbBase;
 
-  public:
+ public:
   void ForwardKinematics() override {
     Eigen::Matrix4f FK;
     float theta = positions_[0];
