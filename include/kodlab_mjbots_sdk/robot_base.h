@@ -50,7 +50,10 @@ namespace kodlab
                 joints.push_back(j); // Copy constructed, uses an implicit upcasting
                 positions_.push_back( j->get_position_reference() );
                 velocities_.push_back( j->get_velocity_reference() );
-                torque_cmd_.push_back( j->get_servo_torque_reference() ); 
+                torque_cmd_.push_back( j->get_servo_torque_reference() );
+                if(j->get_name() != ""){
+                  joint_name_to_index_.insert({j->get_name(), joints.size()-1});
+                }
             }
 
             // Set number of joints
@@ -163,6 +166,13 @@ namespace kodlab
          */
         std::vector<std::shared_ptr<JointBase>> GetJoints(){return joints;}
 
+        /*!
+         * @brief Get the index for a given joint given the name
+         * @param name the name of the joint
+         * @return the index of the joint
+         */
+        int joint_index_by_name_fatal(const std::string& name){return joint_name_to_index_.at(name);};
+
     protected:
         std::vector<std::reference_wrapper<const float>> positions_;  /// Vector of the motor positions (references to the members of joints_)
         std::vector<std::reference_wrapper<const float>> velocities_; /// Vector of the motor velocities (references to the members of joints_)
@@ -171,5 +181,6 @@ namespace kodlab
         real_time_tools::Timer run_timer_;                            /// Run timer for robot, started at construction
         SoftStart soft_start_;                                        /// Soft Start object
         int num_joints_ = 0;                                          /// Number of joints
+        std::unordered_map<std::string, int> joint_name_to_index_;    ///< Map from joint name to joint index
     };
 } // namespace kodlab
