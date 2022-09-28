@@ -16,6 +16,7 @@
 #include "kodlab_mjbots_sdk/joint_base.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
 #include "kodlab_mjbots_sdk/imu_data.h"
+#include "kodlab_mjbots_sdk/log.h"
 
 namespace kodlab
 {
@@ -52,7 +53,9 @@ namespace kodlab
                 velocities_.push_back( j->get_velocity_reference() );
                 torque_cmd_.push_back( j->get_servo_torque_reference() );
                 if(j->get_name() != ""){
-                  joint_name_to_index_.insert({j->get_name(), joints.size()-1});
+                  if (!joint_name_to_index_.insert({j->get_name(), joints.size()-1}).second){
+                    LOG_ERROR("Duplicate non empty joint names for name: %s", j->get_name());
+                  }
                 }
             }
 
