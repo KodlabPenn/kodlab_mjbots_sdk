@@ -190,6 +190,12 @@ class JointBase {
          */
         const std::string get_name() const { return name_; }
 
+        /*!
+         * @brief get the torque limit for the servo
+         * @return torque limit for the servo
+         */
+        float get_servo_torque_limit() const {return max_torque_/gear_ratio_;};
+
     protected:
         std::string name_ = "";  // Optional joint name
         // Joint Params

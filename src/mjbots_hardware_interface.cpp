@@ -20,12 +20,21 @@ void MjbotsHardwareInterface::InitializeCommand() {
   }
 
   ::mjbots::moteus::PositionResolution res; // This is just for the command
-  res.position = ::mjbots::moteus::Resolution::kIgnore;
-  res.velocity = ::mjbots::moteus::Resolution::kIgnore;
-  res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
-  res.kp_scale = ::mjbots::moteus::Resolution::kIgnore;
-  res.kd_scale = ::mjbots::moteus::Resolution::kIgnore;
-  res.maximum_torque = ::mjbots::moteus::Resolution::kIgnore;
+  if(send_pd_commands_){
+    res.position = ::mjbots::moteus::Resolution::kInt16;
+    res.velocity = ::mjbots::moteus::Resolution::kInt16;
+    res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
+    res.kp_scale = ::mjbots::moteus::Resolution::kInt16;
+    res.kd_scale = ::mjbots::moteus::Resolution::kInt16;
+    res.maximum_torque = ::mjbots::moteus::Resolution::kInt8;
+  }else{
+    res.position = ::mjbots::moteus::Resolution::kIgnore;
+    res.velocity = ::mjbots::moteus::Resolution::kIgnore;
+    res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
+    res.kp_scale = ::mjbots::moteus::Resolution::kIgnore;
+    res.kd_scale = ::mjbots::moteus::Resolution::kIgnore;
+    res.maximum_torque = ::mjbots::moteus::Resolution::kIgnore;
+  }
   res.stop_position = ::mjbots::moteus::Resolution::kIgnore;
   res.watchdog_timeout = ::mjbots::moteus::Resolution::kIgnore;
   for (auto &cmd : commands_) {
@@ -131,6 +140,13 @@ void MjbotsHardwareInterface::SendCommand() {
 
   for (int servo = 0; servo < num_joints_; servo++) {// TODO Move to a seperate update method (allow non-ff torque commands)?
     commands_[servo].position.feedforward_torque = (dry_run_ ? 0 : joints[servo]->get_servo_torque());
+    if(send_pd_commands_){
+      commands_[servo].position.position = joints[servo]->get_moteus_position_target();
+      commands_[servo].position.velocity = joints[servo]->get_moteus_velocity_target();
+      commands_[servo].position.kp_scale = joints[servo]->get_kp_scale();
+      commands_[servo].position.kd_scale = joints[servo]->get_kd_scale();
+      commands_[servo].position.maximum_torque = joints[servo]->get_servo_torque_limit();
+    }
   }
   if (print_torques_) {
     std::vector<float> vec;

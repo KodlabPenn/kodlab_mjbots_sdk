@@ -11,6 +11,7 @@
 #pragma once
 #include "kodlab_mjbots_sdk/joint_base.h"
 #include "kodlab_mjbots_sdk/moteus_protocol.h"
+#include "kodlab_mjbots_sdk/log.h"
 #include <string>
 
 namespace kodlab{
@@ -139,10 +140,91 @@ class JointMoteus: public JointBase
          */
         const ::mjbots::moteus::Mode & get_mode_reference()   const {return mode_; }
 
+        /*!
+         * @brief Set the kp_scale for the moteus
+         * @param kp_scale limited between 0 and 1
+         */
+        void set_kp_scale(float kp_scale){
+          if(kp_scale > 1){
+            LOG_WARN("kp_scale is greater than 1, will be limited to 1");
+          }
+          kp_scale = kp_scale;
+        }
+
+        /*!
+         * @brief Set the kd_scale for the moteus
+         * @param kd_scale limited between 0 and 1
+         */
+        void set_kd_scale(float kd_scale){
+          if(kd_scale > 1){
+            LOG_WARN("kd_scale is greater than 1, will be limited to 1");
+          }
+          kd_scale_ = kd_scale;
+        }
+
+        /*!
+         * @brief set the joint position target in radians for the pd loop
+         * @param position_target target position in radians
+         */
+        void set_joint_position_target(float position_target){
+          position_target_ = position_target;
+        }
+
+       /*!
+        * @brief set the joint velocity target in radians/s for the pd loop
+        * @param velocity_target target velocity in rads/s
+        */
+        void set_joint_velocity_target(float velocity_target){
+          position_target_ = velocity_target;
+        }
+
+        /*!
+         * @brief accessor for kp_scale
+         * @return kp_scale
+         */
+        [[nodiscard]] float get_kp_scale() const {return kp_scale_;}
+
+        /*!
+         * @brief accessor for kd_scale
+         * @return kd_scale
+         */
+        [[nodiscard]] float get_kd_scale() const {return kd_scale_;}
+
+        /*!
+         * @brief accessor for joint position target
+         * @return joint position target in rad
+         */
+        [[nodiscard]] float get_joint_position_target()const{return position_target_;}
+
+        /*!
+         * @brief accessor for joint velocity target
+         * @return joint_velociyt target in radians/s
+         */
+        [[nodiscard]] float get_joint_velocity_target()const{return velocity_target_;}
+
+        /*!
+         * @brief accessor for the moteus position target
+         * @return the moteus position target in units of revolutions
+         */
+        [[nodiscard]] float get_moteus_position_target()const{return (position_target_ + zero_offset_) * gear_ratio_/direction_/2/M_PI;}
+
+        /*!
+         * @brief accessor for the moteus velocity target
+         * @return the moteus velocity target in units of revolutions/s
+         */
+        [[nodiscard]] float get_moteus_velocity_target()const{return (velocity_target_) * gear_ratio_/direction_/2/M_PI;}
+
+
     private:
         int can_id_;   /// the can id of this joint's moteus
         int can_bus_;  /// the can bus the moteus communicates on
         ::mjbots::moteus::Mode mode_ = ::mjbots::moteus::Mode::kStopped; /// joint's moteus mode
+
+        // PD setpoints and gain scales
+        float kp_scale_ = 0;          ///< kp scale, limited between 0 and 1
+        float kd_scale_ = 0;          ///< kd scale, limited between 0 and 1
+        float position_target_ = 0;   ///< Target joint position
+        float velocity_target_ = 0;   ///< Target joint velocity
 };
 }//namespace mjbots
 }//namespace kodlab
