@@ -29,7 +29,7 @@ the robot object as follows.
 class MyControlLoop : public kodlab::mjbots::MjbotsControlLoop
 {
   using MjbotsControlLoop::MjbotsControlLoop;
-  void CalcTorques() override{
+  void Update() override{
     std::vector<float> torques = control_effort;
     robot_->SetTorques(torques);
   }    
@@ -78,6 +78,31 @@ Next, implement the `ProcessInput` function to do things with the data in `lcm_s
       void ProcessInput()  override{
         gains_ = lcm_sub_.data_.gains;
       }
+
+## PD Set points and gains
+The SDK is built around just sending ffwd torque commands, but the moteus does have an onboard 
+PD loop. In order to use the built in PD loop modify the PD gains on the moteus. Next when setting
+up the control loop set:
+
+```
+kodlab::mjbots::ControlLoopOptions options;
+options.send_pd_commands = true;
+```
+By setting `send_pd_commands` to true the robot will now send pd scales and set points to the
+moteus. This will slow down the communication with the moteus, so only use this option if you
+are actually going to use the pd commands.
+
+In order to set the PD gains and set points next when constructing the joint vector set the value
+of `moteus_kp` and `moteus_kd` to the values configured on the moteus. Now in the update function
+you can use 
+
+```
+    robot_->joints[0]->set_joint_position_target(0);
+    robot_->joints[0]->set_joint_velocity_target(0);
+    robot_->joints[0]->set_kp(0.8);
+    robot_->joints[0]->set_kd(0.01);
+```
+to set gains and targets for the onboard pd loop.
 
 ## Robot Base
 The `RobotBase` object is intended to be inherited by a user-defined robot 

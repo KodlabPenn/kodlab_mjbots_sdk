@@ -30,6 +30,8 @@ struct MoteusJointConfig{
     float max_torque = std::numeric_limits<float>::infinity();
     float pos_min = -std::numeric_limits<float>::infinity();
     float pos_max = std::numeric_limits<float>::infinity();
+    float moteus_kp = 0;
+    float moteus_kd = 0;
 };
 
 /**         
@@ -52,6 +54,8 @@ class JointMoteus: public JointBase
          * @param max_torque    /// Maximum torque limit of the joint [N m] (Default:inf)
          * @param pos_min       /// Minimum joint pose limit before taking protective measures such as torque limiting or shut off (Default:-inf)
          * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
+         * @param moteus_kp     /// Value of kp set on moteus in units of N m/rev
+         * @param moteus_kd     /// Value of kd set on moteus in units of N m s/rev
          */
         JointMoteus(
             std::string name,
@@ -62,9 +66,14 @@ class JointMoteus: public JointBase
             float gear_ratio = 1.0,
             float max_torque = std::numeric_limits<float>::infinity(),
             float pos_min = -std::numeric_limits<float>::infinity(),
-            float pos_max = std::numeric_limits<float>::infinity())
+            float pos_max = std::numeric_limits<float>::infinity(),
+            float moteus_kp = 0,
+            float moteus_kd = 0)
             : JointBase(name, direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max),
-              can_bus_(can_bus), can_id_(can_id) {}
+              can_bus_(can_bus),
+              can_id_(can_id),
+              moteus_kp_(moteus_kp),
+              moteus_kd_(moteus_kd)  {}
 
         /**
          * @brief Construct a new Joint Moteus object without name
@@ -77,6 +86,8 @@ class JointMoteus: public JointBase
          * @param max_torque    /// Maximum torque limit of the joint [N m] (Default:inf)
          * @param pos_min       /// Minimum joint pose limit before taking protective measures such as torque limiting or shut off (Default:-inf)
          * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
+         * @param moteus_kp     /// Value of kp set on moteus in units of N m/rev
+         * @param moteus_kd     /// Value of kd set on moteus in units of N m s/rev
          */
         JointMoteus(
             int can_id,
@@ -86,9 +97,14 @@ class JointMoteus: public JointBase
             float gear_ratio = 1.0,
             float max_torque = std::numeric_limits<float>::infinity(),
             float pos_min = -std::numeric_limits<float>::infinity(),
-            float pos_max = std::numeric_limits<float>::infinity())
+            float pos_max = std::numeric_limits<float>::infinity(),
+            float moteus_kp = 0,
+            float moteus_kd = 0)
             : JointBase("", direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max),
-              can_bus_(can_bus), can_id_(can_id) {}
+              can_bus_(can_bus),
+              can_id_(can_id),
+              moteus_kp_(moteus_kp),
+              moteus_kd_(moteus_kd) {}
 
 
         /**
@@ -105,7 +121,9 @@ class JointMoteus: public JointBase
                          config.pos_min,
                          config.pos_max),
               can_id_( config.can_id),
-              can_bus_( config.can_bus) {}
+              can_bus_( config.can_bus),
+              moteus_kp_(config.moteus_kp),
+              moteus_kd_(config.moteus_kd){}
         
         /**
          * @brief Update the joint of the moteus. Converts rot/s to rad/s and saves mode
@@ -141,66 +159,40 @@ class JointMoteus: public JointBase
         const ::mjbots::moteus::Mode & get_mode_reference()   const {return mode_; }
 
         /*!
-         * @brief Set the kp_scale for the moteus
-         * @param kp_scale limited between 0 and 1
-         */
-        void set_kp_scale(float kp_scale){
-          if(kp_scale > 1){
-            LOG_WARN("kp_scale is greater than 1, will be limited to 1");
-          }
-          kp_scale = kp_scale;
-        }
-
-        /*!
-         * @brief Set the kd_scale for the moteus
-         * @param kd_scale limited between 0 and 1
-         */
-        void set_kd_scale(float kd_scale){
-          if(kd_scale > 1){
-            LOG_WARN("kd_scale is greater than 1, will be limited to 1");
-          }
-          kd_scale_ = kd_scale;
-        }
-
-        /*!
-         * @brief set the joint position target in radians for the pd loop
-         * @param position_target target position in radians
-         */
-        void set_joint_position_target(float position_target){
-          position_target_ = position_target;
-        }
-
-       /*!
-        * @brief set the joint velocity target in radians/s for the pd loop
-        * @param velocity_target target velocity in rads/s
-        */
-        void set_joint_velocity_target(float velocity_target){
-          position_target_ = velocity_target;
-        }
-
-        /*!
          * @brief accessor for kp_scale
          * @return kp_scale
          */
-        [[nodiscard]] float get_kp_scale() const {return kp_scale_;}
+        [[nodiscard]] float get_kp_scale() const {
+          if(moteus_kp_ == 0){
+            LOG_WARN("Moteus kp is set to 0, while attempting to send pd commands");
+            return 0;
+          }
+          // Multiply by 2pi to convert kp from radians to revolutions
+          // Divide by gear ratio to get servo kp rather than joint kp
+          const float kp_scale = kp_/moteus_kp_ * 2 * M_PI/gear_ratio_;
+          if(kp_scale > 1){
+            LOG_WARN("kp_scale is greater than 1, will be limited to 1. Either use a lower kp or increase kp in the moteus");
+            LOG_WARN("With the current moteus kp of %.3f, the max value of the joint kp is %.3f", moteus_kp_, kp_/kp_scale);
+          }
+          return kp_scale;
+        }
 
         /*!
          * @brief accessor for kd_scale
          * @return kd_scale
          */
-        [[nodiscard]] float get_kd_scale() const {return kd_scale_;}
-
-        /*!
-         * @brief accessor for joint position target
-         * @return joint position target in rad
-         */
-        [[nodiscard]] float get_joint_position_target()const{return position_target_;}
-
-        /*!
-         * @brief accessor for joint velocity target
-         * @return joint_velociyt target in radians/s
-         */
-        [[nodiscard]] float get_joint_velocity_target()const{return velocity_target_;}
+        [[nodiscard]] float get_kd_scale() const {
+          if(moteus_kd_ == 0){
+            LOG_WARN("Moteus kd is set to 0, while attempting to send pd commands");
+            return 0;
+          }
+          const float kd_scale = kd_/moteus_kd_ * 2 * M_PI/gear_ratio_;
+          if(kd_scale > 1){
+            LOG_WARN("kd_scale is greater than 1, will be limited to 1. Either use a lower kd or increase kd in the moteus");
+            LOG_WARN("With the current moteus kd of %.3f, the max value of the joint kd is %.3f", moteus_kp_, kd_/kd_scale);
+          }
+          return kd_scale;
+        }
 
         /*!
          * @brief accessor for the moteus position target
@@ -219,12 +211,8 @@ class JointMoteus: public JointBase
         int can_id_;   /// the can id of this joint's moteus
         int can_bus_;  /// the can bus the moteus communicates on
         ::mjbots::moteus::Mode mode_ = ::mjbots::moteus::Mode::kStopped; /// joint's moteus mode
-
-        // PD setpoints and gain scales
-        float kp_scale_ = 0;          ///< kp scale, limited between 0 and 1
-        float kd_scale_ = 0;          ///< kd scale, limited between 0 and 1
-        float position_target_ = 0;   ///< Target joint position
-        float velocity_target_ = 0;   ///< Target joint velocity
+        float moteus_kp_ = 0;
+        float moteus_kd_ = 0;
 };
 }//namespace mjbots
 }//namespace kodlab
