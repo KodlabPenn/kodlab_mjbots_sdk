@@ -190,7 +190,37 @@ class JointBase {
          */
         const std::string get_name() const { return name_; }
 
-    protected:
+        /*!
+         * @brief get the torque limit for the servo
+         * @return torque limit for the servo
+         */
+        float get_servo_torque_limit() const {return max_torque_/gear_ratio_;};
+
+        /*!
+         * @brief set the joint position target in radians for the pd loop
+         * @param position_target target position in radians
+         */
+        void set_joint_position_target(float position_target){position_target_ = position_target;}
+
+        /*!
+         * @brief set the joint velocity target in radians/s for the pd loop
+         * @param velocity_target target velocity in rads/s
+         */
+        void set_joint_velocity_target(float velocity_target){position_target_ = velocity_target;}
+
+        /*!
+         * @brief set the kp for pd loop
+         * @param kp position gain in N m/rad
+         */
+        void set_kp(float kp){kp_ = kp;}
+
+        /*!
+         * @brief set the kd for pd loop
+         * @param kd velocity gain in N m s/rad
+         */
+        void set_kd(float kd){kd_ = kd;}
+
+ protected:
         std::string name_ = "";  // Optional joint name
         // Joint Params
         float gear_ratio_  = 1.0;   /// external joint gear ratio
@@ -201,6 +231,12 @@ class JointBase {
         float position_;    /// position of the joint [rad]
         float velocity_;    /// velocity of the joint [rad/s]
         float torque_ = 0;  /// Constrained torque for the joint [N m]
+
+        // PD setpoints and gain scales
+        float kp_ = 0;                ///< Value of kp for joint [N m / rad]
+        float kd_ = 0;                ///< Value of kd for joint [N m s/ rad]
+        float position_target_ = 0;   ///< Target joint position [rad]
+        float velocity_target_ = 0;   ///< Target joint velocity [rad/s]
 
         // Servo State/Commands (the raw motor values)
         float servo_position_;      /// position of the servo [rad]
