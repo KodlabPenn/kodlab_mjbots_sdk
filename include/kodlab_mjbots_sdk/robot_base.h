@@ -54,7 +54,7 @@ namespace kodlab
                 torque_cmd_.push_back( j->get_servo_torque_reference() );
                 if(j->get_name() != ""){
                   if (!joint_name_to_index_.insert({j->get_name(), joints.size()-1}).second){
-                    LOG_ERROR("Duplicate non empty joint names for name: %s", j->get_name());
+                    LOG_ERROR("Duplicate non empty joint names for name: %s", j->get_name().c_str());
                   }
                 }
             }
