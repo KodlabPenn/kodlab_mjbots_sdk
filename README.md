@@ -84,7 +84,7 @@ The SDK is built around just sending ffwd torque commands, but the moteus does h
 PD loop. In order to use the built in PD loop modify the PD gains on the moteus. Next when setting
 up the control loop set:
 
-```
+```cpp
 kodlab::mjbots::ControlLoopOptions options;
 options.send_pd_commands = true;
 ```
