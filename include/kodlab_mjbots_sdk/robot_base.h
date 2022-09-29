@@ -94,7 +94,13 @@ namespace kodlab
          * @brief Stop the robot by setting torques to zero. Can be overridden
          *        if other features are available e.g. mehanical or regen braking
          */
-        virtual void Stop(){SetTorques(std::vector<float>(num_joints_, 0));}
+        virtual void Stop(){
+          SetTorques(std::vector<float>(num_joints_, 0));
+          for(const auto& joint: joints){
+            joint->set_kp(0);
+            joint->set_kd(0);
+          }
+        }
 
         /*!
          * @brief accessor for joint positions, takes into account direction and offset
