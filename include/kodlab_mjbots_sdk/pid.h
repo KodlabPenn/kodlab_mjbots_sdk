@@ -21,7 +21,7 @@ namespace kodlab {
 /**
  * @brief Pid object
  */
-class Pid {
+class PIDController {
    public:
     /**
      * @brief Construct a Pid object
