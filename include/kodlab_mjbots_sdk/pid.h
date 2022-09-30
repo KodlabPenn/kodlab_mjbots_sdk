@@ -30,8 +30,8 @@ class PIDController {
      * @param i_gain Integral Gain
      * @param time_step Time difference between 2 updates
      */
-    Pid(double p_gain, double d_gain, double i_gain, double time_step,
-        double deadband, double saturation)
+    PIDController(double p_gain, double d_gain, double i_gain, double time_step,
+                  double deadband, double saturation)
         : kp_(0), kd_(0), ki_(0), time_step_(0.01), deadband_(0), saturation_(0) {
         kp_ = p_gain;
         kd_ = d_gain;
@@ -111,6 +111,11 @@ class PIDController {
         output_ = (output_ > saturation_) ? saturation_ : output_;
         return output_;
     }
+
+    /**
+     * @brief Destructor
+     */
+    ~PIDController() {}
 
    protected:
     /**
