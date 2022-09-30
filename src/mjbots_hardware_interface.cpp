@@ -143,8 +143,8 @@ void MjbotsHardwareInterface::SendCommand() {
     if(send_pd_commands_){
       commands_[servo].position.position = joints[servo]->get_moteus_position_target();
       commands_[servo].position.velocity = joints[servo]->get_moteus_velocity_target();
-      commands_[servo].position.kp_scale = joints[servo]->get_kp_scale();
-      commands_[servo].position.kd_scale = joints[servo]->get_kd_scale();
+      commands_[servo].position.kp_scale = dry_run_ ? 0 : joints[servo]->get_kp_scale();
+      commands_[servo].position.kd_scale = dry_run_ ? 0 : joints[servo]->get_kd_scale();
       commands_[servo].position.maximum_torque = joints[servo]->get_servo_torque_limit();
     }
   }
