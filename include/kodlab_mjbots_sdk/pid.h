@@ -11,15 +11,16 @@
 
 #pragma once
 
-#ifndef _PID_
-#define _PID_
+#include <math.h>
+#include <vector>
 
-#include "Eigen/Geometry"
+#define HIGH_SATURATION_INDEX_ 0
+#define LOW_SATURATION_INDEX_ 0
 
 namespace kodlab {
 
 /**
- * @brief Pid object
+ * @brief PIDController class that allows you to use PID control.
  */
 class PIDController {
    public:
@@ -31,14 +32,9 @@ class PIDController {
      * @param time_step Time difference between 2 updates
      */
     PIDController(double p_gain, double d_gain, double i_gain, double time_step,
-                  double deadband, double saturation)
-        : kp_(0), kd_(0), ki_(0), time_step_(0.01), deadband_(0), saturation_(0) {
-        kp_ = p_gain;
-        kd_ = d_gain;
-        ki_ = i_gain;
+                  double deadband = 1.0, std::vector<double> saturation = {INFINITY, -INFINITY})
+        : kp_(p_gain), kd_(d_gain), ki_(i_gain), deadband_(deadband), saturation_(saturation) {
         time_step_ = time_step;
-        deadband_ = deadband;
-        saturation_ = saturation;
     }
 
     /**
@@ -47,7 +43,7 @@ class PIDController {
      * @param d_gain Derivative Gain
      * @param i_gain Integral Gain
      */
-    void SetGains(double p_gain, double d_gain, double i_gain) {
+    void set_gains(double p_gain, double d_gain, double i_gain) {
         kp_ = p_gain;
         kd_ = d_gain;
         ki_ = i_gain;
@@ -57,7 +53,7 @@ class PIDController {
      * @brief Function to set the deadband
      * @param deadband Deadband that needs to be set
      */
-    void SetDeadband(double deadband) {
+    void set_deadband(double deadband) {
         deadband_ = deadband;
     }
 
@@ -65,7 +61,7 @@ class PIDController {
      * @brief Function to set the Saturation
      * @param saturation Saturation
      */
-    void SetSaturation(double saturation) {
+    void set_saturation(std::vector<double> saturation) {
         saturation_ = saturation;
     }
 
@@ -75,25 +71,19 @@ class PIDController {
      * @param current Current state of the controller.
      * @return Returns the Pid output
      */
-    double Update(double goal, double current) {
+    double Update(double goal, double current, double time_step = time_step_) {
         // Calculate the errors
         // Proportional error
         error_ = goal - current;
 
         // Integral error
-        i_error_ += error_ * time_step_;
+        i_error_ += error_ * time_step;
 
         // Derivative error
-        derivative_ = (error_ - d_error_) / time_step_;
+        d_error_ = (error_ - d_error_) / time_step;
 
-        // Control output
-        output_ = kp_ * error_ + kd_ * derivative_ + ki_ * i_error_;
-
-        // Saturation checking
-        output_ = (output_ > saturation_) ? saturation_ : output_;
-
-        // Storing the past error
-        d_error_ = derivative_;
+        // Calling UpdateWithError.
+        UpdateWithError(error_, d_error_, i_error_);
 
         return output_;
     }
@@ -108,7 +98,12 @@ class PIDController {
     double UpdateWithError(double error_p, double error_d, double error_i) {
         // Finding the control output if errors are inputed
         output_ = kp_ * error_p + kd_ * error_d + ki_ * error_i;
-        output_ = (output_ > saturation_) ? saturation_ : output_;
+
+        // Checking the upper limit of the saturation level
+        output_ = (output_ > saturation_[HIGH_SATURATION_INDEX_]) ? saturation_[HIGH_SATURATION_INDEX_] : output_;
+
+        // Checking the lower limit of the saturation level
+        output_ = (output_ < saturation_[LOW_SATURATION_INDEX_]) ? saturation_[LOW_SATURATION_INDEX_] : output_;
         return output_;
     }
 
@@ -121,7 +116,7 @@ class PIDController {
     /**
      * @brief Time difference between 2 updates
      */
-    double time_step_;
+    static double time_step_;
 
     /**
      * @brief Proportional Gain
@@ -149,19 +144,14 @@ class PIDController {
     double d_error_ = 0;
 
     /**
-     * @brief Current derivative error found
-     */
-    double derivative_;
-
-    /**
      * @brief Sumes up the error for calculating the I term
      */
-    double i_error_;
+    double i_error_ = 0;
 
     /**
      * @brief Error at each step.
      */
-    double error_;
+    double error_ = 0;
 
     /**
      * @brief Deadband of the system
@@ -171,14 +161,12 @@ class PIDController {
     /**
      * @brief Max control output
      */
-    double saturation_;
+    std::vector<double> saturation_{INFINITY, -INFINITY};
 
     /**
-     * @brief Output of the function
+     * @brief Output of the function used internally
      */
-    double output_;
+    double output_ = 0;
 };
 
 }  // namespace kodlab
-
-#endif
