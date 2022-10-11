@@ -12,6 +12,7 @@
 #pragma once
 
 #include <math.h>
+
 #include <vector>
 
 #define HIGH_SATURATION_INDEX_ 0
@@ -19,11 +20,11 @@
 
 namespace kodlab {
 
-/**
- * @brief PIDController class that allows you to use PID control.
- */
-class PIDController {
-   public:
+  /**
+   * @brief PIDController class that allows you to use PID control.
+   */
+  class PIDController {
+  public:
     /**
      * @brief Construct a Pid object
      * @param p_gain Proportional Gain
@@ -32,9 +33,14 @@ class PIDController {
      * @param time_step Time difference between 2 updates
      */
     PIDController(double p_gain, double d_gain, double i_gain, double time_step,
-                  double deadband = 1.0, std::vector<double> saturation = {INFINITY, -INFINITY})
-        : kp_(p_gain), kd_(d_gain), ki_(i_gain), deadband_(deadband), saturation_(saturation) {
-        time_step_ = time_step;
+      double deadband = 1.0,
+      std::vector<double> saturation = { INFINITY, -INFINITY })
+      : kp_(p_gain),
+      kd_(d_gain),
+      ki_(i_gain),
+      deadband_(deadband),
+      saturation_(saturation) {
+      time_step_ = time_step;
     }
 
     /**
@@ -44,25 +50,23 @@ class PIDController {
      * @param i_gain Integral Gain
      */
     void set_gains(double p_gain, double d_gain, double i_gain) {
-        kp_ = p_gain;
-        kd_ = d_gain;
-        ki_ = i_gain;
+      kp_ = p_gain;
+      kd_ = d_gain;
+      ki_ = i_gain;
     }
 
     /**
      * @brief Function to set the deadband
      * @param deadband Deadband that needs to be set
      */
-    void set_deadband(double deadband) {
-        deadband_ = deadband;
-    }
+    void set_deadband(double deadband) { deadband_ = deadband; }
 
     /**
      * @brief Function to set the Saturation
      * @param saturation Saturation
      */
     void set_saturation(std::vector<double> saturation) {
-        saturation_ = saturation;
+      saturation_ = saturation;
     }
 
     /**
@@ -72,20 +76,20 @@ class PIDController {
      * @return Returns the Pid output
      */
     double Update(double goal, double current, double time_step = time_step_) {
-        // Calculate the errors
-        // Proportional error
-        error_ = goal - current;
+      // Calculate the errors
+      // Proportional error
+      error_ = goal - current;
 
-        // Integral error
-        i_error_ += error_ * time_step;
+      // Integral error
+      i_error_ += error_ * time_step;
 
-        // Derivative error
-        d_error_ = (error_ - d_error_) / time_step;
+      // Derivative error
+      d_error_ = (error_ - d_error_) / time_step;
 
-        // Calling UpdateWithError.
-        UpdateWithError(error_, d_error_, i_error_);
+      // Calling UpdateWithError.
+      UpdateWithError(error_, d_error_, i_error_);
 
-        return output_;
+      return output_;
     }
 
     /**
@@ -96,15 +100,19 @@ class PIDController {
      * @return Returns the Pid output
      */
     double UpdateWithError(double error_p, double error_d, double error_i) {
-        // Finding the control output if errors are inputed
-        output_ = kp_ * error_p + kd_ * error_d + ki_ * error_i;
+      // Finding the control output if errors are inputed
+      output_ = kp_ * error_p + kd_ * error_d + ki_ * error_i;
 
-        // Checking the upper limit of the saturation level
-        output_ = (output_ > saturation_[HIGH_SATURATION_INDEX_]) ? saturation_[HIGH_SATURATION_INDEX_] : output_;
+      // Checking the upper limit of the saturation level
+      output_ = (output_ > saturation_[HIGH_SATURATION_INDEX_])
+        ? saturation_[HIGH_SATURATION_INDEX_]
+        : output_;
 
-        // Checking the lower limit of the saturation level
-        output_ = (output_ < saturation_[LOW_SATURATION_INDEX_]) ? saturation_[LOW_SATURATION_INDEX_] : output_;
-        return output_;
+      // Checking the lower limit of the saturation level
+      output_ = (output_ < saturation_[LOW_SATURATION_INDEX_])
+        ? saturation_[LOW_SATURATION_INDEX_]
+        : output_;
+      return output_;
     }
 
     /**
@@ -112,7 +120,7 @@ class PIDController {
      */
     ~PIDController() {}
 
-   protected:
+  protected:
     /**
      * @brief Time difference between 2 updates
      */
@@ -161,12 +169,12 @@ class PIDController {
     /**
      * @brief Max control output
      */
-    std::vector<double> saturation_{INFINITY, -INFINITY};
+    std::vector<double> saturation_{ INFINITY, -INFINITY };
 
     /**
      * @brief Output of the function used internally
      */
     double output_ = 0;
-};
+  };
 
 }  // namespace kodlab
