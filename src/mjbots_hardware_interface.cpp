@@ -40,6 +40,9 @@ void MjbotsHardwareInterface::InitializeCommand() {
   for (auto &cmd : commands_) {
     cmd.resolution = res;
     cmd.mode = ::mjbots::moteus::Mode::kStopped;
+    if(send_pd_commands_){
+      cmd.query.torque = ::mjbots::moteus::Resolution::kInt16;
+    }
   }
 }
 
@@ -129,7 +132,8 @@ void MjbotsHardwareInterface::ProcessReply() {
     if(std::isnan(servo_reply.position)){
       std::cout<<"Missing can frame for servo: " << joint->get_can_id()<< std::endl;
     } else{
-      joint->UpdateMoteus(servo_reply.position, servo_reply.velocity, servo_reply.mode);
+      joint->UpdateMoteus(servo_reply.position, servo_reply.velocity,
+                          send_pd_commands_ ? servo_reply.torque : 0,servo_reply.mode);
     }
   }
   imu_data_->Update(*(moteus_data_.attitude));

@@ -74,8 +74,9 @@ class JointBase {
          * 
          * @param servo_pos raw servo position
          * @param servo_vel raw servo velocity
+         * @param servo_torque raw servo torque measurement
          */
-        virtual void UpdateState(float servo_pos, float servo_vel);
+        virtual void UpdateState(float servo_pos, float servo_vel, float servo_torque);
 
         /**
          * @brief Calculate and limit torque and set servo torque_cmd_
@@ -140,6 +141,13 @@ class JointBase {
          * @return float 
          */
         virtual float get_servo_torque() const {return servo_torque_;}
+
+        /**
+         * @brief Get the measured joint torque
+         *
+         * @return float
+         */
+        virtual float get_measured_torque() const {return measured_torque_;}
 
         /**
          * @brief Set the soft stop flag
@@ -231,6 +239,7 @@ class JointBase {
         float position_;    /// position of the joint [rad]
         float velocity_;    /// velocity of the joint [rad/s]
         float torque_ = 0;  /// Constrained torque for the joint [N m]
+        float measured_torque_ = 0;  /// Measured joint torque [N m]
 
         // PD setpoints and gain scales
         float kp_ = 0;                ///< Value of kp for joint [N m / rad]
@@ -242,6 +251,7 @@ class JointBase {
         float servo_position_;      /// position of the servo [rad]
         float servo_velocity_;      /// velocity of the servo [rad/s]
         float servo_torque_ = 0;    /// torque command for servo [N m]
+        float measured_servo_torque_ = 0;  /// Measured servo torque [N m]
 
         // Features
         bool  soft_stop_active_ = true;  /// enable soft stop flag 

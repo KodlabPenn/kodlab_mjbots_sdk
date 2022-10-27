@@ -65,11 +65,13 @@ float JointBase::UpdateTorque(float joint_torque){
     return servo_torque_;
 }
 
-void JointBase::UpdateState(float servo_pos, float servo_vel){  
+void JointBase::UpdateState(float servo_pos, float servo_vel, float servo_torque){
     servo_position_ = servo_pos;
     servo_velocity_ = servo_vel;
-    position_ = direction_ * servo_pos / gear_ratio_ - zero_offset_ ; 
+    measured_servo_torque_ = servo_torque;
+    position_ = direction_ * servo_pos / gear_ratio_ - zero_offset_ ;
     velocity_= direction_ * servo_vel / gear_ratio_ ;
+    measured_torque_ = direction_ * servo_torque * gear_ratio_;
 }
 
 } // kodlab

@@ -130,10 +130,11 @@ class JointMoteus: public JointBase
          * 
          * @param reply_pos position reported by moteus [rot]
          * @param reply_vel velocity reported by moteus [rot/s]
+         * @param reply_torque torque measured by the moteus [Nm]
          * @param mode      moteus mode
          */
-        void UpdateMoteus(float reply_pos, float reply_vel, ::mjbots::moteus::Mode mode ){
-            UpdateState( 2 * M_PI * reply_pos, 2 * M_PI * reply_vel );
+        void UpdateMoteus(float reply_pos, float reply_vel, float reply_torque, ::mjbots::moteus::Mode mode ){
+            UpdateState( 2 * M_PI * reply_pos, 2 * M_PI * reply_vel, reply_torque);
             mode_ = mode;
         }
 
