@@ -214,7 +214,7 @@ class JointBase {
          * @brief set the joint velocity target in radians/s for the pd loop
          * @param velocity_target target velocity in rads/s
          */
-        void set_joint_velocity_target(float velocity_target){position_target_ = velocity_target;}
+        void set_joint_velocity_target(float velocity_target){velocity_target_ = velocity_target;}
 
         /*!
          * @brief set the kp for pd loop
