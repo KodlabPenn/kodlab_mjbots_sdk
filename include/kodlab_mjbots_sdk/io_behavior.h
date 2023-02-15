@@ -149,7 +149,7 @@ class IOBehavior : public Behavior<Robot> {
   /**
    * @brief Cache storing the most recent input data.
    */
-  [[maybe_unused]] Input input_data_cache_;
+  Input input_data_cache_;
 
  private:
 

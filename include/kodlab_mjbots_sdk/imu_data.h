@@ -176,25 +176,25 @@ public:
    */
   IMUData(const ::mjbots::pi3hat::Attitude &pi_att,
           const Eigen::Quaternion<Scalar> &world_offset_in = {1, 0, 0, 0})
-      : quat_raw_(pi_att.quat.x,
-                  pi_att.quat.y,
-                  pi_att.quat.z,
-                  pi_att.quat.w),
+      : quat_raw_(float(pi_att.quat.x),
+                  float(pi_att.quat.y),
+                  float(pi_att.quat.z),
+                  float(pi_att.quat.w)),
         quat_(world_offset_in * quat_raw_),
-        ang_rate_(pi_att.rate_dps.x * kDegsToRads_, 
-                  pi_att.rate_dps.y * kDegsToRads_,
-                  pi_att.rate_dps.z * kDegsToRads_),
-        accel_(pi_att.accel_mps2.x, pi_att.accel_mps2.y, pi_att.accel_mps2.z),
-        ang_rate_bias_(pi_att.bias_dps.x * kDegsToRads_,
-                       pi_att.bias_dps.y * kDegsToRads_, 
-                       pi_att.bias_dps.z * kDegsToRads_),
-        att_uncertainty_(pi_att.attitude_uncertainty.x,
-                         pi_att.attitude_uncertainty.y,
-                         pi_att.attitude_uncertainty.z,
-                         pi_att.attitude_uncertainty.w),
-        ang_bias_uncertainty_(pi_att.bias_uncertainty_dps.x * kDegsToRads_,
-                              pi_att.bias_uncertainty_dps.y * kDegsToRads_,
-                              pi_att.bias_uncertainty_dps.z * kDegsToRads_),
+        ang_rate_(float(pi_att.rate_dps.x) * kDegsToRads_,
+                  float(pi_att.rate_dps.y) * kDegsToRads_,
+                  float(pi_att.rate_dps.z) * kDegsToRads_),
+        accel_(float(pi_att.accel_mps2.x), float(pi_att.accel_mps2.y), float(pi_att.accel_mps2.z)),
+        ang_rate_bias_(float(pi_att.bias_dps.x) * kDegsToRads_,
+                       float(pi_att.bias_dps.y) * kDegsToRads_,
+                       float(pi_att.bias_dps.z) * kDegsToRads_),
+        att_uncertainty_(float(pi_att.attitude_uncertainty.x),
+                         float(pi_att.attitude_uncertainty.y),
+                         float(pi_att.attitude_uncertainty.z),
+                         float(pi_att.attitude_uncertainty.w)),
+        ang_bias_uncertainty_(float(pi_att.bias_uncertainty_dps.x) * kDegsToRads_,
+                              float(pi_att.bias_uncertainty_dps.y) * kDegsToRads_,
+                              float(pi_att.bias_uncertainty_dps.z) * kDegsToRads_),
         world_offset_(world_offset_in) {}
 
   /**
@@ -245,17 +245,17 @@ public:
    * @param pi_att
    */
   void Update(const ::mjbots::pi3hat::Attitude &pi_att) {
-    Update({pi_att.quat.w, pi_att.quat.x, pi_att.quat.y, pi_att.quat.z},
-           {pi_att.rate_dps.x * kDegsToRads_, pi_att.rate_dps.y * kDegsToRads_,
-            pi_att.rate_dps.z * kDegsToRads_},
-           {pi_att.accel_mps2.x, pi_att.accel_mps2.y, pi_att.accel_mps2.z},
-           {pi_att.bias_dps.x * kDegsToRads_, pi_att.bias_dps.y * kDegsToRads_,
-            pi_att.bias_dps.z * kDegsToRads_},
-           {pi_att.attitude_uncertainty.w, pi_att.attitude_uncertainty.x,
-            pi_att.attitude_uncertainty.y, pi_att.attitude_uncertainty.z},
-           {pi_att.bias_uncertainty_dps.x * kDegsToRads_,
-            pi_att.bias_uncertainty_dps.y * kDegsToRads_,
-            pi_att.bias_uncertainty_dps.z * kDegsToRads_});
+    Update({float(pi_att.quat.w), float(pi_att.quat.x), float(pi_att.quat.y), float(pi_att.quat.z)},
+           {float(pi_att.rate_dps.x) * kDegsToRads_, float(pi_att.rate_dps.y) * kDegsToRads_,
+            float(pi_att.rate_dps.z) * kDegsToRads_},
+           {float(pi_att.accel_mps2.x), float(pi_att.accel_mps2.y), float(pi_att.accel_mps2.z)},
+           {float(pi_att.bias_dps.x) * kDegsToRads_, float(pi_att.bias_dps.y) * kDegsToRads_,
+            float(pi_att.bias_dps.z) * kDegsToRads_},
+           {float(pi_att.attitude_uncertainty.w), float(pi_att.attitude_uncertainty.x),
+            float(pi_att.attitude_uncertainty.y), float(pi_att.attitude_uncertainty.z)},
+           {float(pi_att.bias_uncertainty_dps.x) * kDegsToRads_,
+            float(pi_att.bias_uncertainty_dps.y) * kDegsToRads_,
+            float(pi_att.bias_uncertainty_dps.z) * kDegsToRads_});
   }
 
   /**
