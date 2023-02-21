@@ -20,10 +20,11 @@ JointBase::JointBase(std::string name,
                      float gear_ratio,
                      float max_torque,
                      float pos_min,
-                     float pos_max)
+                     float pos_max,
+                     float soft_start_duration_ms)
     : name_(name), direction_(direction), zero_offset_(zero_offset),
       max_torque_(max_torque), gear_ratio_(gear_ratio),
-      pos_limit_min_(pos_min), pos_limit_max_(pos_max)
+      pos_limit_min_(pos_min), pos_limit_max_(pos_max),soft_start_(max_torque, soft_start_duration_ms)
 {
     // Set to sign if not -1 or 1
     direction_ = (direction_ >= 0) - (direction_ < 0);
@@ -41,13 +42,13 @@ JointBase::JointBase(int direction,
                      float gear_ratio,
                      float max_torque,
                      float pos_min,
-                     float pos_max)
-    : JointBase("", direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max) {}
+                     float pos_max,
+                     float soft_start_duration_ms)
+    : JointBase("", direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max, soft_start_duration_ms) {}
 
 float JointBase::UpdateTorque(float joint_torque){
     // Clip max torque
-    joint_torque =  joint_torque >  max_torque_ ?  max_torque_ : joint_torque;
-    joint_torque =  joint_torque < -max_torque_ ? -max_torque_ : joint_torque;
+    soft_start_.ConstrainTorque(joint_torque);
 
     // Do soft stop if active 
     // Soft Stop: don't allow torque in the direction of the limits

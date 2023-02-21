@@ -8,6 +8,7 @@
 #pragma once
 #include <vector>
 #include <cmath>
+#include "real_time_tools/timer.hpp"
 
 namespace kodlab {
 /*!
@@ -18,33 +19,21 @@ class SoftStart {
   float slope_ = 0;        /// Slope of the ramp
   float max_torque_ = 100; /// Max torque allowed in Nm
   float duration_ms_ = 0;   /// Duration of soft start in milliseconds
-
+  static real_time_tools::Timer timer_;
+  static bool timer_initialized_;
  public:
 
   /*!
    * @brief constrains the vector torques based on soft Start
    * @param torques[in, out] the torques to be constrained
-   * @param time_since_start_ms the number of milliseconds it has been since
-   * start
    */
-  void ConstrainTorques(std::vector<float> &torques, float time_since_start_ms);
+  void ConstrainTorques(std::vector<float> &torques) const;
 
   /*!
-   * @brief constrains all values in values between min_val and max_val
-   * @param values[in, out] vector to be constrained
-   * @param min_val minimum value allowed in vector
-   * @param max_val maximum value allowed in vector
-   */
-  static void Constrain(std::vector<float> &values, float min_val, float max_val);
-
-  /*!
-   * @brief constrains a single value between min_val and max_val
-   * @param values[in]
-   * @param min_val minimum value allowed
-   * @param max_val maximum value allowed
-   * @return constrained value
-   */
-  static float Constrain(float values, float min_val, float max_val);
+ * @brief constrains the torque based on soft Start
+ * @param torque[in, out] the torque to be constrained
+ */
+  void ConstrainTorque(float &torque) const;
 
   /*!
    * @brief constructor for soft Start
@@ -52,5 +41,30 @@ class SoftStart {
    * @param duration_ms how long for ramp to last in ms
    */
   SoftStart(float max_torque, float duration_ms);
+
+  /*!
+   * @brief Starts the soft start timer
+   */
+  static void InitializeTimer();
 };
+
+namespace TorqueLimiter {
+/*!
+ * @brief constrains a single value between min_val and max_val
+ * @param values[in]
+ * @param min_val minimum value allowed
+ * @param max_val maximum value allowed
+ * @return constrained value
+ */
+float Constrain(float values, float min_val, float max_val);
+
+/*!
+ * @brief constrains all values in values between min_val and max_val
+ * @param values[in, out] vector to be constrained
+ * @param min_val minimum value allowed in vector
+ * @param max_val maximum value allowed in vector
+ */
+void Constrain(std::vector<float> &values, float min_val, float max_val);
+
+}
 } // namespace kodlab

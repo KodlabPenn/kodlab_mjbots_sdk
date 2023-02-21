@@ -44,10 +44,8 @@ std::vector<float> kodlab::RobotBase::GetJointTorqueCmd() { //Cop of torque_cmds
 }
 
 void kodlab::RobotBase::SetTorques(std::vector<float> torques) {
-  soft_start_.ConstrainTorques(torques, run_timer_.tac()/1000.0);
-  float torque_cmd;
   for (int joint_ind = 0; joint_ind < num_joints_; joint_ind++) {
-    torque_cmd = joints[joint_ind]->UpdateTorque(torques[joint_ind]);
+    joints[joint_ind]->UpdateTorque(torques[joint_ind]);
   }
 }
 

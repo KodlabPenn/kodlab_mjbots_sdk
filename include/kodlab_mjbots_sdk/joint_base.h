@@ -15,6 +15,7 @@
 #include <vector>
 #include <type_traits>
 #include <string>
+#include "kodlab_mjbots_sdk/soft_start.h"
 
 namespace kodlab
 {
@@ -39,6 +40,7 @@ class JointBase {
          * @param max_torque    /// Maximum torque of the joint [N m] (Default:inf)
          * @param pos_min       /// Minimum joint limit before taking protective measures such as torque limiting or shut off (Default:inf)
          * @param pos_max       /// Maximum joint limit before taking protective measures such as torque limiting or shut off (Default:-inf)
+         * @param soft_start_duration_ms /// Duration of torque limit ramp (soft start) in ms
          */
         JointBase(
                 std::string name,
@@ -47,7 +49,8 @@ class JointBase {
                 float gear_ratio = 1.0, 
                 float max_torque = std::numeric_limits<float>::infinity(),
                 float pos_min = -std::numeric_limits<float>::infinity(), 
-                float pos_max = std::numeric_limits<float>::infinity()
+                float pos_max = std::numeric_limits<float>::infinity(),
+                float soft_start_duration_ms = 1
                 );
 
         /**
@@ -59,6 +62,7 @@ class JointBase {
          * @param max_torque    /// Maximum torque of the joint [N m] (Default:inf)
          * @param pos_min       /// Minimum joint limit before taking protective measures such as torque limiting or shut off (Default:inf)
          * @param pos_max       /// Maximum joint limit before taking protective measures such as torque limiting or shut off (Default:-inf)
+         * @param soft_start_duration_ms /// Duration of torque limit ramp (soft start) in ms
          */
         JointBase(
                 int direction = 1, 
@@ -66,8 +70,9 @@ class JointBase {
                 float gear_ratio = 1.0, 
                 float max_torque = std::numeric_limits<float>::infinity(),
                 float pos_min = -std::numeric_limits<float>::infinity(), 
-                float pos_max = std::numeric_limits<float>::infinity()
-                );
+                float pos_max = std::numeric_limits<float>::infinity(),
+                float soft_start_duration_ms = 1
+        );
 
         /**
          * @brief Update position and velocity using all the servo params (gear ratio, offset, direction)
@@ -261,6 +266,8 @@ class JointBase {
         float pos_limit_min_ = -std::numeric_limits<float>::infinity(); /// max position [rad] before soft stop
         float pos_limit_max_ =  std::numeric_limits<float>::infinity(); /// min position [rad] before soft stop
 
+        // Soft start
+        SoftStart soft_start_;
 };
 
 

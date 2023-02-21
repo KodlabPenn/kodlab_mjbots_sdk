@@ -58,7 +58,7 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
         // In flight we use pd loops to control in limb space
         f_z_ = k_stiff_ * (z0_ - z_) - b_stiff_ * d_z_;
         // We Constrain f_x to prevent large jumps in x force
-        f_x_ = kodlab::SoftStart::Constrain(-kp_ * x_ - kd_ * d_x_, -kMaxF_x, kMaxF_x);
+        f_x_ = kodlab::TorqueLimiter::Constrain(-kp_ * x_ - kd_ * d_x_, -kMaxF_x, kMaxF_x);
 
         // convert from limb space to joint space
         torques = leg_.InverseDynamics(robot_->GetJointPositions(), f_z_, f_x_);

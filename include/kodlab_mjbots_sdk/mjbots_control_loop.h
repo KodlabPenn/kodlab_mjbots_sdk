@@ -251,6 +251,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   robot_->Init();
   lcm_sub_->Init();
   Init();
+  SoftStart::InitializeTimer();
 
   float prev_msg_duration = 0;
 
