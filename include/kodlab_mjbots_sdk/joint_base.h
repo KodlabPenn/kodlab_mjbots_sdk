@@ -180,7 +180,7 @@ class JointBase {
          * 
          * @return const float& 
          */
-        const float& get_servo_torque_reference() const {return servo_torque_; }
+        const float& get_torque_cmd_reference() const {return torque_; }
 
         /**
          * @brief Get the minimum position limit

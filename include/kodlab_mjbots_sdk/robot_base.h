@@ -38,10 +38,7 @@ namespace kodlab
          */
         template <class JointDerived = JointBase>
         RobotBase(std::vector<std::shared_ptr<JointDerived>> joint_vect,
-                  float robot_max_torque,
-                  float soft_start_duration_ms,
                   std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr = nullptr)
-            : soft_start_(robot_max_torque, soft_start_duration_ms)
         {
             // Ensure at compile time that the template is JointBase or a child of JointBase
             static_assert(std::is_base_of<JointBase, JointDerived>::value);
@@ -51,7 +48,7 @@ namespace kodlab
                 joints.push_back(j); // Copy constructed, uses an implicit upcasting
                 positions_.push_back( j->get_position_reference() );
                 velocities_.push_back( j->get_velocity_reference() );
-                torque_cmd_.push_back( j->get_servo_torque_reference() );
+                torque_cmd_.push_back(j->get_torque_cmd_reference() );
                 if(j->get_name() != ""){
                   if (!joint_name_to_index_.insert({j->get_name(), joints.size()-1}).second){
                     LOG_ERROR("Duplicate non empty joint names for name: %s", j->get_name().c_str());
@@ -188,7 +185,6 @@ namespace kodlab
         std::vector<std::reference_wrapper<const float>> torque_cmd_; /// Vector of the torque command sent to motors (references to the members of joints_)
         std::shared_ptr<::kodlab::IMUData<float>> imu_data_;          /// Robot IMU data
         real_time_tools::Timer run_timer_;                            /// Run timer for robot, started at construction
-        SoftStart soft_start_;                                        /// Soft Start object
         int num_joints_ = 0;                                          /// Number of joints
         std::unordered_map<std::string, int> joint_name_to_index_;    ///< Map from joint name to joint index
     };

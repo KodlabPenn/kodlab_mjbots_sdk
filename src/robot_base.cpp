@@ -38,7 +38,7 @@ std::vector<std::shared_ptr<kodlab::JointBase>> kodlab::RobotBase::GetJoints(std
   return kodlab::RobotBase::GetJoints(joint_vect);
 }
 
-std::vector<float> kodlab::RobotBase::GetJointTorqueCmd() { //Cop of torque_cmds
+std::vector<float> kodlab::RobotBase::GetJointTorqueCmd() { //Copy of torque_cmds
   std::vector<float>torques(torque_cmd_.begin(), torque_cmd_.end());
   return torques;
 }

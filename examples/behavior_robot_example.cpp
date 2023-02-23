@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 {
   // Setup joints with a std::vector
   std::vector<kodlab::mjbots::JointMoteus> joints;
-  joints.emplace_back(22, 1, 1, 0, 1.0, 5.0);
+  joints.emplace_back(22, 1, 1, 0, 1.0, 1.0);
 
   // Define robot options
   kodlab::mjbots::ControlLoopOptions options;
@@ -91,7 +91,6 @@ int main(int argc, char **argv)
   options.frequency = 1000;  // control loop frequency
   options.realtime_params.main_cpu = 3;
   options.realtime_params.can_cpu = 2;
-  options.max_torque = 1.0;
 
   // Create control loop
   SimpleRobotBehaviorLoop simple_robot(joints, options);

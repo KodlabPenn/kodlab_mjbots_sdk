@@ -14,12 +14,12 @@ void TorqueLimiter::Constrain(std::vector<float> &values,
                           float min_val,
                           float max_val) {
   for (auto &value : values) {
-    value = fmin(fmax(value, min_val), max_val);
+    value = std::min(std::max(value, min_val), max_val);
   }
 }
 
 float TorqueLimiter::Constrain(float values, float min_val, float max_val) {
-  return fmin(fmax(values, min_val), max_val);
+  return std::min(std::max(values, min_val), max_val);
 }
 
 void SoftStart::ConstrainTorques(std::vector<float> &torques) const {
@@ -44,11 +44,11 @@ void SoftStart::ConstrainTorque(float &torque) const {
       TorqueLimiter::Constrain(torque, -max_torque_, max_torque_);
     } else {
       float max_val = time_since_start_ms * slope_;
-      TorqueLimiter::Constrain(torque, -max_val, max_val);
+      torque = TorqueLimiter::Constrain(torque, -max_val, max_val);
     }
   } else{
     LOG_ERROR("Soft start not initialized, constraining torque to zero");
-    TorqueLimiter::Constrain(torque, -0, 0);
+    torque = 0;
   }
 }
 
