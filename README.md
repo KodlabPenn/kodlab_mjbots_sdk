@@ -199,9 +199,10 @@ An example demonstrating usage of the `MjbotsBehaviorLoop` is provided in
 `examples/behavior_robot_example.cpp`.
 
 ## Soft Start
-To configure the soft Start, set the `options.max_torque` and `options.soft_start_duration`. Where the
-max torque is the maximum torque per motor and the soft Start duration is how long the torque ramp should last
-in iterations of the control loop. 
+Each joint has its own soft start. To configure the soft start set the `MoteusJointConfig.max_torque`
+to the maximum allowable torque for the motor and `MoteusJointConfig.soft_start_duration_ms` to the
+duration of the soft start. The soft start will ramp the maximum torque from 0 to `max_torque` over `soft_start_duration_ms`.
+Once the time is greater than `soft_start_duration_ms`, torque will be limited to `max_torque`.
 
 ## Console Logging
 The `log.h` header provides a set of debug logging macros with adjustable
