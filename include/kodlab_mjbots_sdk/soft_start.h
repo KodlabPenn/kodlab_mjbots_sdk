@@ -30,14 +30,14 @@ class SoftStart {
   void ConstrainTorques(std::vector<float> &torques) const;
 
   /*!
- * @brief constrains the torque based on soft Start
+ * @brief constrains the torque based on soft start
  * @param torque[in, out] the torque to be constrained
  */
   void ConstrainTorque(float &torque) const;
 
   /*!
-   * @brief constructor for soft Start
-   * @param max_torque maximum torque allowed in robot
+   * @brief constructor for soft start
+   * @param max_torque maximum torque allowed in joint
    * @param duration_ms how long for ramp to last in ms
    */
   SoftStart(float max_torque, float duration_ms);
@@ -56,7 +56,7 @@ namespace TorqueLimiter {
  * @param max_val maximum value allowed
  * @return constrained value
  */
-float Constrain(float values, float min_val, float max_val);
+float Constrain(float value, float min_val, float max_val);
 
 /*!
  * @brief constrains all values in values between min_val and max_val

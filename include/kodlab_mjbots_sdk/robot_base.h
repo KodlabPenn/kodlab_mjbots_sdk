@@ -48,7 +48,7 @@ namespace kodlab
                 joints.push_back(j); // Copy constructed, uses an implicit upcasting
                 positions_.push_back( j->get_position_reference() );
                 velocities_.push_back( j->get_velocity_reference() );
-                torque_cmd_.push_back(j->get_torque_cmd_reference() );
+                torque_cmd_.push_back( j->get_torque_cmd_reference() );
                 if(j->get_name() != ""){
                   if (!joint_name_to_index_.insert({j->get_name(), joints.size()-1}).second){
                     LOG_ERROR("Duplicate non empty joint names for name: %s", j->get_name().c_str());
