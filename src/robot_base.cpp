@@ -38,16 +38,14 @@ std::vector<std::shared_ptr<kodlab::JointBase>> kodlab::RobotBase::GetJoints(std
   return kodlab::RobotBase::GetJoints(joint_vect);
 }
 
-std::vector<float> kodlab::RobotBase::GetJointTorqueCmd() { //Cop of torque_cmds
+std::vector<float> kodlab::RobotBase::GetJointTorqueCmd() { //Copy of torque_cmds
   std::vector<float>torques(torque_cmd_.begin(), torque_cmd_.end());
   return torques;
 }
 
 void kodlab::RobotBase::SetTorques(std::vector<float> torques) {
-  soft_start_.ConstrainTorques(torques, run_timer_.tac()/1000.0);
-  float torque_cmd;
   for (int joint_ind = 0; joint_ind < num_joints_; joint_ind++) {
-    torque_cmd = joints[joint_ind]->UpdateTorque(torques[joint_ind]);
+    joints[joint_ind]->UpdateTorque(torques[joint_ind]);
   }
 }
 

@@ -32,6 +32,7 @@ struct MoteusJointConfig{
     float pos_max = std::numeric_limits<float>::infinity();
     float moteus_kp = 0;
     float moteus_kd = 0;
+    float soft_start_duration_ms = 1;
 };
 
 /**         
@@ -56,6 +57,7 @@ class JointMoteus: public JointBase
          * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
          * @param moteus_kp     /// Value of kp set on moteus in units of N m/rev
          * @param moteus_kd     /// Value of kd set on moteus in units of N m s/rev
+         * @param soft_start_duration_ms /// Duration of torque limit ramp (soft start) in ms
          */
         JointMoteus(
             std::string name,
@@ -67,9 +69,10 @@ class JointMoteus: public JointBase
             float max_torque = std::numeric_limits<float>::infinity(),
             float pos_min = -std::numeric_limits<float>::infinity(),
             float pos_max = std::numeric_limits<float>::infinity(),
+            float soft_start_duration_ms = 1,
             float moteus_kp = 0,
             float moteus_kd = 0)
-            : JointBase(name, direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max),
+            : JointBase(name, direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max, soft_start_duration_ms),
               can_bus_(can_bus),
               can_id_(can_id),
               moteus_kp_(moteus_kp),
@@ -88,6 +91,7 @@ class JointMoteus: public JointBase
          * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
          * @param moteus_kp     /// Value of kp set on moteus in units of N m/rev
          * @param moteus_kd     /// Value of kd set on moteus in units of N m s/rev
+         * @param soft_start_duration_ms /// Duration of torque limit ramp (soft start) in ms
          */
         JointMoteus(
             int can_id,
@@ -98,9 +102,10 @@ class JointMoteus: public JointBase
             float max_torque = std::numeric_limits<float>::infinity(),
             float pos_min = -std::numeric_limits<float>::infinity(),
             float pos_max = std::numeric_limits<float>::infinity(),
+            float soft_start_duration_ms = 1,
             float moteus_kp = 0,
             float moteus_kd = 0)
-            : JointBase("", direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max),
+            : JointBase("", direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max, soft_start_duration_ms),
               can_bus_(can_bus),
               can_id_(can_id),
               moteus_kp_(moteus_kp),
