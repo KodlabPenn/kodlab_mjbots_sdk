@@ -29,7 +29,7 @@ namespace kodlab
     public:
         static const int KILL_ROBOT = -1;  // Kill mode/behavior index; used to signal robot E-stop
         std::vector< std::shared_ptr<JointBase> > joints; ///the vector of shared_ptrs to joints 
-        std::vector<std::shared_ptr<LimbBase>> limbs;   /// vector of limbs for the robot, if choosing to not use limbs can be an empty vector always
+        std::vector<std::shared_ptr<LimbBase<Eigen::VectorXf>>> limbs;   /// vector of limbs for the robot, if choosing to not use limbs can be an empty vector always
 
         
         /*!
@@ -169,9 +169,9 @@ namespace kodlab
 
         /*!
          * @brief Add a user generated limb to the vector of limbs for the robot
-         * @param Limb the limb to be added to the vector
+         * @param limb the limb to be added to the vector
          */
-        void AddLimb(std::shared_ptr<LimbBase> Limb);
+        void AddLimb(std::shared_ptr<LimbBase<Eigen::VectorXf>> limb);
 
     protected:
         std::vector<std::reference_wrapper<const float>> positions_;  /// Vector of the motor positions (references to the members of joints_)

@@ -1,6 +1,7 @@
 /**
  * @file limb_base.cpp
  * @author Kodlab - Zac Gong (zacgong@seas.upenn.edu)
+ * @author Kodlab - J. Diego Caporale (jdcap@seas.upenn.edu)
  * @brief Class implementation for LimbBase.
  * @date 2022-08-18
  *
@@ -12,7 +13,8 @@
 
 namespace kodlab
 {
-    LimbBase::LimbBase(const std::string &name,
+    template<typename EndEffectorOutput>
+    LimbBase<EndEffectorOutput>::LimbBase(const std::string &name,
                        const std::vector<std::shared_ptr<JointBase>> &joints,
                        const LimbConfig &config)
     {
@@ -21,57 +23,100 @@ namespace kodlab
         legDOFs_ = joints.size();
     }
 
-    LimbBase::LimbBase(const std::vector<std::shared_ptr<JointBase>> &joints,
+    template<typename EndEffectorOutput>
+    LimbBase<EndEffectorOutput>::LimbBase(const std::vector<std::shared_ptr<JointBase>> &joints,
                        const LimbConfig &config)
     {
         joints_ = joints;
         config_ = config;
     }
 
-    void LimbBase::Update(const std::vector<float> &pos_list, 
-                          const std::vector<float> &vel_list)
+    template<typename EndEffectorOutput>
+    void LimbBase<EndEffectorOutput>::UpdateJointStates()
     {
-        for (int i = 0; i < joints_.size(); i++)
-        {
-            // update position/velocity/torque vectors
-            positions_[i] = joints_[i]->get_position();
-            velocities_[i] = joints_[i]->get_velocity();
-            torques_[i] = joints_[i]->get_servo_torque();
+        if(!joint_cache_bool_){
+            for (int i = 0; i < joints_.size(); i++)
+            {
+                // update position/velocity/torque vectors
+                joint_positions_[i] = joints_[i]->get_position();
+                joint_velocities_[i] = joints_[i]->get_velocity();
+            }
+            joint_cache_bool_ = true;
         }
-
-        LimbBase::set_positions(pos_list);
-        LimbBase::set_velocities(vel_list);
+        fk_.invalidate();
+        jac_.invalidate();
     }
 
-    std::vector<float> LimbBase::get_positions()
-    {
-        return positions_;
+    template<typename EndEffectorOutput>
+    void LimbBase<EndEffectorOutput>::Update()
+    {   
+        joint_cache_bool_ = false; 
+        UpdateJointStates(); // Get joint states
+        FKAndJacobianImpl(); // If implemented, fk_ and jac_ are set here and the following two would do nothing
+        ForwardKinematics(); 
+        Jacobian();
     }
 
-    std::vector<float> LimbBase::get_velocities()
+    template<typename EndEffectorOutput>
+    EndEffectorOutput LimbBase<EndEffectorOutput>::ForwardKinematics()
     {
-        return velocities_;
+        if(!fk_.valid()){
+            UpdateJointStates(); 
+            fk_ = ForwardKinematicsImpl();
+        }
+        return fk_;
     }
 
-    std::vector<float> LimbBase::get_torques()
+    template<typename EndEffectorOutput>
+    Eigen::MatrixXf LimbBase<EndEffectorOutput>::Jacobian()
     {
-        return torques_;
+        if(!jac_.valid()){
+            UpdateJointStates();
+            jac_ = JacobianImpl();
+        }
+        return jac_;
     }
 
-    void LimbBase::set_positions(const std::vector<float> &positions)
+    template<typename EndEffectorOutput>
+    void LimbBase<EndEffectorOutput>::InvalidateCache()
     {
-        for (int i = 0; i < joints_.size(); i++)
+        joint_cache_bool_ = false;
+        fk_.invalidate();
+        jac_.invalidate();
+    }
+
+    template<typename EndEffectorOutput>
+    std::vector<float> LimbBase<EndEffectorOutput>::get_joint_positions()
+    {
+        return joint_positions_;
+    }
+
+    template<typename EndEffectorOutput>
+    std::vector<float> LimbBase<EndEffectorOutput>::get_joint_velocities()
+    {
+        return joint_velocities_;
+    }
+
+    template<typename EndEffectorOutput>
+    void LimbBase<EndEffectorOutput>::set_joint_positions(const std::vector<float> &positions)
+    {
+        for (int i = 0; i < LimbBase::joints_.size(); i++)
         {
-            joints_[i]->set_position(positions[i]);
+            // joints_[i]->set_position(positions[i]);
+            joint_positions_[i] = positions[i];
         }
     }
 
-    void LimbBase::set_velocities(const std::vector<float> &velocities)
+    template<typename EndEffectorOutput>
+    void LimbBase<EndEffectorOutput>::set_joint_velocities(const std::vector<float> &velocities)
     {
-        for (int i = 0; i < joints_.size(); i++)
+        for (int i = 0; i < LimbBase::joints_.size(); i++)
         {
-            joints_[i]->set_velocity(velocities[i]);
+            // joints_[i]->set_velocity(velocities[i]);
+            joint_velocities_[i] = velocities[i];
         }
     }
 
+// Explicit template instantiation
+template class LimbBase<Eigen::VectorXf>;
 }

@@ -51,7 +51,7 @@ void kodlab::RobotBase::SetTorques(std::vector<float> torques) {
   }
 }
 
-void kodlab::RobotBase::AddLimb(std::shared_ptr<LimbBase> Limb) {
-  limbs.push_back(Limb);
+void kodlab::RobotBase::AddLimb(std::shared_ptr<LimbBase<Eigen::VectorXf>> limb) {
+  limbs.push_back(limb);
 }
 
