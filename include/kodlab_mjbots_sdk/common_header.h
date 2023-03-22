@@ -94,6 +94,15 @@ public:
   }
 
   /**
+   * @brief Uses operator= to set the class data and marks it valid
+   * @param data valid data
+   */
+  void operator=(const T &data)
+  {
+    set(data);
+  }
+
+  /**
    * @brief Accessor for data (<b>does not check validity</b>)
    * @return data
    */
