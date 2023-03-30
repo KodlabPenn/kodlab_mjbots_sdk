@@ -44,7 +44,7 @@ template<typename T>
 class ValidatedCache
 {
 
-private:
+protected:
   /**
    * @brief Validation status of \c data_
    */
@@ -75,7 +75,7 @@ public:
    * @brief Returns the data status
    * @return \c true if data is valid, \c false otherwise
    */
-  bool valid() const { return valid_; }
+  virtual bool valid() const { return valid_; }
 
   /**
    * @brief Marks the class invalid so that future calls will change the cached
@@ -87,7 +87,7 @@ public:
    * @brief Sets the class data and marks it valid
    * @param data valid data
    */
-  void set(const T &data)
+  virtual void set(const T &data)
   {
     data_ = data;
     valid_ = true;
@@ -108,7 +108,7 @@ public:
    */
   T get()
   {
-    if (!valid_)
+    if (!valid())
     {
       std::cerr << "[WARN] Returning invalid data." << std::endl;
     }
