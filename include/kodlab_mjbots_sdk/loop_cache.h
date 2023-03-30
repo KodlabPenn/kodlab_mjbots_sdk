@@ -49,7 +49,7 @@ class LoopId
    * @note there can only be ONE loop using this type of cache at once to avoid 
    * prematurely invalidating caches, MAKE SURE THIS IS WHAT YOU WANT
    * 
-   * @return uint8_t 
+   * @return uint32_t 
    */
   static uint32_t increment(){
       return (++loop_id_);
@@ -76,6 +76,7 @@ class ValidatedLoopCache : public ValidatedCache<T>
   using ValidatedCache<T>::ValidatedCache;
   using ValidatedCache<T>::valid_;
   using ValidatedCache<T>::data_;
+  using ValidatedCache<T>::operator=;
 
   /**
    * @brief Returns the data status
@@ -95,7 +96,7 @@ class ValidatedLoopCache : public ValidatedCache<T>
   }
 
  protected:
-  uint8_t last_loop_id_; // loop id from the last set event, used to invalidate
+  uint32_t last_loop_id_ = -1; // loop id from the last set event, used to invalidate
   LoopId loop_id_; // Loop id, tied to control loop
 };
 

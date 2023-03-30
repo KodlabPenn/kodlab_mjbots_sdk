@@ -251,7 +251,8 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   lcm_sub_->Init();
   Init();
   SoftStart::InitializeTimer();
-  kodlab::LoopId::set(0); // Set loop id/count to 0
+  kodlab::LoopId::set(-1); // Set loop id/count to uint(-1), first update 
+                           // will be in loop 0
 
   float prev_msg_duration = 0;
 
@@ -286,8 +287,8 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
     }
 
     // Calculate torques and log
-    Update();      //TODO should we give full control to the robot_ instead of feeding update thorugh?
     kodlab::LoopId::increment(); // invalidate any caches that are tied to the loop by incrementing the id
+    Update();      //TODO should we give full control to the robot_ instead of feeding update thorugh?
     // robot_->Update();
     PrepareLog();
     AddTimingLog(time_now_, sleep_duration, prev_msg_duration);
