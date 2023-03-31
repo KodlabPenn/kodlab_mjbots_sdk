@@ -72,6 +72,12 @@ public:
   ValidatedCache(const T &data, const bool &valid) : data_(data), valid_(valid) {}
 
   /**
+   * @brief Destroy the ValidatedCache object. Virtual destructor for proper 
+   * derived pointer destruction.
+   */
+   virtual ~ValidatedCache(){};
+
+  /**
    * @brief Returns the data status
    * @return \c true if data is valid, \c false otherwise
    */
