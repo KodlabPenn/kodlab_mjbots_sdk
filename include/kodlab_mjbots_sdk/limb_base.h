@@ -56,8 +56,8 @@ namespace kodlab
          * @brief Construct a new Limb Base object with a name
          *
          * @param name Sets the limb name
-         * @param joints Joints that make up the leg
-         * @param config Configuration of the joints in the leg
+         * @param joints Joints that make up the limb
+         * @param config Configuration of the joints in the limb
          */
         LimbBase(const std::string &name,
                  const std::vector<std::shared_ptr<JointBase>> &joints,
@@ -66,8 +66,8 @@ namespace kodlab
         /**
          * @brief Construct a new Limb Base object
          *
-         * @param joints Joints that make up the leg
-         * @param config Configuration of the joints in the leg
+         * @param joints Joints that make up the limb
+         * @param config Configuration of the joints in the limb
          */
         LimbBase(const std::vector<std::shared_ptr<JointBase>> &joints,
                  const LimbConfig &config);
@@ -80,13 +80,13 @@ namespace kodlab
         virtual ~LimbBase(){};
 
         /**
-         * @brief Update position and velocity of each joint within leg
+         * @brief Update position and velocity of each joint within limb
          *
          */
         void UpdateJointStates();
 
         /**
-         * @brief Update FK and jacobian for the leg, can be overloaded for optimization
+         * @brief Update FK and jacobian for the limb, can be overloaded for optimization
          *
          */
         virtual void Update();
@@ -98,14 +98,14 @@ namespace kodlab
         void InvalidateCache();
 
         /**
-         * @brief Calculates and returns the forward kinematics of the leg
+         * @brief Calculates and returns the forward kinematics of the limb
          *
          * @return Eigen::VectorXf
          */
         EndEffectorOutput ForwardKinematics();
 
         /**
-         * @brief Calculates and returns the Jacobian of the leg
+         * @brief Calculates and returns the Jacobian of the limb
          *
          * @return Eigen::MatrixXf
          */
@@ -114,7 +114,7 @@ namespace kodlab
         /**
          * @brief Implementation of the forward kinematics, to be overloaded by user
          *
-         * @return Eigen::VectorXf
+         * @return EndEffectorOutput
          */
         virtual EndEffectorOutput ForwardKinematicsImpl() = 0;
 
@@ -133,60 +133,55 @@ namespace kodlab
         virtual void FKAndJacobianImpl() {};
 
         /**
-         * @brief Calculates the Inverse kinematics of a leg given a desired position
-         * measured from the origin of the leg (????)
-         *
-         * @param x_des desired x position
-         * @param y_des desired y position
-         * @param z_des desired z position
+         * @brief Implementation of the inverse kinematics of the limb 
+         * given a desired pose
          *
          * @return std::vector<float> positions
          */
         virtual Eigen::MatrixXf InverseKinematics(const EndEffectorOutput &EE_pos) = 0;
 
         /**
-         * @brief Get the Positions of each joint in the leg
+         * @brief Get the positions of each joint in the limb
          *
          * @return std::vector<float>
          */
         std::vector<float> get_joint_positions();
 
         /**
-         * @brief Get the velocities of each joint in the leg
+         * @brief Get the velocities of each joint in the limb
          *
          * @return std::vector<float>
          */
         std::vector<float> get_joint_velocities();
 
-
+    protected:
         /**
-         * @brief Set the positions of each joint in the leg
+         * @brief Set the positions of each joint in the limb
          *
          * @param positions
          */
         void set_joint_positions(const std::vector<float> &positions);
 
         /**
-         * @brief Set the velocities of each joint in the leg
+         * @brief Set the velocities of each joint in the limb
          *
          * @param velocities
          */
         void set_joint_velocities(const std::vector<float> &velocities);
-
-    protected:
-        std::string name_ = ""; // Optional leg name
+    
+        std::string name_ = ""; // Optional limb name
 
         // Vector of joints within array
         std::vector<std::shared_ptr<JointBase>> joints_;
 
-        // Leg Shape and Size
-        int legDOFs_;
+        // Limb Shape and Size
+        int limbDOFs_;
         LimbConfig config_;
 
-        // Leg State/Commands
+        // Limb State/Commands
         bool joint_cache_bool_ = false;        /// check if limb state is up to date
-        std::vector<float> joint_positions_;   /// positions of each joint in leg [rad]
-        std::vector<float> joint_velocities_;  /// velocities of each joint in leg [rad/s]
+        std::vector<float> joint_positions_;   /// positions of each joint in limb [rad]
+        std::vector<float> joint_velocities_;  /// velocities of each joint in limb [rad/s]
         ValidatedCache<EndEffectorOutput> fk_; /// forward kinematics storage
         ValidatedCache<Eigen::MatrixXf> jac_;  /// jacobian storage
     };

@@ -20,7 +20,7 @@ namespace kodlab
     {
         joints_ = joints;
         config_ = config;
-        legDOFs_ = joints.size();
+        limbDOFs_ = joints.size();
     }
 
     template<typename EndEffectorOutput>
