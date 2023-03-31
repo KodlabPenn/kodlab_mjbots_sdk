@@ -52,7 +52,7 @@ namespace kodlab
     {   
         joint_cache_bool_ = false; 
         UpdateJointStates(); // Get joint states
-        FKAndJacobianImpl(); // If implemented, fk_ and jac_ are set here and the following two would do nothing
+        FKAndJacobianImpl(joint_positions_); // If implemented, fk_ and jac_ are set here and the following two would do nothing
         ForwardKinematics(); 
         Jacobian();
     }
@@ -62,7 +62,7 @@ namespace kodlab
     {
         if(!fk_.valid()){
             UpdateJointStates(); 
-            fk_ = ForwardKinematicsImpl();
+            fk_ = ForwardKinematicsImpl(joint_positions_);
         }
         return fk_;
     }
@@ -72,10 +72,17 @@ namespace kodlab
     {
         if(!jac_.valid()){
             UpdateJointStates();
-            jac_ = JacobianImpl();
+            jac_ = JacobianImpl(joint_positions_);
         }
         return jac_;
     }
+
+    template<typename EndEffectorOutput>
+    std::vector<float> LimbBase<EndEffectorOutput>::InverseKinematics(const EndEffectorOutput &EE_pos)
+    {
+        return InverseKinematicsImpl(EE_pos);
+    }
+
 
     template<typename EndEffectorOutput>
     void LimbBase<EndEffectorOutput>::InvalidateCache()

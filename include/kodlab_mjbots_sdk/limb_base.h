@@ -110,27 +110,37 @@ namespace kodlab
          * @return Eigen::MatrixXf
          */
         Eigen::MatrixXf Jacobian();
+        
+        /**
+         * @brief Calculates the inverse kinematics of the limb given a desired 
+         * pose
+         *
+         * @param EE_pos desired end effector position, type: EndEffectorOutput
+         *
+         * @return std::vector<float>, joint positions
+         */
+         std::vector<float> InverseKinematics(const EndEffectorOutput &EE_pos);
 
         /**
          * @brief Implementation of the forward kinematics, to be overloaded by user
          *
          * @return EndEffectorOutput
          */
-        virtual EndEffectorOutput ForwardKinematicsImpl() = 0;
+        virtual EndEffectorOutput ForwardKinematicsImpl(std::vector<float> joint_positions) = 0;
 
         /**
          * @brief Implementation of Jacobian, to be overloaded by user
          *
          * @return Eigen::MatrixXf
          */
-        virtual Eigen::MatrixXf JacobianImpl() = 0;
+        virtual Eigen::MatrixXf JacobianImpl(std::vector<float> joint_positions) = 0;
 
         /**
          * @brief Implementation of FK and Jac combined for optimization, to be overloaded by user
          *
          * @return None, need to set fk_ and jac_ in implementation if used
          */
-        virtual void FKAndJacobianImpl() {};
+        virtual void FKAndJacobianImpl(std::vector<float> joint_positions) {};
 
         /**
          * @brief Implementation of the inverse kinematics of the limb 
@@ -138,7 +148,7 @@ namespace kodlab
          *
          * @return std::vector<float> positions
          */
-        virtual Eigen::MatrixXf InverseKinematics(const EndEffectorOutput &EE_pos) = 0;
+        virtual std::vector<float> InverseKinematicsImpl(const EndEffectorOutput &EE_pos) {};
 
         /**
          * @brief Get the positions of each joint in the limb
