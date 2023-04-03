@@ -4,6 +4,7 @@
 #include <atomic>
 #include <signal.h>  // manage the ctrl+c signal
 #include <type_traits>
+#include <typeinfo>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -116,7 +117,7 @@ public:
   {
     if (!valid())
     {
-      std::cerr << "[WARN] Returning invalid data." << std::endl;
+      std::cerr << "[WARN] Returning invalid data of type " << typeid(data_).name() << std::endl;
     }
     return data_;
   }

@@ -21,6 +21,7 @@ namespace kodlab{
 /**
  * @brief Simple loop id counter class that allows the user to tell when the 
  * control loop has looped. Useful for forcing recalculations and/or timing.
+ * @warning This is not thread safe and should only be used in the control loop
  * 
  */
 class LoopId
