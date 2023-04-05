@@ -16,22 +16,20 @@
 namespace kodlab
 {
     template<typename EndEffectorOutput>
-    LimbBase<EndEffectorOutput>::LimbBase(const std::string &name,
-                       const std::vector<std::shared_ptr<JointBase>> &joints,
-                       const LimbConfig &config)
-    {
-        joints_ = joints;
-        config_ = config;
-        limbDOFs_ = joints.size();
-    }
+    LimbBase<EndEffectorOutput>::LimbBase(
+        const std::string &name,
+        const std::vector<std::shared_ptr<JointBase>> &joints,
+        const LimbConfig &config)
+        : joints_(joints), 
+          config_(config),
+          limbDOFs_(joints.size()),
+          name_(name) {}
 
     template<typename EndEffectorOutput>
-    LimbBase<EndEffectorOutput>::LimbBase(const std::vector<std::shared_ptr<JointBase>> &joints,
-                       const LimbConfig &config)
-    {
-        joints_ = joints;
-        config_ = config;
-    }
+    LimbBase<EndEffectorOutput>::LimbBase(
+        const std::vector<std::shared_ptr<JointBase>> &joints,
+        const LimbConfig &config) 
+        : LimbBase("", joints, config) {}
 
     template<typename EndEffectorOutput>
     void LimbBase<EndEffectorOutput>::UpdateJointStates()
