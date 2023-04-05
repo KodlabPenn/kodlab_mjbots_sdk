@@ -34,14 +34,9 @@ namespace kodlab
     template<typename EndEffectorOutput>
     void LimbBase<EndEffectorOutput>::UpdateJointStates()
     {
-        if(!joint_cache_bool_){
-            for (int i = 0; i < joints_.size(); i++)
-            {
-                // update position/velocity/torque vectors
-                joint_positions_[i] = joints_[i]->get_position();
-                joint_velocities_[i] = joints_[i]->get_velocity();
-            }
-            joint_cache_bool_ = true;
+        if(!joint_positions_.valid()){
+            // update position/velocity/torque vectors
+            joint_positions_.set(joint_utils::PositionsFromJoints(joints_)); 
         }
         fk_.invalidate();
         jac_.invalidate();
@@ -50,9 +45,13 @@ namespace kodlab
     template<typename EndEffectorOutput>
     void LimbBase<EndEffectorOutput>::Update()
     {   
-        joint_cache_bool_ = false; 
         UpdateJointStates(); // Get joint states
-        FKAndJacobianImpl(joint_positions_); // If implemented, fk_ and jac_ are set here and the following two would do nothing
+
+        // If implemented, fk_ and jac_ are set here and 
+        // the following two lines should do nothing, 
+        // if not function does nothing by default
+        FKAndJacobianImpl(joint_positions_.get()); 
+
         ForwardKinematics(); 
         Jacobian();
     }
@@ -62,7 +61,7 @@ namespace kodlab
     {
         if(!fk_.valid()){
             UpdateJointStates(); 
-            fk_ = ForwardKinematicsImpl(joint_positions_);
+            fk_ = ForwardKinematicsImpl(joint_positions_.get());
         }
         return fk_;
     }
@@ -78,16 +77,32 @@ namespace kodlab
     }
 
     template<typename EndEffectorOutput>
-    std::vector<float> LimbBase<EndEffectorOutput>::InverseKinematics(const EndEffectorOutput &EE_pos)
+    std::vector<float> LimbBase<EndEffectorOutput>::InverseKinematics(
+                       const EndEffectorOutput &EE_pos)
     {
         return InverseKinematicsImpl(EE_pos);
     }
 
 
     template<typename EndEffectorOutput>
+    Eigen::VectorXf LimbBase<EndEffectorOutput>::EndEffectorVelocity(){
+        EndEffectorVelocityImpl(joint_utils::VelocitiesFromJoints(joints_));
+    }
+
+    // Default implementation
+    template<typename EndEffectorOutput>
+    Eigen::VectorXf LimbBase<EndEffectorOutput>::EndEffectorVelocityImpl( 
+        std::vector<float> velocities)
+    {
+        return Jacobian() * Eigen::Map<Eigen::VectorXf>(velocities.data(),
+                                                        velocities.size());
+    }
+
+
+    template<typename EndEffectorOutput>
     void LimbBase<EndEffectorOutput>::InvalidateCache()
     {
-        joint_cache_bool_ = false;
+        joint_positions_.invalidate();
         fk_.invalidate();
         jac_.invalidate();
     }
@@ -95,33 +110,15 @@ namespace kodlab
     template<typename EndEffectorOutput>
     std::vector<float> LimbBase<EndEffectorOutput>::get_joint_positions()
     {
-        return joint_positions_;
+        return joint_positions_.get();
     }
 
-    template<typename EndEffectorOutput>
-    std::vector<float> LimbBase<EndEffectorOutput>::get_joint_velocities()
-    {
-        return joint_velocities_;
-    }
 
     template<typename EndEffectorOutput>
-    void LimbBase<EndEffectorOutput>::set_joint_positions(const std::vector<float> &positions)
+    void LimbBase<EndEffectorOutput>::set_joint_positions(
+        const std::vector<float> &positions)
     {
-        for (int i = 0; i < LimbBase::joints_.size(); i++)
-        {
-            // joints_[i]->set_position(positions[i]);
-            joint_positions_[i] = positions[i];
-        }
-    }
-
-    template<typename EndEffectorOutput>
-    void LimbBase<EndEffectorOutput>::set_joint_velocities(const std::vector<float> &velocities)
-    {
-        for (int i = 0; i < LimbBase::joints_.size(); i++)
-        {
-            // joints_[i]->set_velocity(velocities[i]);
-            joint_velocities_[i] = velocities[i];
-        }
+        joint_positions_.set(positions);
     }
 
 // Explicit template instantiation

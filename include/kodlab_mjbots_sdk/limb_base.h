@@ -23,6 +23,7 @@
 #include <Eigen/Dense>
 
 #include "kodlab_mjbots_sdk/common_header.h"
+#include "kodlab_mjbots_sdk/loop_cache.h"
 #include "kodlab_mjbots_sdk/joint_base.h"
 
 namespace kodlab
@@ -124,7 +125,15 @@ namespace kodlab
          std::vector<float> InverseKinematics(const EndEffectorOutput &EE_pos);
 
         /**
-         * @brief Implementation of the forward kinematics, to be overloaded by user
+         * @brief Returns end effector velocity using current joint velocity
+         * 
+         * @return Eigen::VectorXf 
+         */
+        Eigen::VectorXf EndEffectorVelocity();
+      
+        /**
+         * @brief Implementation of the forward kinematics, to be overloaded 
+         * by user
          *
          * @return EndEffectorOutput
          */
@@ -155,6 +164,18 @@ namespace kodlab
          */
         virtual std::vector<float> InverseKinematicsImpl(
             const EndEffectorOutput &EE_pos) = 0;
+
+        /** 
+         * @brief Implementation of end effector velocity calculation. Default
+         * implementation multiplies Jacobian() matrix (jac_) by 
+         * joint velocities vector
+         * 
+         * @param std::vector<float> joint velocities
+         * 
+         * @return Eigen::VectorXf end effector velocity
+         */
+        virtual Eigen::VectorXf EndEffectorVelocityImpl(
+            std::vector<float> velocities);
 
         /**
          * @brief Get the positions of each joint in the limb
@@ -195,9 +216,8 @@ namespace kodlab
         LimbConfig config_;
 
         // Limb State/Commands
-        bool joint_cache_bool_ = false;        /// check if limb state is up to date
-        std::vector<float> joint_positions_;   /// positions of each joint in limb [rad]
-        std::vector<float> joint_velocities_;  /// velocities of each joint in limb [rad/s]
+        ValidatedLoopCache<std::vector<float>> 
+            joint_positions_; ///< cached positions of each joint in limb [rad]
         ValidatedLoopCache<EndEffectorOutput> fk_;///< forward kinematics storage
         ValidatedLoopCache<Eigen::MatrixXf> jac_; ///< jacobian storage
     };
