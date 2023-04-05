@@ -3,10 +3,12 @@
  * @author Kodlab - Zac Gong (zacgong@seas.upenn.edu)
  * @author Kodlab - J. Diego Caporale (jdcap@seas.upenn.edu)
  * @brief Abstract class for limbs, consisting of multiple joints
- * @version 0.1
+ * 
  * @date 2022-08-18
  *
- * @copyright BSD 3-Clause License, Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
+ * @copyright BSD 3-Clause License, 
+ * Copyright (c) 2021 The Trustees of the University of Pennsylvania. 
+ * All Rights Reserved
  *
  */
 
@@ -51,7 +53,7 @@ namespace kodlab
 
     template<typename EndEffectorOutput = Eigen::VectorXf>
     class LimbBase {
-    public:
+      public:
         /**
          * @brief Construct a new Limb Base object with a name
          *
@@ -86,8 +88,8 @@ namespace kodlab
         void UpdateJointStates();
 
         /**
-         * @brief Update FK and jacobian for the limb, can be overloaded for optimization
-         *
+         * @brief Update FK and jacobian for the limb, can be overloaded 
+         * for optimization
          */
         virtual void Update();
 
@@ -126,17 +128,20 @@ namespace kodlab
          *
          * @return EndEffectorOutput
          */
-        virtual EndEffectorOutput ForwardKinematicsImpl(std::vector<float> joint_positions) = 0;
+        virtual EndEffectorOutput ForwardKinematicsImpl(
+            std::vector<float> joint_positions) = 0;
 
         /**
          * @brief Implementation of Jacobian, to be overloaded by user
          *
          * @return Eigen::MatrixXf
          */
-        virtual Eigen::MatrixXf JacobianImpl(std::vector<float> joint_positions) = 0;
+        virtual Eigen::MatrixXf JacobianImpl(
+            std::vector<float> joint_positions) = 0;
 
         /**
-         * @brief Implementation of FK and Jac combined for optimization, to be overloaded by user
+         * @brief Implementation of FK and Jac combined for optimization, 
+         * to be overloaded by user
          *
          * @return None, need to set fk_ and jac_ in implementation if used
          */
@@ -146,9 +151,10 @@ namespace kodlab
          * @brief Implementation of the inverse kinematics of the limb 
          * given a desired pose
          *
-         * @return std::vector<float> positions
+         * @return std::vector<float> joint positions
          */
-        virtual std::vector<float> InverseKinematicsImpl(const EndEffectorOutput &EE_pos) {};
+        virtual std::vector<float> InverseKinematicsImpl(
+            const EndEffectorOutput &EE_pos) = 0;
 
         /**
          * @brief Get the positions of each joint in the limb
@@ -164,7 +170,7 @@ namespace kodlab
          */
         std::vector<float> get_joint_velocities();
 
-    protected:
+      protected:
         /**
          * @brief Set the positions of each joint in the limb
          *
@@ -192,7 +198,7 @@ namespace kodlab
         bool joint_cache_bool_ = false;        /// check if limb state is up to date
         std::vector<float> joint_positions_;   /// positions of each joint in limb [rad]
         std::vector<float> joint_velocities_;  /// velocities of each joint in limb [rad/s]
-        ValidatedCache<EndEffectorOutput> fk_; /// forward kinematics storage
-        ValidatedCache<Eigen::MatrixXf> jac_;  /// jacobian storage
+        ValidatedLoopCache<EndEffectorOutput> fk_;///< forward kinematics storage
+        ValidatedLoopCache<Eigen::MatrixXf> jac_; ///< jacobian storage
     };
 }
