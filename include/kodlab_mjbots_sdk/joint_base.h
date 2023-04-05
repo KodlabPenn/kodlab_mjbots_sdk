@@ -15,6 +15,8 @@
 #include <vector>
 #include <type_traits>
 #include <string>
+#include <algorithm>
+#include <functional>
 
 namespace kodlab
 {
@@ -217,6 +219,7 @@ class JointBase {
 
 };
 
+namespace joint_utils{
 
 /*!
  * @brief Helper class to wrap the vector of shared pointers of JointBaseDerived
@@ -256,4 +259,41 @@ public:
     joint_type & operator[](size_t i) {return *(v_[i]);}
 };
 
+/**
+ * @brief Get the joint positions from a vector of pointer to joints
+ * 
+ * @tparam JointTypePtr (JointType*,can be shared_ptr) )
+ * @param joints 
+ * @return std::vector<float> positions
+ */
+template<class JointTypePtr>
+std::vector<float> PositionsFromJoints(std::vector<JointTypePtr> joints){
+    using JointType =  typename std::pointer_traits<JointTypePtr>::element_type;
+    static_assert(  std::is_base_of<JointBase, JointType>::value
+                    ); // check that the joint_type is derived from JointBase
+    std::vector<float> positions;
+    std::transform(joints.begin(), joints.end(),
+                   positions.begin(), std::mem_fn(&JointType::get_position));
+    return positions;
+}
+
+/**
+ * @brief Get the joint velocities from a vector of pointer to joints
+ * 
+ * @tparam JointTypePtr (JointType*,can be shared_ptr) )
+ * @param joints 
+ * @return std::vector<float> velocities
+ */
+template<class JointTypePtr>
+std::vector<float> VelocitiesFromJoints(std::vector<JointTypePtr> joints){
+    using JointType =  typename std::pointer_traits<JointTypePtr>::element_type;
+    static_assert(  std::is_base_of<JointBase, JointType>::value
+                    ); // check that the joint_type is derived from JointBase
+    std::vector<float> velocities;
+    std::transform(joints.begin(), joints.end(),
+                   velocities.begin(), std::mem_fn(&JointType::get_velocity));
+    return velocities;
+}
+
+} // joint_utils
 } // kodlab

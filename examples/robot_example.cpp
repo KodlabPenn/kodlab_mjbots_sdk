@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     std::vector<kodlab::mjbots::JointMoteus> joints;
     joints.emplace_back(100, 4, 1, 0,   1, 0);
     joints.emplace_back(101, 4,-1, 0, 5.0/3.0, 0);
-    // JointSharedVector<kodlab::mjbots::JointMoteus> joints;
+    // kodlab::joint_utils::JointSharedVector<kodlab::mjbots::JointMoteus> joints;
     // joints.addJoint(100, 4, 1, 0, 1, 0);
     // joints.addJoint(101, 4, -1, 0, 5.0 / 3.0, 0);
 
