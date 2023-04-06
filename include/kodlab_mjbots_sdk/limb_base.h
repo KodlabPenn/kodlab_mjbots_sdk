@@ -37,7 +37,7 @@ namespace kodlab
          * @brief Offset between ceneters of two joints, in the frame of the 
          * first joint
          */
-        std::vector<std::array<float, 3>> actuator_offsets; 
+        std::vector<Eigen::Vector3f> actuator_offsets; 
 
         /**
          * @brief Rotation matrix transforming the previous joint frame to 

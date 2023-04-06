@@ -17,6 +17,7 @@
 #include <limits>
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include "examples/simple_limb.h"
 
 class Joints3DoF : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
