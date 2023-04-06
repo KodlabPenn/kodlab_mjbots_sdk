@@ -18,6 +18,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include "examples/simple_limb.h"
+#include "examples/quadruped_3dof_limb.h"
 
 class Joints3DoF : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
