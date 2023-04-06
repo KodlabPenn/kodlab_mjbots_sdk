@@ -28,29 +28,6 @@
 
 namespace kodlab
 {
-    /**
-     * @brief struct containing structural information to a limb
-     * @details all information provided by user at initialization
-     */
-    struct LimbConfig {
-        /**
-         * @brief Offset between ceneters of two joints, in the frame of the 
-         * first joint
-         */
-        std::vector<Eigen::Vector3f> actuator_offsets; 
-
-        /**
-         * @brief Rotation matrix transforming the previous joint frame to 
-         * the current joint frame, beginning with \f${}^0 R_1\f$
-         */
-        std::vector<Eigen::Matrix3f> actuator_orientations; 
-
-        /**
-         * @brief Matrix of zeros and ones for reordering joints in member 
-         * methods 
-         */
-        Eigen::MatrixXf selection_matrix;
-    };
 
     template<typename EndEffectorOutput = Eigen::VectorXf>
     class LimbBase {
@@ -60,20 +37,16 @@ namespace kodlab
          *
          * @param name Sets the limb name
          * @param joints Joints that make up the limb
-         * @param config Configuration of the joints in the limb
          */
         LimbBase(const std::string &name,
-                 const std::vector<std::shared_ptr<JointBase>> &joints,
-                 const LimbConfig &config);
+                 const std::vector<std::shared_ptr<JointBase>> &joints);
 
         /**
          * @brief Construct a new Limb Base object
          *
          * @param joints Joints that make up the limb
-         * @param config Configuration of the joints in the limb
          */
-        LimbBase(const std::vector<std::shared_ptr<JointBase>> &joints,
-                 const LimbConfig &config);
+        LimbBase(const std::vector<std::shared_ptr<JointBase>> &joints);
 
 
         /**
@@ -212,8 +185,7 @@ namespace kodlab
         std::vector<std::shared_ptr<JointBase>> joints_;
 
         // Limb Shape and Size
-        int limbDOFs_;
-        LimbConfig config_;
+        int num_joints_;
 
         // Limb State/Commands
         ValidatedLoopCache<std::vector<float>> 

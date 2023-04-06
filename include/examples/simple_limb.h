@@ -25,18 +25,39 @@
  * @todo Implement running example
  */
 class SimpleLimb : public kodlab::LimbBase<Eigen::Vector3f> {
-
   public:
-    using kodlab::LimbBase<Eigen::Vector3f>::LimbBase;
+    /**
+     * @brief Helper limb configuration class for simple limb with axis along z
+     */
+    struct LimbConfig 
+    {
+        // Offset of end effector from limb origin
+        Eigen::Vector3f actuator_offset; 
+    };
+    
+    /**
+     * @brief Construct a new Simple Limb object
+     *
+     * @param joints joints that make up the limb
+     * @param actuator_offset end effector location in zero configuration
+     */
+    SimpleLimb( 
+        const std::vector<std::shared_ptr<kodlab::JointBase>> &joint,
+        const Eigen::Vector3f actuator_offset)
+        : LimbBase("", joint)
+    {
+        config_.actuator_offset = actuator_offset;
+    }
+    
     Eigen::Vector3f ForwardKinematicsImpl(
         std::vector<float>joint_positions) override 
     {
         float theta = joint_positions[0];
         Eigen::Vector3f fk;
 
-        fk << config_.actuator_offsets[0].x() * cos(theta),
-                config_.actuator_offsets[0].y() * sin(theta),
-                config_.actuator_offsets[0].z();
+        fk << config_.actuator_offset.x() * cos(theta),
+                config_.actuator_offset.y() * sin(theta),
+                config_.actuator_offset.z();
         return fk;
     }
 
@@ -46,8 +67,8 @@ class SimpleLimb : public kodlab::LimbBase<Eigen::Vector3f> {
         Eigen::MatrixXf jac(3,1);
         float theta = joint_positions[0];
 
-        jac << -config_.actuator_offsets[0].x() * sin(theta),
-                config_.actuator_offsets[0].y() * cos(theta),
+        jac << -config_.actuator_offset.x() * sin(theta),
+                config_.actuator_offset.y() * cos(theta),
                 0;
         return jac;
     }
@@ -76,7 +97,10 @@ class SimpleLimb : public kodlab::LimbBase<Eigen::Vector3f> {
         jac_multi << -s_theta, c_theta, 0;
 
         // Set cached internal variables
-        fk_.set( config_.actuator_offsets[0].cwiseProduct(fk_multi) );
-        jac_.set( config_.actuator_offsets[0].cwiseProduct(jac_multi) );
+        fk_.set( config_.actuator_offset.cwiseProduct(fk_multi) );
+        jac_.set( config_.actuator_offset.cwiseProduct(jac_multi) );
     } 
+
+  private:
+    LimbConfig config_;
 };

@@ -94,6 +94,22 @@ float qnanf(){
 class QuadrupedLimb : public kodlab::LimbBase<Eigen::Vector3f> {
   
   public:
+
+    /**
+     * @brief struct containing structural information to a limb with the common
+     * quadruped morphology 
+     * @details The rotation axis can be described in the zero state to be 
+     * parallel to the body axes. In particular, the abduction axis is the 
+     * x-direction and the hip and knee axes are the y-direction
+     */
+    struct LimbConfig {
+        /**
+         * @brief Offset between centers of two joints, in the frame of the 
+         * first joint
+         */
+        std::array<Eigen::Vector3f,4> actuator_offsets; 
+    };
+
     // Limb index is defined as follows
     typedef uint8_t LimbIndex_t;
     enum {
@@ -105,9 +121,10 @@ class QuadrupedLimb : public kodlab::LimbBase<Eigen::Vector3f> {
 
     QuadrupedLimb(
         const std::vector<std::shared_ptr<kodlab::JointBase>> &joints,
-        const kodlab::LimbConfig &config,
+        const LimbConfig &config,
         LimbIndex_t limb_id = kFrontLeft)
-        : kodlab::LimbBase<Eigen::Vector3f>::LimbBase("", joints, config)
+        : kodlab::LimbBase<Eigen::Vector3f>::LimbBase("", joints),
+          config_(config)
     {
         is_front_limb_ = (int(limb_id) % 2) == 0;
         is_left_limb_ = (int(limb_id) / 2) == 0;
@@ -306,6 +323,7 @@ class QuadrupedLimb : public kodlab::LimbBase<Eigen::Vector3f> {
   private:
     bool is_front_limb_ = true; ///< True is index is front limb
     bool is_left_limb_ = true; ///< True is index is left limb
+    LimbConfig config_; ///< Config the common quad
 
     /**
      * @brief Evaluate if an angle is valid for a specific joint.
