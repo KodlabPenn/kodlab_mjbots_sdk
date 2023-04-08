@@ -28,7 +28,22 @@
 
 namespace kodlab
 {
-
+    /**
+     * @brief Simple base class for limbs with an arbitrary end effector space. 
+     * @details Includes virtual functions that can to be implemented by the 
+     * derived classes: 
+     *      ForwardKinematicsImpl(...) [req]
+     *      JacobianImpl(...) [req]
+     *      FKAndJacobianImpl(...) [optional, for optimization, MUST SET CACHES]
+     *      InverseKinematicsImpl(...) [optional]
+     *      EndEffectorVelocityImpl(...) [default: Jacobian * velocities]
+     * @note ForwardKinematicsImpl(...) and JacobianImpl(...) are required, but 
+     * are superceded in the Update() function by the implementation of 
+     * FKAndJacobianImpl(...) if it is non-empty, which is assumed to be 
+     * faster/better.   
+     * @tparam EndEffectorOutput, end effector space / output type of the 
+     * forward kinematics
+     */
     template<typename EndEffectorOutput = Eigen::VectorXf>
     class LimbBase {
       public:
