@@ -13,6 +13,7 @@
 #pragma once
 #include <type_traits>
 #include <memory>
+#include <atomic>
 
 #include "kodlab_mjbots_sdk/common_header.h"
 
@@ -21,19 +22,31 @@ namespace kodlab{
 /**
  * @brief Simple loop id counter class that allows the user to tell when the 
  * control loop has looped. Useful for forcing recalculations and/or timing.
+ * @warning This is a singleton, with all the pros and cons that come with that
  * @warning This is not thread safe and should only be used in the control loop
  * 
  */
-class LoopId
-{
+class LoopId{
+    
  public:
+
+  /**
+   * @brief Get the LoopId object
+   * 
+   * @return LoopId& 
+   */
+  static LoopId& getInstance() {
+    static LoopId loop_id_obj;
+    return loop_id_obj;
+  }
+
   /**
    * @brief Returns the current loop id
    * 
    * @return uint32_t 
    */
   static uint32_t get(){
-    return loop_id_;
+    return getInstance().loop_id_;
   }
 
   /**
@@ -42,26 +55,48 @@ class LoopId
    * @param id_des 
    */
   static void set(uint32_t id_des){
-    loop_id_ = id_des;
+    getInstance().loop_id_ = id_des;
   }
 
   /**
-   * @brief increment and return the loop id, note 
-   * @note there can only be ONE loop using this type of cache at once to avoid 
-   * prematurely invalidating caches, MAKE SURE THIS IS WHAT YOU WANT
+   * @brief Initialize the loop id (sets it to uint32_t(-1))
+   */
+  static void init(){
+    getInstance().set(-1); // Set loop to pre-loop value
+  }
+
+  /**
+   * @brief Increment and return the loop id 
+   * @note LoopId is a singleton, there can only be one, only one control loop
+   * at a time should be incrementing it otherwise you may be prematurely 
+   * invalidating caches.
    * 
    * @return uint32_t 
    */
   static uint32_t increment(){
-      return (++loop_id_);
+      return (++getInstance().loop_id_);
   }
 
- protected:
+  // Delete copy and assignment, singletons should not do either
+  LoopId(const LoopId&) = delete; ///< deleted
+  LoopId& operator=(const LoopId&) = delete; ///< deleted
+
+ private:
+  /**
+   * @brief Construct a new Loop Id object.
+   */
+  LoopId() {}
+  /**
+   * @brief Destroy the Loop Id object
+   * 
+   */
+  ~LoopId() {}
+
   /**
    * @brief Loop id shared between all instances acts a "global" loop id
    * 
    */
-  static uint32_t loop_id_; 
+  std::atomic<std::uint32_t> loop_id_;
 };
 
 /**

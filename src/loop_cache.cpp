@@ -11,4 +11,3 @@
  */
 #include "kodlab_mjbots_sdk/loop_cache.h"
 
-uint32_t kodlab::LoopId::loop_id_ = 0; //Initialize the static variable 

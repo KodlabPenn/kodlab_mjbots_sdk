@@ -251,8 +251,8 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   lcm_sub_->Init();
   Init();
   SoftStart::InitializeTimer();
-  kodlab::LoopId::set(-1); // Set loop id/count to uint(-1), first update 
-                           // will be in loop 0
+  kodlab::LoopId::init(); // Set loop id/count to uint(-1), first update 
+                          // will be in loop 0
 
   float prev_msg_duration = 0;
 
