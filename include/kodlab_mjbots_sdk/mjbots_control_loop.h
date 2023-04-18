@@ -5,12 +5,18 @@
 // J. Diego Caporale <jdcap@seas.upenn.edu>
 
 
+
 #pragma once
 #include <type_traits>
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 #include "kodlab_mjbots_sdk/robot_base.h"
 #include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
+#include <iostream>
+#ifdef Simulation
+  #include "kodlab_mjbots_sdk/mjbots_simulation_interface.h"
+#endif
+
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "kodlab_mjbots_sdk/lcm_message_handler.h"
 #include "kodlab_mjbots_sdk/lcm_publisher.h"
@@ -19,6 +25,7 @@
 #include "real_time_tools/hard_spinner.hpp"
 #include "VoidLcm.hpp"
 #include "common_header.h"
+
 
 namespace kodlab::mjbots {
 /*!
@@ -54,7 +61,7 @@ struct ControlLoopOptions {
  * @tparam InputClass[optional] class for input data 
  * @tparam RobotClass[optional] RobotInterfaceDerived class that contains state and control calculations 
  */
-template<class LogClass = VoidLcm, class InputClass = VoidLcm, class RobotClass = kodlab::RobotBase>
+template<class LogClass = VoidLcm, class InputClass = VoidLcm, class RobotClass = kodlab::RobotBase, class InterfaceClass=kodlab::mjbots::MjbotsHardwareInterface>
 class MjbotsControlLoop : public AbstractRealtimeObject {
  static_assert(std::is_base_of<kodlab::RobotBase, RobotClass>::value);
  public:
@@ -144,7 +151,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   void SetupOptions(const ControlLoopOptions &options);
 
   std::shared_ptr<RobotClass> robot_;     /// ptr to the robot object
-  std::shared_ptr<kodlab::mjbots::MjbotsHardwareInterface> mjbots_interface_;   ///ptr to mjbots_interface object, if unique causes issues, also should be initialized inside thread
+  std::shared_ptr<InterfaceClass> mjbots_interface_;   ///ptr to mjbots_interface object, if unique causes issues, also should be initialized inside thread
   int frequency_;                         /// frequency of the controller in Hz
   int num_joints_;                        /// Number of motors
   ControlLoopOptions options_;            /// Options struct
@@ -160,17 +167,17 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
 
 /******************************************Implementation**************************************************************/
 
-template<class log_type, class input_type, class robot_type>
-MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options)
-  : MjbotsControlLoop<log_type, input_type,robot_type>( make_share_vector(joints), options){}
+template<class log_type, class input_type, class robot_type, class interface_type>
+MjbotsControlLoop<log_type, input_type, robot_type,interface_type>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options)
+  : MjbotsControlLoop<log_type, input_type,robot_type,interface_type>( make_share_vector(joints), options){}
 
-template<class log_type, class input_type, class robot_type>
-MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(
+template<class log_type, class input_type, class robot_type, class interface_type>
+MjbotsControlLoop<log_type, input_type, robot_type,interface_type>::MjbotsControlLoop(
     std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joint_ptrs, const ControlLoopOptions &options)
   : MjbotsControlLoop(std::make_shared<robot_type>(joint_ptrs),options) {}
 
-template<class log_type, class input_type, class robot_type>
-MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shared_ptr<robot_type>robot_in, const ControlLoopOptions &options)
+template<class log_type, class input_type, class robot_type, class interface_type>
+MjbotsControlLoop<log_type, input_type, robot_type,interface_type>::MjbotsControlLoop(std::shared_ptr<robot_type>robot_in, const ControlLoopOptions &options)
   : AbstractRealtimeObject(options.realtime_params.main_rtp, options.realtime_params.can_cpu),
     lcm_(std::make_shared<lcm::LCM>()),
     log_pub_(lcm_, options.log_channel_name),
@@ -178,7 +185,6 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
     lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu)) {
   // Copy robot pointer
   robot_ = robot_in;
-  
   // Cast joints to JointMoteus (currently JointBase)
   std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joints_moteus;
   for (auto &j : robot_->joints) {
@@ -186,7 +192,7 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
         std::dynamic_pointer_cast<kodlab::mjbots::JointMoteus>(j));
   }
   // Initialize mjbots_interface
-  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(
+  mjbots_interface_ = std::make_shared<interface_type>(
       std::move(joints_moteus), options.realtime_params,
       options.imu_mounting_deg, options.attitude_rate_hz,
       robot_->GetIMUDataSharedPtr(), options.imu_world_offset_deg,
@@ -197,8 +203,9 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
   SetupOptions(options);
 }
 
-template<class log_type, class input_type, class robot_type>
-void MjbotsControlLoop<log_type, input_type, robot_type>::SetupOptions(const ControlLoopOptions &options){
+
+template<class log_type, class input_type, class robot_type, class interface_type>
+void MjbotsControlLoop<log_type, input_type, robot_type,interface_type>::SetupOptions(const ControlLoopOptions &options){
   // Extract useful values from options
   options_ = options;
   cpu_ = options.realtime_params.main_cpu;
@@ -226,8 +233,8 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::SetupOptions(const Con
 }
 
 
-template<class log_type, class input_type, class robot_type>
-void MjbotsControlLoop<log_type, input_type, robot_type>::AddTimingLog(float t, float margin, float message_duration) {
+template<class log_type, class input_type, class robot_type, class interface_type>
+void MjbotsControlLoop<log_type, input_type, robot_type,interface_type>::AddTimingLog(float t, float margin, float message_duration) {
   if (logging_) {
     log_data_->timestamp = t;
     log_data_->margin = margin;
@@ -235,22 +242,20 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::AddTimingLog(float t, 
   }
 }
 
-template<class log_type, class input_type, class robot_type>
-void MjbotsControlLoop<log_type, input_type, robot_type>::PublishLog() {
+template<class log_type, class input_type, class robot_type, class interface_type>
+void MjbotsControlLoop<log_type, input_type, robot_type,interface_type>::PublishLog() {
   if (logging_)
     log_pub_.Publish();
 }
 
-template<class log_type, class input_type, class robot_type>
-void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
+template<class log_type, class input_type, class robot_type, class interface_type>
+void MjbotsControlLoop<log_type, input_type, robot_type,interface_type>::Run() {
   EnableCtrlC();
-
   mjbots_interface_->Init();
   robot_->Init();
   lcm_sub_->Init();
   Init();
   SoftStart::InitializeTimer();
-
   float prev_msg_duration = 0;
 
   // Create spinner to time loop
@@ -260,7 +265,6 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   // Create additional timers for other timing information
   real_time_tools::Timer dt_timer;
   real_time_tools::Timer message_duration_timer;
-
   spinner.initialize();
   spinner.spin();
   // If parallelizing loop send a command to process once the loop starts
@@ -322,8 +326,8 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   }
 }
 
-template<class log_type, class input_type, class robot_type>
-void MjbotsControlLoop<log_type, input_type, robot_type>::SafeProcessInput() {
+template<class log_type, class input_type, class robot_type, class interface_type>
+void MjbotsControlLoop<log_type, input_type, robot_type,interface_type>::SafeProcessInput() {
   // Check to make sure using input
   if (input_) {
     // Retrieve new data if available, std::nullopt_t otherwise
