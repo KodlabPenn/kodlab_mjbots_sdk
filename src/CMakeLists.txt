@@ -7,7 +7,6 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/moteus_protocol.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_hardware_interface.h"
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_simulation_interface.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/common_header.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/type_traits.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/polar_leg.h"
@@ -35,7 +34,9 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_spin_joints_behavior.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_control_io_behavior.h"
 )
-set(SIM_HEADER_LIST    "${kodlab_mjbots_sdk_SOURCE_DIR}/include/sim/array_safety.h"
+set(SIM_HEADER_LIST                    
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_simulation_interface.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/sim/array_safety.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/sim/glfw_dispatch.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/sim/simulate.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/sim/uitools.h"
@@ -43,7 +44,6 @@ set(SIM_HEADER_LIST    "${kodlab_mjbots_sdk_SOURCE_DIR}/include/sim/array_safety
 
 set(SOURCE_LIST "pi3hat.cpp" 
                 "mjbots_hardware_interface.cpp"
-                "mjbots_simulation_interface.cpp"
                 "polar_leg.cpp"
                 "soft_start.cpp"
                 "abstract_realtime_object.cpp"
@@ -52,6 +52,7 @@ set(SOURCE_LIST "pi3hat.cpp"
                 "cartesian_leg.cpp"
 )
 set(SIM_SOURCE_LIST
+                "mjbots_simulation_interface.cpp"
                 "sim/glfw_dispatch.cpp"
                 "sim/simulate.cpp"
                 "sim/uitools.cpp"
@@ -72,9 +73,9 @@ set(ALL_HEADER
 
 # Make an automatic library - will be static or dynamic based on user setting
 if(Simulation)
-        add_library(kodlab_mjbots_sdk  ${SOURCE_LIST} ${HEADER_LIST} )
-else()
         add_library(kodlab_mjbots_sdk  ${ALL_SOURCE} ${ALL_HEADER} )
+else()
+        add_library(kodlab_mjbots_sdk  ${SOURCE_LIST} ${HEADER_LIST} )
 endif()
 # We need this directory, and users of our library will need it too
 target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty/Eigen ../lcm_types ../thirdparty/lodepng

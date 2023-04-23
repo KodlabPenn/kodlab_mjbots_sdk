@@ -121,7 +121,8 @@ class MjbotsHardwareInterface  {
   * @param imu_data_ptr a shared pointer to kodlab::IMUData
   */
   void SetIMUDataSharedPtr(std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr){imu_data_ = imu_data_ptr;}
-
+  void SetModelPath(std::string path){;}
+  void SetFrequency(int freq){;}
  private:
   std::vector< std::shared_ptr<JointMoteus>> joints; /// Vector of shared pointers to joints for the robot, shares state information
   int num_joints_ = 0;                               /// Number of joints

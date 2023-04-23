@@ -48,6 +48,7 @@ struct ControlLoopOptions {
   bool dry_run = false;  ///< If true, torques sent to moteus boards will always be zero
   bool print_torques = false;  ///< If true, torque commands will be printed to console
   bool send_pd_commands = false; ///< If true, the control loop will send pd setpoints & gains in addition to ffwd torque commands
+  std::string xml_model_path; /// Path of robot xml model file
 };
 
 /*!
@@ -251,6 +252,10 @@ void MjbotsControlLoop<log_type, input_type, robot_type,interface_type>::Publish
 template<class log_type, class input_type, class robot_type, class interface_type>
 void MjbotsControlLoop<log_type, input_type, robot_type,interface_type>::Run() {
   EnableCtrlC();
+  if(!options_.xml_model_path.empty()){
+    mjbots_interface_->SetModelPath(options_.xml_model_path);
+    mjbots_interface_->SetFrequency(options_.frequency);
+  }
   mjbots_interface_->Init();
   robot_->Init();
   lcm_sub_->Init();

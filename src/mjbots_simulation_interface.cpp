@@ -94,29 +94,17 @@ MjbotsSimulationInterface::MjbotsSimulationInterface(std::vector<std::shared_ptr
 
 
 void MjbotsSimulationInterface::Init() {
-
-    
-    // TODO: initialize GUI
     // activate software
     mj_activate("~/.mujoco/mujoco-2.3.3/bin/mjkey.txt");
 
     // load and compile model
     char error[1000] = "Could not load binary model";
+    m = mj_loadXML(xml_model_path.c_str(), 0, error, 1000);
+    if( !m )
+      mju_error_s("Load model error: %s", error);
 
-    // check command-line arguments
-    // if( argc<2 )
-    //     m = mj_loadXML("../../../model/invertedPendulum.xml", 0, error, 1000);
-
-    // else
-    //     if( strlen(argv[1])>4 && !strcmp(argv[1]+strlen(argv[1])-4, ".mjb") )
-    //         m = mj_loadModel(argv[1], 0);
-    //     else
-    //         m = mj_loadXML(argv[1], 0, error, 1000);
-    // if( !m )
-    //     mju_error_s("Load model error: %s", error);
-    m = mj_loadXML("../../../model/invertedPendulum.xml", 0, error, 1000);
-
-
+    // set timestep
+    m->opt.timestep=1.0/control_frequency;
     // make data
     d = mj_makeData(m);
 
@@ -145,7 +133,7 @@ void MjbotsSimulationInterface::Init() {
     glfwSetCursorPosCallback(window, mouseMoveCallbackStatic);
     glfwSetMouseButtonCallback(window, mouseCallbackStatic);
     glfwSetScrollCallback(window, scrollCallbackStatic);
-
+    
     // initial position
     d->qpos[0] = 1.57;
 
@@ -218,10 +206,10 @@ void MjbotsSimulationInterface::Shutdown() {
     mj_deleteModel(m);
     mj_deactivate();
 
-    // // terminate GLFW (crashes with Linux NVidia drivers)
-    // #if defined(__APPLE__) || defined(_WIN32)
-    //     glfwTerminate();
-    // #endif
+    // terminate GLFW (crashes with Linux NVidia drivers)
+    #if defined(__APPLE__) || defined(_WIN32)
+        glfwTerminate();
+    #endif
 }
 
 const ::kodlab::IMUData<float>& MjbotsSimulationInterface::GetIMUData() {

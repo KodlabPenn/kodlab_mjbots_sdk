@@ -126,15 +126,18 @@ class MjbotsSimulationInterface  {
   */
   void SetIMUDataSharedPtr(std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr){imu_data_ = imu_data_ptr;}
 
-
+  void SetModelPath(std::string path){xml_model_path=path;}
+  void SetFrequency(int freq){control_frequency=freq;}
  private:
   std::vector< std::shared_ptr<JointMoteus>> joints; /// Vector of shared pointers to joints for the robot, shares state information
   int num_joints_ = 0;                               /// Number of joints
+  int control_frequency;                                     /// Control frequency (Now used as simulation frequency as well)
   u_int64_t cycle_count_ = 0;                        /// Number of cycles/commands sent
   bool dry_run_;                                     ///< dry run active flag
   bool print_torques_;                               ///< print torques active flag
   bool send_pd_commands_;                            ///< Include pd gains and setpoints in the moteus packet
 
+  std::string xml_model_path;
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
 
   std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> modes_; /// Vector of current moteus modes (references to the members of joints_)

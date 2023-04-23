@@ -15,8 +15,12 @@
 #include <sys/mman.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
-
-class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog,VoidLcm,kodlab::RobotBase,kodlab::mjbots::MjbotsSimulationInterface> {
+#ifdef Simulation
+  class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog,VoidLcm,kodlab::RobotBase,kodlab::mjbots::MjbotsSimulationInterface>
+#else
+  class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog,VoidLcm,kodlab::RobotBase,kodlab::mjbots::MjbotsHardwareInterface>
+#endif
+  {
   using MjbotsControlLoop::MjbotsControlLoop;
   void Update() override {
     std::vector<float> positions=robot_->GetJointPositions();
@@ -74,7 +78,7 @@ int main(int argc, char **argv) {
   options.imu_mounting_deg.roll = 0;
   options.imu_mounting_deg.pitch = 180;
   options.attitude_rate_hz = 1000;
-
+  options.xml_model_path="../../model/invertedPendulum.xml";
   // Create control loop
   LOG_INFO("Constructing Spin_Joint with %zu joints.", joints.size());
   Spin_Joint control_loop(std::move(joints), options);
