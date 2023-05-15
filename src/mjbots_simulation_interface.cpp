@@ -24,39 +24,6 @@
 #include "kodlab_mjbots_sdk/string.h"  // kodlab::string::ScalarVectorToString
 
 namespace kodlab::mjbots {
-void MjbotsSimulationInterface::InitializeCommand() {
-  for (const auto &joint : joints) {
-    commands_.push_back({});
-    commands_.back().id = joint->get_can_id(); //id
-  }
-
-  ::mjbots::moteus::PositionResolution res; // This is just for the command
-  if(send_pd_commands_){
-    res.position = ::mjbots::moteus::Resolution::kInt16;
-    res.velocity = ::mjbots::moteus::Resolution::kInt16;
-    res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
-    res.kp_scale = ::mjbots::moteus::Resolution::kInt16;
-    res.kd_scale = ::mjbots::moteus::Resolution::kInt16;
-    res.maximum_torque = ::mjbots::moteus::Resolution::kInt8;
-  }else{
-    res.position = ::mjbots::moteus::Resolution::kIgnore;
-    res.velocity = ::mjbots::moteus::Resolution::kIgnore;
-    res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
-    res.kp_scale = ::mjbots::moteus::Resolution::kIgnore;
-    res.kd_scale = ::mjbots::moteus::Resolution::kIgnore;
-    res.maximum_torque = ::mjbots::moteus::Resolution::kIgnore;
-  }
-  res.stop_position = ::mjbots::moteus::Resolution::kIgnore;
-  res.watchdog_timeout = ::mjbots::moteus::Resolution::kIgnore;
-  for (auto &cmd : commands_) {
-    cmd.resolution = res;
-    cmd.mode = ::mjbots::moteus::Mode::kStopped;
-    if(send_pd_commands_){
-      cmd.query.torque = ::mjbots::moteus::Resolution::kInt16;
-    }
-  }
-}
-
 
 
 MjbotsSimulationInterface::MjbotsSimulationInterface(std::vector<std::shared_ptr<JointMoteus>> joint_ptrs,
@@ -184,9 +151,7 @@ void MjbotsSimulationInterface::SendCommand() {
 }
 
 void MjbotsSimulationInterface::SetModeStop() {
-  for (auto &cmd : commands_) {
-    cmd.mode = ::mjbots::moteus::Mode::kStopped;
-  }
+  ;
 }
 
 void MjbotsSimulationInterface::Stop() {
@@ -200,7 +165,6 @@ void MjbotsSimulationInterface::Stop() {
 }
 
 void MjbotsSimulationInterface::Shutdown() {
-  // moteus_interface_->shutdown();
   // free MuJoCo model and data, deactivate
     mj_deleteData(d);
     mj_deleteModel(m);

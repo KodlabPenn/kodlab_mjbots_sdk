@@ -89,7 +89,7 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
     for (int servo = 0; servo < 2; servo++) {
       log_data_->positions[servo] = robot_->GetJointPositions()[servo];
       log_data_->velocities[servo] = robot_->GetJointVelocities()[servo];
-      log_data_->modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
+      log_data_->modes[servo] = static_cast<int>(robot_interface_->GetJointModes()[servo]);
       log_data_->torque_cmd[servo] = robot_->GetJointTorqueCmd()[servo];
     }
     log_data_->limb_position[0] = z_ - z0_;

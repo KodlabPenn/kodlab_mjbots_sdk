@@ -3,7 +3,7 @@
 // Authors:
 // Shane Rozen-Levy <srozen01@seas.upenn.edu>
 #ifndef _mjbots_simulation_interface
-#define _mjbots_simulation_interface 1
+#define _mjbots_simulation_interface 
 
 #pragma once
 
@@ -17,7 +17,7 @@
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
 #include "kodlab_mjbots_sdk/imu_data.h"
-#include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
+#include "kodlab_mjbots_sdk/robot_interface.h"
 
 #include <iostream>
 #include <mujoco/mjmodel.h>
@@ -40,7 +40,7 @@ namespace kodlab::mjbots {
  * @brief Object allowing interaction with the Mjbots Moteus motor controller
  *        hardware
  */
-class MjbotsSimulationInterface  {
+class MjbotsSimulationInterface : public RobotInterface {
  public:
 
   /*!
@@ -105,7 +105,6 @@ class MjbotsSimulationInterface  {
    * @brief accessor for the joint modes
    * @return the joint modes
    */
-  std::vector<::mjbots::moteus::Mode> GetJointModes();
   
   /*!
    * @brief accessor for the IMU data of the robot
@@ -119,35 +118,17 @@ class MjbotsSimulationInterface  {
    */
   const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr();        
   
-  /*!
-  * @brief Setter for the robot's IMU data pointer. Releases the previously owned IMU data object
-  *
-  * @param imu_data_ptr a shared pointer to kodlab::IMUData
-  */
-  void SetIMUDataSharedPtr(std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr){imu_data_ = imu_data_ptr;}
 
   void SetModelPath(std::string path){xml_model_path=path;}
   void SetFrequency(int freq){control_frequency=freq;}
  private:
-  std::vector< std::shared_ptr<JointMoteus>> joints; /// Vector of shared pointers to joints for the robot, shares state information
-  int num_joints_ = 0;                               /// Number of joints
   int control_frequency;                                     /// Control frequency (Now used as simulation frequency as well)
-  u_int64_t cycle_count_ = 0;                        /// Number of cycles/commands sent
+  std::string xml_model_path;
+  
   bool dry_run_;                                     ///< dry run active flag
   bool print_torques_;                               ///< print torques active flag
   bool send_pd_commands_;                            ///< Include pd gains and setpoints in the moteus packet
-
-  std::string xml_model_path;
-  std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
-
-  std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> modes_; /// Vector of current moteus modes (references to the members of joints_)
-
-  std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> commands_;  /// Vector of servo commands
-  std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> replies_;     /// Vector of replies
-  std::shared_ptr<::mjbots::moteus::Pi3HatMoteusInterface> moteus_interface_;    /// pi3hat interface
-  ::mjbots::moteus::Pi3HatMoteusInterface::Data moteus_data_;                    /// Data
   std::shared_ptr<::kodlab::IMUData<float>> imu_data_;                           /// Robot IMU data
-
   /******************************************Implementation**************************************************************/
   // MuJoCo data structures
   mjModel* m = NULL;                  // MuJoCo model
@@ -259,13 +240,6 @@ class MjbotsSimulationInterface  {
     MjbotsSimulationInterface* that = static_cast<MjbotsSimulationInterface*>(glfwGetWindowUserPointer(window));
     that->scroll(window, xoffset, yoffset);
   }
-
-  /*!
-   * @brief initialize the command with resolutions
-   */
-  void InitializeCommand();
-
-
 };
 } // namespace kodlab::mjbots
 

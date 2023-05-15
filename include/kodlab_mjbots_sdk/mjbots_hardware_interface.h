@@ -16,27 +16,15 @@
 #include "kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
 #include "kodlab_mjbots_sdk/imu_data.h"
+#include "kodlab_mjbots_sdk/robot_interface.h"
 
 namespace kodlab::mjbots {
-
-
-/*!
- * @brief struct for setting the realtime params for the robot
- */
-struct RealtimeParams {
-  int can_cpu = 3;   /// Which cpu the can should be on
-  int main_cpu = 2;  /// Which cpu the main loop should be on
-  int main_rtp = 97; /// The realtime priority of the main thread
-  int can_rtp = 98;  /// The realtime priority of the can thread
-  int lcm_rtp = 90;
-  int lcm_cpu = 0;
-};
 
 /*!
  * @brief Object allowing interaction with the Mjbots Moteus motor controller
  *        hardware
  */
-class MjbotsHardwareInterface  {
+class MjbotsHardwareInterface : public RobotInterface {
  public:
 
   /*!
@@ -124,26 +112,23 @@ class MjbotsHardwareInterface  {
   void SetModelPath(std::string path){;}
   void SetFrequency(int freq){;}
  private:
-  std::vector< std::shared_ptr<JointMoteus>> joints; /// Vector of shared pointers to joints for the robot, shares state information
-  int num_joints_ = 0;                               /// Number of joints
-  u_int64_t cycle_count_ = 0;                        /// Number of cycles/commands sent
+  std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                /// True if communication has timed out
+  std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if response is ready
+
   bool dry_run_;                                     ///< dry run active flag
   bool print_torques_;                               ///< print torques active flag
   bool send_pd_commands_;                            ///< Include pd gains and setpoints in the moteus packet
+  std::shared_ptr<::kodlab::IMUData<float>> imu_data_;                           /// Robot IMU data
 
-  std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
-
+  
   std::vector<std::reference_wrapper<const ::mjbots::moteus::Mode>> modes_; /// Vector of current moteus modes (references to the members of joints_)
-
-  std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                /// True if communication has timed out
+          /// True if communication has timed out
 
   std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoCommand> commands_;  /// Vector of servo commands
   std::vector<::mjbots::moteus::Pi3HatMoteusInterface::ServoReply> replies_;     /// Vector of replies
   std::shared_ptr<::mjbots::moteus::Pi3HatMoteusInterface> moteus_interface_;    /// pi3hat interface
   ::mjbots::moteus::Pi3HatMoteusInterface::Data moteus_data_;                    /// Data
-  std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if response is ready
-  std::shared_ptr<::kodlab::IMUData<float>> imu_data_;                           /// Robot IMU data
-
+  
   /*!
    * @brief initialize the command with resolutions
    */
