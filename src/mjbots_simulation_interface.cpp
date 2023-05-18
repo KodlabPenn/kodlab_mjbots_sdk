@@ -4,7 +4,7 @@
 // Shane Rozen-Levy <srozen01@seas.upenn.edu>
 
 
-#include "kodlab_mjbots_sdk/mjbots_simulation_interface.h"
+#include "kodlab_mjbots_sdk/interfaces.h"
 
 #include <iostream>
 #include <algorithm>
@@ -38,7 +38,8 @@ MjbotsSimulationInterface::MjbotsSimulationInterface(std::vector<std::shared_ptr
     : imu_data_(imu_data_ptr ? imu_data_ptr : std::make_shared<::kodlab::IMUData<float>>()),
       dry_run_(dry_run),
       print_torques_(print_torques),
-      send_pd_commands_(send_pd_commands)
+      send_pd_commands_(send_pd_commands),
+      mj_animator_(1000)
 { 
   LOG_IF_WARN(dry_run_, "\nDRY RUN: NO TORQUES COMMANDED");
   joints = joint_ptrs;
@@ -61,93 +62,47 @@ MjbotsSimulationInterface::MjbotsSimulationInterface(std::vector<std::shared_ptr
 
 
 void MjbotsSimulationInterface::Init() {
-    // activate software
-    mj_activate("~/.mujoco/mujoco-2.3.3/bin/mjkey.txt");
+    // init Mujoco GUI, model, and data
+    mj_animator_.Init(xml_model_path);
+    mj_animator_.setFrameRate(60);
+    mj_model_=mj_animator_.getModel();
+    mj_data_=mj_animator_.getData();
+    mutex_ptr_=mj_animator_.getMutex();
+    // initialize robot's state
+    // std::cout<<"Start initailizing robot's state"<<std::endl;
+    for (int i=0; i<initial_pos_.size(); i++) mj_data_->qpos[i]=initial_pos_[i];
+    for (int i=0; i<initial_vel_.size(); i++) mj_data_->qvel[i]=initial_vel_[i];
 
-    // load and compile model
-    char error[1000] = "Could not load binary model";
-    m = mj_loadXML(xml_model_path.c_str(), 0, error, 1000);
-    if( !m )
-      mju_error_s("Load model error: %s", error);
+    // Update once to enable dynamics in MuJoCo
+    SendCommand();
+    ProcessReply();
 
-    // set timestep
-    m->opt.timestep=1.0/control_frequency;
-    // make data
-    d = mj_makeData(m);
-
-
-    // init GLFW
-    if( !glfwInit() )
-        mju_error("Could not initialize GLFW");
-
-    // create window, make OpenGL context current, request v-sync
-    window = glfwCreateWindow(1244, 700, "Demo", NULL, NULL);
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
-
-    // initialize visualization data structures
-    mjv_defaultCamera(&cam);
-    mjv_defaultOption(&opt);
-    mjv_defaultScene(&scn);
-    mjr_defaultContext(&con);
-    mjv_makeScene(m, &scn, 2000);                // space for 2000 objects
-    mjr_makeContext(m, &con, mjFONTSCALE_150);   // model-specific context
-
-    // install GLFW mouse and keyboard callbacks
-    // glfwSetKeyCallback(window, [](GLFWwindow* window_, int key, int scancode, int action, int mode){ MjbotsSimulationInterface::keyboard(window_, key, scancode, action, mode) ;});
-    glfwSetWindowUserPointer(window, this);
-    glfwSetKeyCallback(window,keyCallbackStatic);
-    glfwSetCursorPosCallback(window, mouseMoveCallbackStatic);
-    glfwSetMouseButtonCallback(window, mouseCallbackStatic);
-    glfwSetScrollCallback(window, scrollCallbackStatic);
     
-    // initial position
-    d->qpos[0] = 1.57;
-
-    // run main loop, target real-time simulation and 60 fps rendering
-    mjtNum timezero = d->time;
-    double_t update_rate = 0.01;
-
-    // making sure the first time step updates the ctrl previous_time
-    last_update = timezero-1.0/ctrl_update_freq;
-
-    SendCommand();
-    ProcessReply();
-    // Setup message for basic torque commands
-    SendCommand();
-    ProcessReply();
-
+    // start animation thread
+    mj_animator_.Start();
+    sleep(1);
 }
 
 void MjbotsSimulationInterface::ProcessReply() {
-  mj_step(m, d);
-  // get framebuffer viewport
-  mjrRect viewport = {0, 0, 0, 0};
-  glfwGetFramebufferSize(window, &viewport.width, &viewport.height);
-
-    // update scene and render
-  mjv_updateScene(m, d, &opt, NULL, &cam, mjCAT_ALL, &scn);
-  mjr_render(viewport, &scn, &con);
-
-  // swap OpenGL buffers (blocking call due to v-sync)
-  glfwSwapBuffers(window);
-
-  // process pending GUI events, call GLFW callbacks
-  glfwPollEvents();
-  
+  mutex_ptr_->lock();
+  mj_step(mj_model_, mj_data_);
   // Copy results to object so controller can use
   int servo=0;
   for (auto & joint : joints) {
-    joint->UpdateState(d->qpos[servo], d->qvel[servo],
-                        d->sensordata[servo]);
+    joint->UpdateState(mj_data_->qpos[servo], mj_data_->qvel[servo],
+                        mj_data_->sensordata[servo]);
   }
+
+  mutex_ptr_->unlock();
 }
 
 void MjbotsSimulationInterface::SendCommand() {
+  mutex_ptr_->lock();
   cycle_count_++;
   for (int servo = 0; servo < num_joints_; servo++) {
-    d->ctrl[servo] = (dry_run_ ? 0 : joints[servo]->get_servo_torque());
+    mj_data_->ctrl[servo] = (dry_run_ ? 0 : joints[servo]->get_servo_torque());
   }
+  mutex_ptr_->unlock();
 }
 
 void MjbotsSimulationInterface::SetModeStop() {
@@ -157,19 +112,12 @@ void MjbotsSimulationInterface::SetModeStop() {
 void MjbotsSimulationInterface::Stop() {
   // Send a few stop commands
   // free visualization storage
-    mjv_freeScene(&scn);
-    mjr_freeContext(&con);
-
-    
-
+    mj_animator_.Stop();
+    mj_animator_.Join();
 }
 
 void MjbotsSimulationInterface::Shutdown() {
-  // free MuJoCo model and data, deactivate
-    mj_deleteData(d);
-    mj_deleteModel(m);
-    mj_deactivate();
-
+  
     // terminate GLFW (crashes with Linux NVidia drivers)
     #if defined(__APPLE__) || defined(_WIN32)
         glfwTerminate();

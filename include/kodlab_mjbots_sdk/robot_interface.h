@@ -15,7 +15,7 @@
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/soft_start.h"
 
-namespace kodlab::mjbots {
+namespace kodlab {
 
 
 /*!
@@ -71,11 +71,23 @@ class RobotInterface  {
    */
   virtual void Shutdown()=0;
 
-  virtual void SetModelPath(std::string path)=0;
-  virtual void SetFrequency(int freq)=0;
+  /*!
+   * @brief Set xml model path for simulation. Do nothing by default
+   */
+  virtual void SetModelPath(std::string path) {} 
+
+  /*!
+   * @brief Set control frequency, which is also simulation frequency as well for now, for simulation. Do nothing by default
+   */
+  virtual void SetFrequency(int freq) {}
+  
+  /*!
+   * @brief Set initial robot's state for simulation. Do nothing by default
+   */
+  virtual void SetInitialState(std::vector<double> initial_pos,std::vector<double> initial_vel) {}
  protected:
   
-  std::vector< std::shared_ptr<JointMoteus>> joints; /// Vector of shared pointers to joints for the robot, shares state information
+  std::vector< std::shared_ptr<kodlab::mjbots::JointMoteus>> joints; /// Vector of shared pointers to joints for the robot, shares state information
   int num_joints_ = 0;                               /// Number of joints
   u_int64_t cycle_count_ = 0;                        /// Number of cycles/commands sent
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus

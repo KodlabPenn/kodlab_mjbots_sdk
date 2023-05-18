@@ -11,7 +11,6 @@
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 #include "kodlab_mjbots_sdk/robot_base.h"
-#include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
 #include <iostream>
 #include "kodlab_mjbots_sdk/interfaces.h"
 
@@ -23,6 +22,10 @@
 #include "real_time_tools/hard_spinner.hpp"
 #include "VoidLcm.hpp"
 #include "common_header.h"
+
+#include <boost/assign/std/vector.hpp>
+#include <vector>
+
 
 
 namespace kodlab::mjbots {
@@ -46,8 +49,9 @@ struct ControlLoopOptions {
   bool dry_run = false;  ///< If true, torques sent to moteus boards will always be zero
   bool print_torques = false;  ///< If true, torque commands will be printed to console
   bool send_pd_commands = false; ///< If true, the control loop will send pd setpoints & gains in addition to ffwd torque commands
-  std::string xml_model_path; /// Path of robot xml model file
-  std::string interface; /// interface type
+  std::string xml_model_path=""; /// Path of robot xml model file
+  std::vector<double> initial_positions; /// initial positions of the robot
+  std::vector<double> initial_vels; /// initial velocities of the robot
 };
 
 /*!
@@ -151,7 +155,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   void SetupOptions(const ControlLoopOptions &options);
 
   std::shared_ptr<RobotClass> robot_;     /// ptr to the robot object
-  std::shared_ptr<INTERFACE_TYPE> robot_interface_;
+  std::shared_ptr<INTERFACE_TYPE> robot_interface_; //INTERFACE_TYPE is a child class of RobotInterface 
   int frequency_;                         /// frequency of the controller in Hz
   int num_joints_;                        /// Number of motors
   ControlLoopOptions options_;            /// Options struct
@@ -255,6 +259,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   if(!options_.xml_model_path.empty()){
     robot_interface_->SetModelPath(options_.xml_model_path);
     robot_interface_->SetFrequency(options_.frequency);
+    robot_interface_->SetInitialState(options_.initial_positions,options_.initial_vels);
   }
   robot_interface_->Init();
   robot_->Init();

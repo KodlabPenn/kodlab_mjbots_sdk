@@ -4,7 +4,12 @@
 // Shane Rozen-Levy <srozen01@seas.upenn.edu>
 
 
+
 #pragma once
+
+#ifndef INTERFACE_INCLUDED
+  #error "do not include mjbots_hardware_interface directly, include interfaces.h instead"
+#endif
 
 #include <vector>
 #include <map>
@@ -24,7 +29,7 @@ namespace kodlab::mjbots {
  * @brief Object allowing interaction with the Mjbots Moteus motor controller
  *        hardware
  */
-class MjbotsHardwareInterface : public RobotInterface {
+class MjbotsHardwareInterface : public kodlab::RobotInterface {
  public:
 
   /*!
@@ -54,36 +59,36 @@ class MjbotsHardwareInterface : public RobotInterface {
    * @brief Send and recieve initial communications effectively starting the robot
    * 
    */
-  void Init();
+  void Init() override;
 
   /*!
    * @brief Checks to make sure the response is ready and then adds the response to the data members in the robot interface
    * should be called after send command.
    * WARNING this is a blocking function call
    */
-  void ProcessReply();
+  void ProcessReply() override;
 
   /*!
    * @brief initiates a cycle of communication with the pi3hat. Sends torques and requests responses.
    * WARNING this is a non blocking function call, to get the response use process reply.
    * WARNING you must call ProcessReply after calling SendCommand before sending the next command
    */
-  void SendCommand();
+  void SendCommand() override;
   
   /*!
    * @brief sets the moteus message to be stop, Run this followed by send command to stop the motors
    */
-  void SetModeStop();
+  void SetModeStop() override;
 
   /*!
    * @brief Stops the robot by setting and sending stop commands
    */
-  void Stop();
+  void Stop() override;
 
   /*!
    * @brief shuts down the can thread
    */
-  void Shutdown();
+  void Shutdown() override;
 
   /*!
    * @brief accessor for the joint modes
@@ -109,8 +114,6 @@ class MjbotsHardwareInterface : public RobotInterface {
   * @param imu_data_ptr a shared pointer to kodlab::IMUData
   */
   void SetIMUDataSharedPtr(std::shared_ptr<::kodlab::IMUData<float>> imu_data_ptr){imu_data_ = imu_data_ptr;}
-  void SetModelPath(std::string path){;}
-  void SetFrequency(int freq){;}
  private:
   std::shared_ptr<bool> timeout_ = std::make_shared<bool>(false);                /// True if communication has timed out
   std::future<::mjbots::moteus::Pi3HatMoteusInterface::Output> can_result_;      /// future can result, used to check if response is ready

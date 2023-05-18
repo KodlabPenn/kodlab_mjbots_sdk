@@ -4,7 +4,7 @@
 // Shane Rozen-Levy <srozen01@seas.upenn.edu>
 
 
-#include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
+#include "kodlab_mjbots_sdk/interfaces.h"
 
 #include <iostream>
 #include <algorithm>

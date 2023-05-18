@@ -38,10 +38,6 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
 )
 set(SIM_HEADER_LIST                    
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_simulation_interface.h"
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/sim/array_safety.h"
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/sim/glfw_dispatch.h"
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/sim/simulate.h"
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/sim/uitools.h"
 )
 
 set(SOURCE_LIST "pi3hat.cpp" 
@@ -55,9 +51,6 @@ set(SOURCE_LIST "pi3hat.cpp"
 )
 set(SIM_SOURCE_LIST
                 "mjbots_simulation_interface.cpp"
-                "sim/glfw_dispatch.cpp"
-                "sim/simulate.cpp"
-                "sim/uitools.cpp"
 )
 
 set(ALL_SOURCE 

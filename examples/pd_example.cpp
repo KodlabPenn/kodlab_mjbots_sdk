@@ -15,14 +15,15 @@
 #include <sys/mman.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
-
+#include <boost/assign/std/vector.hpp>
+#include <vector>
 class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog,VoidLcm>
   {
   using MjbotsControlLoop::MjbotsControlLoop;
   void Update() override {
     std::vector<float> positions=robot_->GetJointPositions();
     std::vector<float> vels=robot_->GetJointVelocities();
-    float ctrl_torque=1.5*(-vels[0]-50.0*positions[0]);
+    float ctrl_torque=0.15*(-vels[0]-15.0*positions[0]);
 
     std::vector<float> torques(num_joints_, 0);
     torques[0]=ctrl_torque;
@@ -76,7 +77,8 @@ int main(int argc, char **argv) {
   options.imu_mounting_deg.pitch = 180;
   options.attitude_rate_hz = 1000;
   options.xml_model_path="../../model/invertedPendulum.xml";
-  options.interface="simulation_interface";
+  options.initial_positions.push_back(2.5);
+  options.initial_vels.push_back(0);
   // Create control loop
   LOG_INFO("Constructing Spin_Joint with %zu joints.", joints.size());
   Spin_Joint control_loop(std::move(joints), options);
