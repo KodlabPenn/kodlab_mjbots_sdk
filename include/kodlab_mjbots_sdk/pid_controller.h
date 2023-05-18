@@ -1,18 +1,20 @@
 /**
- * @file pid_controller.h
+ * @file pid.h
  * @author Chandravaran Kunjeti (kunjeti@seas.upenn.edu)
+ * @author Raghavesh Viswanath (vrag@seas.upenn.edu)
  * @brief Class implementation of PID
- * @date 9/30/2022
- *
- * @copyright 2022 The Trustees of the University of Pennsylvania.
+ * @date 5/18/2023
+ * @copyright 2023 The Trustees of the University of Pennsylvania.
  * All rights reserved.
  *
  */
 
 #pragma once
 
-#include <cmath>
+#include <math.h>
+
 #include <vector>
+#include <algorithm>
 
 #define HIGH_SATURATION_INDEX_ 0
 #define LOW_SATURATION_INDEX_ 1
@@ -69,48 +71,80 @@ namespace kodlab {
     }
 
     /**
-     * @brief Function to update the PID output.
-     * @param goal Final goal state for the controller.
-     * @param current Current state of the controller.
+     * @brief Function to update the state setpoints.
+     * @param setpoint State Target of the controller.
+     * @param derivative_setpoint Derivative State Target of the controller.
+     */
+    void set_setpoint(double setpoint,double derivative_setpoint = 0.){
+      setpoint_ = setpoint;
+      derivative_setpoint_ = derivative_setpoint;
+    }
+
+    /**
+     * @brief Function to update setpoints and PID output.
+     * @param state Current state for the controller.
+     * @param derivative_state Current derivative state of the controller.
+     * @param setpoint Desired state of the controller
+     * @param derivative_setpoint Desired derivative state of the controller
+     * @param time_step   Time difference between 2 updates
      * @return Returns the Pid output
      */
-    double Update(double goal, double current, double time_step = time_step_) {
+
+    double Update(double state,double derivative_state,double setpoint,double derivative_setpoint,double time_step) {
+      
+      set_setpoint(setpoint,derivative_setpoint);
+      
+      // Calling Nominal Update function.
+      return Update(state,derivative_state,time_step);
+
+      
+    }
+    /**
+     * @brief Function to update setpoints and PID output.
+     * @param state Current state for the controller.
+     * @param derivative_state Current derivative state of the controller.
+     * @param time_step   Time difference between 2 updates
+     * @return Returns the Pid output
+     */
+    double Update(double state,double derivative_state,double time_step) {
       // Calculate the errors
       // Proportional error
-      error_ = goal - current;
-
-      // Integral error
-      i_error_ += error_ * time_step;
-
+      error_ = setpoint_ - state;
+     
       // Derivative error
-      d_error_ = (error_ - d_error_) / time_step;
-
+      d_error_ =  derivative_setpoint_ - derivative_state;
+      
       // Calling UpdateWithError.
-      UpdateWithError(error_, d_error_, i_error_);
+      return UpdateWithError(error_, d_error_,time_step);
+    }
 
-      return output_;
+    /**
+     * @brief Function to update the PID output given the respective errors
+     * @param state Current state for the controller.
+     * @param derivative_state Current derivative state of the controller.  
+     * @return Returns the Pid output
+     */
+    
+    double Update(double state, double derivative_state) {
+
+      return Update(state,derivative_state,time_step_);
     }
 
     /**
      * @brief Function to update the PID output given the respective errors
      * @param error_p Proportional Error
      * @param error_d Derivative Error
-     * @param error_i Integral Error
      * @return Returns the Pid output
      */
-    double UpdateWithError(double error_p, double error_d, double error_i) {
-      // Finding the control output if errors are inputed
-      output_ = kp_ * error_p + kd_ * error_d + ki_ * error_i;
+    double UpdateWithError(double error_p, double error_d, double time_step) {
+      // Computing the integral error
+      i_error_ += error_p*time_step; 
 
-      // Checking the upper limit of the saturation level
-      output_ = (output_ > saturation_[HIGH_SATURATION_INDEX_])
-        ? saturation_[HIGH_SATURATION_INDEX_]
-        : output_;
+      // Finding the control output from the errors
+      output_ = kp_ * error_p + kd_ * error_d + ki_ * i_error_;
 
-      // Checking the lower limit of the saturation level
-      output_ = (output_ < saturation_[LOW_SATURATION_INDEX_])
-        ? saturation_[LOW_SATURATION_INDEX_]
-        : output_;
+      output_= std::clamp(output_,saturation_[LOW_SATURATION_INDEX_],saturation_[HIGH_SATURATION_INDEX_]);
+      
       return output_;
     }
 
@@ -120,15 +154,27 @@ namespace kodlab {
     ~PIDController() {}
 
   protected:
+    
+    /**
+     * @brief State Setpoint 
+     */
+    double setpoint_;
+
+    /**
+     * @brief State derivative Setpoint
+     */
+    double derivative_setpoint_;
     /**
      * @brief Time difference between 2 updates
      */
-    static double time_step_;
+    double time_step_;
 
     /**
      * @brief Proportional Gain
      */
     double kp_;
+
+
 
     /**
      * @brief Derivative Gain
@@ -146,7 +192,7 @@ namespace kodlab {
     double d_error_ = 0;
 
     /**
-     * @brief Sumes up the error for calculating the I term
+     * @brief Sums up the error for calculating the I term
      */
     double i_error_ = 0;
 
@@ -172,3 +218,4 @@ namespace kodlab {
   };
 
 }  // namespace kodlab
+ 
