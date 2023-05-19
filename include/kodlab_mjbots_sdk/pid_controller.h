@@ -12,12 +12,9 @@
 #pragma once
 
 #include <math.h>
-
+#include <array>
 #include <vector>
 #include <algorithm>
-
-#define HIGH_SATURATION_INDEX_ 0
-#define LOW_SATURATION_INDEX_ 1
 
 namespace kodlab {
 
@@ -25,7 +22,8 @@ namespace kodlab {
    * @brief PIDController class that allows you to use PID control.
    */
   class PIDController {
-  public:
+
+   public:
     /**
      * @brief Construct a Pid object
      * @param p_gain Proportional Gain
@@ -35,14 +33,13 @@ namespace kodlab {
      */
     PIDController(double p_gain, double d_gain, double i_gain, double time_step,
       double deadband = 1.0,
-      std::vector<double> saturation = { INFINITY, -INFINITY })
+      std::array<double, 2> saturation = { -INFINITY, INFINITY })
       : kp_(p_gain),
-      kd_(d_gain),
-      ki_(i_gain),
-      deadband_(deadband),
-      saturation_(saturation) {
-      time_step_ = time_step;
-    }
+        kd_(d_gain),
+        ki_(i_gain),
+        deadband_(deadband),
+        saturation_(saturation),
+        time_step_(time_step) {}
 
     /**
      * @brief Function to set the PID gains
@@ -66,7 +63,7 @@ namespace kodlab {
      * @brief Function to set the Saturation
      * @param saturation Saturation
      */
-    void set_saturation(std::vector<double> saturation) {
+    void set_saturation(std::array<double, 2> saturation) {
       saturation_ = saturation;
     }
 
@@ -89,16 +86,14 @@ namespace kodlab {
      * @param time_step   Time difference between 2 updates
      * @return Returns the Pid output
      */
-
     double Update(double state,double derivative_state,double setpoint,double derivative_setpoint,double time_step) {
       
       set_setpoint(setpoint,derivative_setpoint);
       
       // Calling Nominal Update function.
       return Update(state,derivative_state,time_step);
-
-      
     }
+
     /**
      * @brief Function to update setpoints and PID output.
      * @param state Current state for the controller.
@@ -124,7 +119,6 @@ namespace kodlab {
      * @param derivative_state Current derivative state of the controller.  
      * @return Returns the Pid output
      */
-    
     double Update(double state, double derivative_state) {
 
       return Update(state,derivative_state,time_step_);
@@ -143,7 +137,7 @@ namespace kodlab {
       // Finding the control output from the errors
       output_ = kp_ * error_p + kd_ * error_d + ki_ * i_error_;
 
-      output_= std::clamp(output_,saturation_[LOW_SATURATION_INDEX_],saturation_[HIGH_SATURATION_INDEX_]);
+      output_= std::clamp(output_,saturation_[kSaturationLowerLimitIndex],saturation_[kSaturationUpperLimitIndex]);
       
       return output_;
     }
@@ -152,6 +146,7 @@ namespace kodlab {
      * @brief Destructor
      */
     ~PIDController() {}
+
 
   protected:
     
@@ -173,8 +168,6 @@ namespace kodlab {
      * @brief Proportional Gain
      */
     double kp_;
-
-
 
     /**
      * @brief Derivative Gain
@@ -209,12 +202,17 @@ namespace kodlab {
     /**
      * @brief Max control output
      */
-    std::vector<double> saturation_{ INFINITY, -INFINITY };
+    std::array<double, 2> saturation_{ -INFINITY, INFINITY };
 
     /**
      * @brief Output of the function used internally
      */
     double output_ = 0;
+
+  private:
+    static constexpr int kSaturationLowerLimitIndex = 0;
+    static constexpr int kSaturationUpperLimitIndex = 1;
+
   };
 
 }  // namespace kodlab
