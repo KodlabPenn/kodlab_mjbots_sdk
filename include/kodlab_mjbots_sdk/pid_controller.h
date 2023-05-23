@@ -15,15 +15,19 @@
 #include <array>
 #include <vector>
 #include <algorithm>
+#include <Eigen/Dense>
 
 namespace kodlab {
 
   /**
    * @brief PIDController class that allows you to use PID control.
    */
+  
+  template <typename Scalar, int N>
   class PIDController {
 
    public:
+    typedef Eigen::Matrix<Scalar,N,1> VectorNS;
     /**
      * @brief Construct a Pid object
      * @param p_gain Proportional Gain
@@ -31,34 +35,49 @@ namespace kodlab {
      * @param i_gain Integral Gain
      * @param time_step Time difference between 2 updates
      */
-    PIDController(double p_gain, double d_gain, double i_gain, double time_step,
-      double deadband = 1.0,
+    
+    PIDController(const VectorNS & p_gain,const VectorNS & d_gain,const VectorNS & i_gain, double time_step=0.001,
+       double deadband = 1.0, double windup_limit = INFINITY,
       std::array<double, 2> saturation = { -INFINITY, INFINITY })
-      : kp_(p_gain),
-        kd_(d_gain),
-        ki_(i_gain),
+      : 
         deadband_(deadband),
+        windup_limit_(windup_limit),
         saturation_(saturation),
-        time_step_(time_step) {}
+        time_step_(time_step){
 
+      set_gains(p_gain,d_gain,i_gain); 
+      const int input_size = kp_.rows();
+      error_ = VectorNS::Zero(input_size);
+      d_error_ = VectorNS::Zero(input_size);
+
+      setpoint_ = VectorNS::Zero(input_size);
+      derivative_setpoint_ =VectorNS::Zero(input_size);    
+    }
+    
     /**
      * @brief Function to set the PID gains
      * @param p_gain Proportional Gain
      * @param d_gain Derivative Gain
      * @param i_gain Integral Gain
      */
-    void set_gains(double p_gain, double d_gain, double i_gain) {
+    void set_gains(VectorNS p_gain, VectorNS d_gain,VectorNS i_gain) {
       kp_ = p_gain;
       kd_ = d_gain;
       ki_ = i_gain;
     }
 
+    
     /**
      * @brief Function to set the deadband
      * @param deadband Deadband that needs to be set
      */
     void set_deadband(double deadband) { deadband_ = deadband; }
 
+    /**
+     * @brief Function to set the Windup limit
+     * @param limit Windup limit
+     */
+    void set_windup(double limit){ windup_limit_ = limit;}
     /**
      * @brief Function to set the Saturation
      * @param saturation Saturation
@@ -68,14 +87,24 @@ namespace kodlab {
     }
 
     /**
-     * @brief Function to update the state setpoints.
+     * @brief Function to update the state setpoints and reset integral error
      * @param setpoint State Target of the controller.
      * @param derivative_setpoint Derivative State Target of the controller.
      */
-    void set_setpoint(double setpoint,double derivative_setpoint = 0.){
+    void set_setpoint(const VectorNS & setpoint){
+      setpoint_ = setpoint;
+      i_error_ = VectorNS::Zero(setpoint.rows());           
+    }
+
+    void set_setpoint(const VectorNS & setpoint, const VectorNS & derivative_setpoint){
       setpoint_ = setpoint;
       derivative_setpoint_ = derivative_setpoint;
+      i_error_ = VectorNS::Zero(setpoint.rows());
     }
+    /**
+     * @brief Function to print out setpoints
+     */
+    void get_setpoints(){std::cout << "Setpoints are" << setpoint_  <<"\n";}
 
     /**
      * @brief Function to update setpoints and PID output.
@@ -86,12 +115,12 @@ namespace kodlab {
      * @param time_step   Time difference between 2 updates
      * @return Returns the Pid output
      */
-    double Update(double state,double derivative_state,double setpoint,double derivative_setpoint,double time_step) {
+    void Update(VectorNS state,VectorNS derivative_state,VectorNS setpoint,VectorNS derivative_setpoint,double time_step) {
       
       set_setpoint(setpoint,derivative_setpoint);
       
       // Calling Nominal Update function.
-      return Update(state,derivative_state,time_step);
+      Update(state,derivative_state,time_step);
     }
 
     /**
@@ -101,16 +130,17 @@ namespace kodlab {
      * @param time_step   Time difference between 2 updates
      * @return Returns the Pid output
      */
-    double Update(double state,double derivative_state,double time_step) {
+    VectorNS Update(VectorNS state,VectorNS derivative_state,double time_step) {
       // Calculate the errors
       // Proportional error
       error_ = setpoint_ - state;
-     
+      
       // Derivative error
       d_error_ =  derivative_setpoint_ - derivative_state;
       
+      
       // Calling UpdateWithError.
-      return UpdateWithError(error_, d_error_,time_step);
+      return UpdateWithError(error_, d_error_,time_step);;
     }
 
     /**
@@ -119,7 +149,7 @@ namespace kodlab {
      * @param derivative_state Current derivative state of the controller.  
      * @return Returns the Pid output
      */
-    double Update(double state, double derivative_state) {
+    VectorNS Update(VectorNS state,VectorNS derivative_state) {
 
       return Update(state,derivative_state,time_step_);
     }
@@ -130,14 +160,23 @@ namespace kodlab {
      * @param error_d Derivative Error
      * @return Returns the Pid output
      */
-    double UpdateWithError(double error_p, double error_d, double time_step) {
+    VectorNS UpdateWithError(VectorNS error_p, VectorNS error_d, double time_step) {
       // Computing the integral error
-      i_error_ += error_p*time_step; 
+      i_error_ += error_p*time_step;
+
+      //adding a limit on integral error to prevent windup
+      i_error_ = i_error_.array().min(windup_limit_).max(-windup_limit_);
 
       // Finding the control output from the errors
-      output_ = kp_ * error_p + kd_ * error_d + ki_ * i_error_;
+      output_ = kp_.array() * error_p.array() + kd_.array() * error_d.array() + ki_.array() * i_error_.array();
 
-      output_= std::clamp(output_,saturation_[kSaturationLowerLimitIndex],saturation_[kSaturationUpperLimitIndex]);
+      //Checking if in Deadband range
+      for(int i=0;i<error_p.rows();i++){
+        if (abs(error_p(i))< deadband_/2) {
+            output_(i) =0; 
+            i_error_(i)=0;
+        } 
+      }
       
       return output_;
     }
@@ -150,15 +189,17 @@ namespace kodlab {
 
   protected:
     
+    
     /**
      * @brief State Setpoint 
      */
-    double setpoint_;
+    //Eigen::Matrix<Scalar,Eigen::Dynamic,1> setpoint_;
+    VectorNS setpoint_;
 
     /**
      * @brief State derivative Setpoint
      */
-    double derivative_setpoint_;
+    VectorNS derivative_setpoint_;
     /**
      * @brief Time difference between 2 updates
      */
@@ -167,38 +208,43 @@ namespace kodlab {
     /**
      * @brief Proportional Gain
      */
-    double kp_;
+    VectorNS kp_;
 
     /**
      * @brief Derivative Gain
      */
-    double kd_;
+    VectorNS kd_;
 
     /**
      * @brief Integral Gain
      */
-    double ki_;
+    VectorNS ki_;
 
     /**
      * @brief Stores the previous error for the d term
      */
-    double d_error_ = 0;
+    VectorNS d_error_ ;
 
     /**
      * @brief Sums up the error for calculating the I term
      */
-    double i_error_ = 0;
+    VectorNS i_error_ ;
 
     /**
      * @brief Error at each step.
      */
-    double error_ = 0;
+    VectorNS error_ ;
 
     /**
      * @brief Deadband of the system
      */
     double deadband_;
 
+    /**
+     * @brief Windup limit of the system if needed
+     */
+    double windup_limit_;
+    
     /**
      * @brief Max control output
      */
@@ -207,7 +253,11 @@ namespace kodlab {
     /**
      * @brief Output of the function used internally
      */
-    double output_ = 0;
+    VectorNS output_ ;
+
+    
+
+    
 
   private:
     static constexpr int kSaturationLowerLimitIndex = 0;
@@ -215,5 +265,5 @@ namespace kodlab {
 
   };
 
-}  // namespace kodlab
+} // namespace kodlab
  
