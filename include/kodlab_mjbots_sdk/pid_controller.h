@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <Eigen/Dense>
 
-namespace kodlab {
+  namespace kodlab {
 
   /**
    * @brief PIDController class that allows you to use PID control.
@@ -89,13 +89,17 @@ namespace kodlab {
     /**
      * @brief Function to update the state setpoints and reset integral error
      * @param setpoint State Target of the controller.
-     * @param derivative_setpoint Derivative State Target of the controller.
      */
     void set_setpoint(const VectorNS & setpoint){
       setpoint_ = setpoint;
       i_error_ = VectorNS::Zero(setpoint.rows());           
     }
 
+    /**
+     * @brief Function to update the state setpoints and reset integral error
+     * @param setpoint State Target of the controller.
+     * @param derivative_setpoint Derivative State Target of the controller.
+     */
     void set_setpoint(const VectorNS & setpoint, const VectorNS & derivative_setpoint){
       setpoint_ = setpoint;
       derivative_setpoint_ = derivative_setpoint;
@@ -254,10 +258,6 @@ namespace kodlab {
      * @brief Output of the function used internally
      */
     VectorNS output_ ;
-
-    
-
-    
 
   private:
     static constexpr int kSaturationLowerLimitIndex = 0;
