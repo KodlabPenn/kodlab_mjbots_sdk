@@ -34,6 +34,7 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
         )
 
 set(SOURCE_LIST "pi3hat.cpp" 
+                "common_header.cpp"
                 "mjbots_hardware_interface.cpp"
                 "polar_leg.cpp"
                 "soft_start.cpp"

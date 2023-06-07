@@ -55,7 +55,7 @@ class SimpleRobotControlLoop : public kodlab::mjbots::MjbotsControlLoop<ManyMoto
         // If the kill robot mode is detected kill robot using CTRL_C flag handler.
         if (robot_->mode == robot_->KILL_ROBOT)
         { // KILL_ROBOT
-            kodlab::CTRL_C_DETECTED = true;
+            kodlab::ActivateCtrlC();
         }
     }
 };

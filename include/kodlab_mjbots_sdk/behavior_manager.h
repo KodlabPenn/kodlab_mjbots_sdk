@@ -142,7 +142,7 @@ class BehaviorManager {
    */
   virtual void SetBehavior(int next_idx) {
     if (next_idx == KILL_ROBOT_IDX) {
-      kodlab::CTRL_C_DETECTED = true; // kill robot
+      kodlab::ActivateCtrlC(); // kill robot
       LOG_FATAL("Behavior %d received, killing robot.", KILL_ROBOT_IDX);
     } else if (next_idx == selected_idx) {
       LOG_INFO("Behavior %d is already active.", next_idx);

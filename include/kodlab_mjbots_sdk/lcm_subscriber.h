@@ -139,7 +139,7 @@ inline int LcmSubscriber::RemoveSubscription(const std::string &channel_name) {
 }
 
 inline void LcmSubscriber::Run() {
-  while (!CTRL_C_DETECTED) {
+  while (!CtrlCDetected()) {
     lcm_.handleTimeout(1000);
   }
 }
