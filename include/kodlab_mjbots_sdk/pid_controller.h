@@ -33,51 +33,62 @@ public:
   /**
    * @brief Construct a vector Pid object
    * @param p_gain Proportional Gain
-   * @param d_gain Derivative Gain
-   * @param i_gain Integral Gain
+   * @param i_gain Derivative Gain
+   * @param d_gain Integral Gain
    * @param time_step Time difference between 2 updates
+   * @param deadband Used to set range within setpoints where no correction input is applied
+   * @param accumulator_limit Used to prevent runaway integrator/windup
+   * @param saturation controller output limits
    */
-  PIDController(const VectorNS & p_gain,const VectorNS & d_gain,const VectorNS & i_gain, double time_step=0.001,
-    VectorNS deadband = 0.5*VectorNS::Ones(), VectorNS windup_limit = std::numeric_limits<Scalar>::max()*VectorNS::Ones(),
-    std::array<Scalar, 2> saturation = { -std::numeric_limits<Scalar>::max(), std::numeric_limits<Scalar>::max() })
+  PIDController(const VectorNS & p_gain,
+                const VectorNS & i_gain,
+                const VectorNS & d_gain, 
+                double time_step=0.001,
+                VectorNS deadband = 0.05*VectorNS::Ones(), 
+                VectorNS accumulator_limit = std::numeric_limits<Scalar>::max()*VectorNS::Ones(),
+                std::array<VectorNS, 2> saturation = { -std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
+                                                    std::numeric_limits<Scalar>::max()*VectorNS::Ones() })
     : 
       deadband_(deadband),
-      windup_limit_(windup_limit),
+      accumulator_limit_(accumulator_limit),
       saturation_(saturation),
       time_step_(time_step){
 
-    set_gains(p_gain,d_gain,i_gain); 
-    const int input_size = kp_.rows();
+    set_gains(p_gain, i_gain, d_gain); 
     error_ = VectorNS::Zero();
     d_error_ = VectorNS::Zero();
-
-    setpoint_ = VectorNS::Zero();
-    derivative_setpoint_ =VectorNS::Zero();    
+    set_setpoints(VectorNS::Zero(), VectorNS::Zero());
   }
   
   /**
-   * @brief Construct a scalar Pid object
+   * @brief Construct a vector Pid object
    * @param p_gain Proportional Gain
-   * @param d_gain Derivative Gain
-   * @param i_gain Integral Gain
+   * @param i_gain Derivative Gain
+   * @param d_gain Integral Gain
    * @param time_step Time difference between 2 updates
+   * @param deadband Used to set range within setpoints where no correction input is applied
+   * @param accumulator_limit Used to prevent runaway integrator/windup
+   * @param saturation Used to set controller output limits
    */
-  PIDController(Scalar p_gain,Scalar  d_gain,Scalar  i_gain, double time_step=0.001,
-    VectorNS deadband = 0.5*VectorNS::Ones(),VectorNS windup_limit = std::numeric_limits<Scalar>::max()*VectorNS::Ones(),
-    std::array<Scalar, 2> saturation = { -std::numeric_limits<Scalar>::max(), std::numeric_limits<Scalar>::max() })
+  PIDController(Scalar p_gain,
+                Scalar i_gain,
+                Scalar d_gain, 
+                double time_step=0.001,
+                VectorNS deadband = 0.05*VectorNS::Ones(),
+                VectorNS accumulator_limit = std::numeric_limits<Scalar>::max()*VectorNS::Ones(),
+                std::array<VectorNS, 2> saturation = { -std::numeric_limits<VectorNS>::max()*VectorNS::Ones(), 
+                                                    std::numeric_limits<VectorNS>::max()*VectorNS::Ones() })
     : 
       deadband_(deadband),
-      windup_limit_(windup_limit),
+      accumulator_limit_(accumulator_limit),
       saturation_(saturation),
       time_step_(time_step){
 
-    set_gains(p_gain,d_gain,i_gain); 
-    const int input_size = kp_.rows();
-    error_ = VectorNS::Zero(input_size);
-    d_error_ = VectorNS::Zero(input_size);
-
-    setpoint_ = VectorNS::Zero(input_size);
-    derivative_setpoint_ =VectorNS::Zero(input_size);    
+    set_gains(p_gain, i_gain, d_gain); 
+    error_ = VectorNS::Zero();
+    d_error_ = VectorNS::Zero();
+    set_setpoints(VectorNS::Zero(), VectorNS::Zero());
+       
   }
 
   /**
@@ -86,10 +97,10 @@ public:
    * @param d_gain Derivative Gain
    * @param i_gain Integral Gain
    */
-  void set_gains(VectorNS p_gain, VectorNS d_gain,VectorNS i_gain) {
+  void set_gains(VectorNS p_gain, VectorNS i_gain, VectorNS d_gain) {
     kp_ = p_gain;
-    kd_ = d_gain;
     ki_ = i_gain;
+    kd_ = d_gain;
   }
   /**
    * @brief Function to set the scalar  PID gains
@@ -98,12 +109,12 @@ public:
    * @param i_gain Integral Gain
    */
   
-  void set_gains(Scalar p_gain, Scalar d_gain, Scalar i_gain) {
+  void set_gains(Scalar p_gain, Scalar i_gain, Scalar d_gain) {
     //checking if using for scalar PID
     static_assert(N==1, "Using Scalar function in vector PID");
     kp_ = p_gain*VectorNS::Ones();
-    kd_ = d_gain*VectorNS::Ones();
     ki_ = i_gain*VectorNS::Ones();
+    kd_ = d_gain*VectorNS::Ones();
   }
   
   /**
@@ -125,13 +136,13 @@ public:
    * @brief Function to set the scalar deadband
    * @param deadband Deadband that needs to be set
    */
-  void set_deadband(double deadband) { deadband_ = deadband*VectorNS::Ones(); }
+  void set_deadband(Scalar deadband) { deadband_ = deadband*VectorNS::Ones(); }
 
   /**
    * @brief Function to set the vector deadband
    * @param deadband Deadband that needs to be set
    */
-  void set_deadband(VectorNS deadband) { deadband_ = deadband; }
+  void set_deadband(const VectorNS & deadband) { deadband_ = deadband; }
 
   /**
    * @brief Function to get deadband 
@@ -140,49 +151,58 @@ public:
 
 
   /**
-   * @brief Function to set the scalar Windup limit
-   * @param limit Windup limit
+   * @brief Function to set the scalar accumulator limit
+   * @param limit accumulator limit
    */
-  void set_windup(double limit){ windup_limit_ = limit*VectorNS::Ones();}
+  void set_accumulator(Scalar limit){ accumulator_limit_ = limit*VectorNS::Ones();}
 
   /**
-   * @brief Function to set the vector Windup limit
-   * @param limit Windup limit
+   * @brief Function to set the vector accumulator limit
+   * @param limit accumulator limit
    */
-  void set_windup(const VectorNS & limit){ windup_limit_ = limit;}
+  void set_accumulator(const VectorNS & limit){ accumulator_limit_ = limit;}
+
 
   /**
    * @brief Function to set the Saturation
    * @param saturation Saturation
    */
-  void set_saturation(std::array<Scalar, 2> saturation) {
+  void set_saturation_limits(std::array<VectorNS, 2> saturation) {
     saturation_ = saturation;
   }
 
+  
+  void set_saturation_limits(VectorNS saturation) {
+    std::array<VectorNS, 2> out = {-saturation, saturation};
+    set_saturation_limits(out);
+  }
+
+  void set_saturation_limits(std::array<Scalar,2> saturation) {
+    set_saturation_limits({saturation[0]*VectorNS::Ones(), saturation[1]*VectorNS::Ones()});
+  }
+
+  void set_saturation_limits(Scalar saturation) {
+    set_saturation_limits({-saturation*VectorNS::Ones(), saturation*VectorNS::Ones()});
+  }
   /**
    * @brief Function to get the dimensions
    */
   int get_N(){ return N;}
 
   /**
-   * @brief Function to update the state setpoints and reset integral error
-   * @param setpoint State Target of the controller.
+   * @brief Function to reset the integral error to zero
    */
-
-  void set_setpoints(const VectorNS & setpoint){
-    setpoint_ = setpoint;
-    i_error_ = VectorNS::Zero(setpoint.rows());           
-  }
+  void reset_i_error() { i_error_ = VectorNS::Zero();}
 
   /**
    * @brief Function to update the state setpoints and reset integral error
    * @param setpoint State Target of the controller.
    * @param derivative_setpoint Derivative State Target of the controller.
    */
-  void set_setpoints(const VectorNS & setpoint, const VectorNS & derivative_setpoint){
-    setpoint_ = setpoint;
+  void set_setpoints(const VectorNS & setpoint, const VectorNS & derivative_setpoint = VectorNS::Zero() ){
+    setpoint_ = setpoint; 
     derivative_setpoint_ = derivative_setpoint;
-    i_error_ = VectorNS::Zero(setpoint.rows());
+    
   }
 
   /**
@@ -193,9 +213,7 @@ public:
   void set_setpoints(Scalar setpoint, Scalar derivative_setpoint = 0){
     //checking if using for scalar PID
     static_assert(N==1, "Using Scalar function in vector PID");
-    setpoint_ = setpoint*VectorNS::Ones();
-    derivative_setpoint_ = derivative_setpoint*VectorNS::Ones();
-    i_error_ = VectorNS::Zero(); //required?
+    set_setpoints(setpoint*VectorNS::Ones(), derivative_setpoint*VectorNS::Ones());
   }
   
   /**
@@ -225,14 +243,14 @@ public:
    * @return Returns the Pid output
    */
 
-  void Update(const VectorNS & state,const VectorNS & derivative_state,const VectorNS & setpoint,const VectorNS & 
+  VectorNS Update(const VectorNS & state,const VectorNS & derivative_state,const VectorNS & setpoint,const VectorNS & 
       derivative_setpoint,double time_step) {
     
     //Calling the setter function 
-    set_setpoint(setpoint,derivative_setpoint);
+    set_setpoint(setpoint, derivative_setpoint);
     
     // Calling Nominal Update function.
-    Update(state,derivative_state,time_step);
+    return Update(state, derivative_state, time_step);
   }
 
   /**
@@ -244,13 +262,13 @@ public:
    * @param time_step   Time difference between 2 updates
    * @return Returns the Pid output
    */
-  void Update(Scalar state,Scalar derivative_state,Scalar setpoint,Scalar derivative_setpoint,double time_step) {
+  Scalar Update(Scalar state,Scalar derivative_state,Scalar setpoint,Scalar derivative_setpoint,double time_step) {
     //checking if using for scalar PID
     static_assert(N==1, "Using Scalar function in vector PID");
-    set_setpoint(setpoint,derivative_setpoint);
+    set_setpoint(setpoint, derivative_setpoint);
     
     // Calling Nominal Update function.
-    Update(state,derivative_state,time_step);
+    return Update(state*VectorNS::Ones(), derivative_state*VectorNS::Ones(), time_step)(0);
   }
 
   /**
@@ -260,17 +278,16 @@ public:
    * @param time_step   Time difference between 2 updates
    * @return Returns the Pid output
    */
-  virtual VectorNS Update(const VectorNS & state,const VectorNS & derivative_state,double time_step) {
+  virtual VectorNS Update(const VectorNS & state, const VectorNS & derivative_state, double time_step) {
     // Calculate the errors
     // Proportional error
     error_ = setpoint_ - state;
-    
     // Derivative error
     d_error_ =  derivative_setpoint_ - derivative_state;
     
     
     // Calling UpdateWithError.
-    return UpdateWithError(error_, d_error_,time_step);;
+    return UpdateWithError(error_, d_error_, time_step);;
   }
 
   /**
@@ -279,11 +296,12 @@ public:
    * @param derivative_state Scalar derivative state of the controller.
    * @return Returns the Pid output
    */
-  VectorNS Update(Scalar state,Scalar derivative_state) {
+  Scalar Update(Scalar state, Scalar derivative_state) {
     //checking if using for scalar PID
     static_assert(N==1, "Using Scalar function in vector PID");
+    
     // converts scalar to vector form to calculate output
-    return Update(state*VectorNS::Ones(),derivative_state*VectorNS::Ones());
+    return Update(state*VectorNS::Ones(), derivative_state*VectorNS::Ones())(0);
   }
   /**
    * @brief Function to update the PID output given the respective errors
@@ -293,7 +311,7 @@ public:
    */
   VectorNS Update(const VectorNS & state,const VectorNS & derivative_state) {
 
-    return Update(state,derivative_state,time_step_);
+    return Update(state, derivative_state, time_step_);
   }
 
   /**
@@ -306,9 +324,9 @@ public:
   virtual VectorNS UpdateWithError(const VectorNS & error_p, const VectorNS &  error_d, double time_step) {
     // Computing the integral error
     i_error_ += error_p*time_step;
-
-    //adding a limit on integral error to prevent windup
-    i_error_ = i_error_.cwiseMin(windup_limit_).cwiseMax(-windup_limit_);
+    
+    //adding a limit on integral error to prevent accumulator
+    i_error_ = i_error_.cwiseMin(accumulator_limit_).cwiseMax(-accumulator_limit_);
 
     // Finding the control output from the errors
     output_ = kp_.array() * error_p.array() + kd_.array() * error_d.array() + ki_.array() * i_error_.array();
@@ -320,7 +338,8 @@ public:
           i_error_(i)=0;
       } 
     }
-    
+    output_ = output_.cwiseMin(saturation_[1]).cwiseMax(saturation_[0]);
+
     return output_;
   }
 
@@ -384,14 +403,14 @@ protected:
   VectorNS deadband_;
 
   /**
-   * @brief Windup limit of the system if needed
+   * @brief accumulator limit of the system if needed
    */
-  VectorNS windup_limit_;
+  VectorNS accumulator_limit_;
   
   /**
    * @brief Max control output
    */
-  std::array<Scalar, 2> saturation_;
+  std::array<VectorNS, 2> saturation_;
 
   /**
    * @brief Output of the function used internally
@@ -416,48 +435,93 @@ public:
   /**
    * @brief Construct a vector Pid object
    * @param p_gain Proportional Gain
-   * @param d_gain Derivative Gain
-   * @param i_gain Integral Gain
+   * @param i_gain Derivative Gain
+   * @param d_gain Integral Gain
    * @param time_step Time difference between 2 updates
+   * @param deadband Used to set range within setpoints where no correction input is applied
+   * @param accumulator_limit Used to prevent runaway integrator/windup
+   * @param saturation controller output limits
    */
   PIDCascade( const VectorNS & p_gain,
-              const VectorNS & d_gain,
-              const VectorNS & i_gain, 
+              const VectorNS & i_gain,
+              const VectorNS & d_gain, 
               double time_step=0.001,
               VectorNS deadband = 0.5*VectorNS::Ones(),
-              VectorNS windup_limit = std::numeric_limits<Scalar>::max()*VectorNS::Ones(),
-              std::array<Scalar, 2> saturation = { -std::numeric_limits<Scalar>::max(), 
-                                                    std::numeric_limits<Scalar>::max() })
-    : PIDController<Scalar, N>(p_gain,d_gain,i_gain,time_step,deadband,windup_limit,saturation){}
+              VectorNS accumulator_limit = std::numeric_limits<Scalar>::max()*VectorNS::Ones(),
+              std::array<VectorNS, 2> saturation = { -std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
+                                                    std::numeric_limits<Scalar>::max()*VectorNS::Ones() })
+    : PIDController<Scalar, N>(p_gain,i_gain,d_gain,time_step,deadband,accumulator_limit,saturation){
+    
+    max_vel_ = std::numeric_limits<Scalar>::max()*VectorNS::Ones();
+    }
 
   /**
-   * @brief Construct a scalar Pid object
+   * @brief Construct a vector Pid object
    * @param p_gain Proportional Gain
-   * @param d_gain Derivative Gain
-   * @param i_gain Integral Gain
+   * @param i_gain Derivative Gain
+   * @param d_gain Integral Gain
    * @param time_step Time difference between 2 updates
+   * @param deadband Used to set range within setpoints where no correction input is applied
+   * @param accumulator_limit Used to prevent runaway integrator/windup
+   * @param saturation controller output limits
    */
-  PIDCascade(Scalar p_gain,Scalar  d_gain,Scalar  i_gain, double time_step=0.001,
-    VectorNS deadband = 0.5*VectorNS::Ones(),VectorNS windup_limit = std::numeric_limits<Scalar>::max()*VectorNS::Ones(),
-    std::array<Scalar, 2> saturation = { -std::numeric_limits<Scalar>::max(), std::numeric_limits<Scalar>::max() })
+  PIDCascade( Scalar p_gain,
+              Scalar i_gain,
+              Scalar d_gain, 
+              double time_step=0.001,
+              VectorNS deadband = 0.0*VectorNS::Ones(),
+              VectorNS accumulator_limit = std::numeric_limits<Scalar>::max()*VectorNS::Ones(),
+              std::array<VectorNS, 2> saturation = { -std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
+                                                    std::numeric_limits<Scalar>::max()*VectorNS::Ones() })
     : 
-      PIDController<Scalar, N>(p_gain,d_gain,i_gain,time_step,deadband,windup_limit,saturation){}
+      PIDController<Scalar, N>(p_gain, i_gain, d_gain, time_step, deadband, accumulator_limit, saturation){
+    
+    max_vel_ = std::numeric_limits<Scalar>::max()*VectorNS::Ones();
+    }
+
+  /**
+   * @brief Function to set maximum velocity
+   * @param max_vel velocity limit for the controller.
+   */
+  void set_max_velocity(VectorNS max_vel) { max_vel_ = max_vel;}
+
+  void set_max_velocity(Scalar max_vel) { max_vel_ = max_vel*VectorNS::Ones();}
+
+  /**
+   * @brief Function to get maximum velocity
+   * @return max_vel velocity limit for the controller.
+   */
+  VectorNS get_max_velocity() { return max_vel_;}
 
   
-  VectorNS Update(Scalar state,Scalar derivative_state) {
+  /**
+   * @brief Function to update setpoints and cascade scalar PID output.
+   * @param state Current state for the controller.
+   * @param derivative_state Current derivative state of the controller.
+   * @return Returns the Pid output
+   */
+
+  Scalar Update(Scalar state,Scalar derivative_state) {
     //checking if using for scalar PID
     static_assert(N==1, "Using Scalar function in vector PID");
     // converts scalar to vector form to calculate output
-    return Update(state*VectorNS::Ones(),derivative_state*VectorNS::Ones());
+    return Update(state*VectorNS::Ones(), derivative_state*VectorNS::Ones())(0);
   }
+
+  /**
+   * @brief Function to update setpoints and cascade vector PID output.
+   * @param state Current state for the controller.
+   * @param derivative_state Current derivative state of the controller.
+   * @return Returns the Pid output
+   */
 
   VectorNS Update(const VectorNS & state,const VectorNS & derivative_state) {
 
-    return Update(state,derivative_state,time_step_);
+    return Update(state, derivative_state, time_step_);
   }  
 
   /**
-   * @brief Function to update setpoints and PID output.
+   * @brief Function to update setpoints and cascade PID output.
    * @param state Current state for the controller.
    * @param derivative_state Current derivative state of the controller.
    * @param time_step   Time difference between 2 updates
@@ -469,38 +533,41 @@ public:
     error_ = setpoint_ - state;
     
     v_cmd_ = kp_.array() *error_.array() + derivative_setpoint_.array();
+    v_cmd_ = v_cmd_.cwiseMin(max_vel_).cwiseMax(-max_vel_);
     
     v_error_ = v_cmd_-derivative_state;
     
-    // Calling UpdateWithError.
-    return UpdateWithError(error_, v_error_,time_step);
+    // Calling UpdateWithError.   
+    return UpdateWithError(error_, v_error_, time_step);
   }
 
   /**
-   * @brief Function to update the PID output given the respective errors
+   * @brief Function to update the cascade PID output given the respective errors
    * @param error_p Proportional Error
    * @param error_d Derivative Error
    * @return Returns the Pid output
    */
   
-  VectorNS UpdateWithError(const VectorNS & error_p, const VectorNS &  error_v, double time_step) override  {
-    // Computing the integral error
-    i_error_ += error_v*time_step;
+  VectorNS UpdateWithError(const VectorNS & error_p, 
+                           const VectorNS & error_v, 
+                           double time_step) override  {
     
-    //adding a limit on integral error to prevent windup
-    i_error_ = i_error_.cwiseMin(windup_limit_).cwiseMax(-windup_limit_);
-
-    // Finding the control output from the errors
-    output_ = kd_.array() * error_v.array() + ki_.array() * i_error_.array();
-     
-    //Checking if in Deadband range
-    for(int i=0;i<error_p.rows();i++){
-      if ( std::abs(error_p.coeff(i)) < deadband_.coeff(i)) {
-          output_(i) =0; 
-          i_error_(i)=0;
-      } 
+    //checking if within deadband range
+    for (int i=0; i < error_p.rows();i++){
+      if ( std::abs(error_v.coeff(i)) < deadband_.coeff(i)){
+        //implementing deadband control logic
+        output_(i) = ki_(i)*i_error_(i);
+        std::cout << i_error_(i) << std::endl;  
+      }
+      else {
+        //implementing cascade control logic
+        i_error_(i) += error_v(i)*time_step;
+        i_error_ = i_error_.cwiseMin(accumulator_limit_).cwiseMax(-accumulator_limit_);
+        output_(i) = kd_(i)*error_v(i) + ki_(i)*i_error_(i);
+      }
     }
     
+    output_ = output_.cwiseMin(saturation_[1]).cwiseMax(saturation_[0]);
     return output_;
   }
 
@@ -513,19 +580,26 @@ protected:
   using PIDController<Scalar,N>::time_step_;
   using PIDController<Scalar,N>::deadband_;
   using PIDController<Scalar,N>::output_;
-  using PIDController<Scalar,N>::windup_limit_;
+  using PIDController<Scalar,N>::accumulator_limit_;
   using PIDController<Scalar,N>::setpoint_;
   using PIDController<Scalar,N>::derivative_setpoint_;
+  using PIDController<Scalar,N>::saturation_;
 
   /**
-   * @brief Stores the previous error for the d term
+   * @brief Velocity error
    */
   VectorNS v_error_ ;
 
   /**
-   * @brief Stores the previous error for the d term
+   * @brief Velocity command
    */
   VectorNS v_cmd_ ;
+
+  /**
+   * @brief Maximum Velocity 
+   */
+  VectorNS max_vel_ ;
+
 };
 
 
