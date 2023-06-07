@@ -468,7 +468,7 @@ public:
   PIDCascade( const VectorNS & p_gain,
               const VectorNS & i_gain,
               const VectorNS & d_gain, 
-              double time_step=0.001,
+              double time_step = 0.001,
               VectorNS deadband = 0.5*VectorNS::Ones(),
               VectorNS accumulator_limit = 
                   std::numeric_limits<Scalar>::max()*VectorNS::Ones(),
@@ -476,8 +476,8 @@ public:
                   { -std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
                      std::numeric_limits<Scalar>::max()*VectorNS::Ones() })
     : 
-      PIDController<Scalar, N>(p_gain,i_gain,d_gain,time_step,deadband,
-                              accumulator_limit,saturation){
+      PIDController<Scalar, N>(p_gain, i_gain, d_gain, time_step, deadband,
+                              accumulator_limit, saturation){
     
     max_vel_ = std::numeric_limits<Scalar>::max()*VectorNS::Ones();
     }
@@ -496,7 +496,7 @@ public:
   PIDCascade( Scalar p_gain,
               Scalar i_gain,
               Scalar d_gain, 
-              double time_step=0.001,
+              double time_step = 0.001,
               VectorNS deadband = 0.0*VectorNS::Ones(),
               VectorNS accumulator_limit = 
                   std::numeric_limits<Scalar>::max()*VectorNS::Ones(),
@@ -602,7 +602,7 @@ public:
         //adding a limit on integral error to prevent windup
         i_error_ = i_error_.cwiseMin(accumulator_limit_)
                            .cwiseMax(-accumulator_limit_);
-                           
+
         //implementing cascade control logic
         output_(i) = kd_(i)*error_v(i) + ki_(i)*i_error_(i);
       }
