@@ -10,7 +10,7 @@
 
 namespace kodlab {
 
-void TorqueLimiter::Constrain(std::vector<float> &values,
+void torque_limiter::Constrain(std::vector<float> &values,
                           float min_val,
                           float max_val) {
   for (auto &value : values) {
@@ -18,22 +18,22 @@ void TorqueLimiter::Constrain(std::vector<float> &values,
   }
 }
 
-float TorqueLimiter::Constrain(float value, float min_val, float max_val) {
-  return std::min(std::max(value, min_val), max_val);
+void torque_limiter::Constrain(float& value, float min_val, float max_val) {
+  value = std::min(std::max(value, min_val), max_val);
 }
 
 void SoftStart::ConstrainTorques(std::vector<float> &torques) const {
   if(timer_initialized_){
     float time_since_start_ms = SoftStart::timer_.tac()/1000.0;
     if (time_since_start_ms > duration_ms_) {
-      TorqueLimiter::Constrain(torques, -max_torque_, max_torque_);
+      torque_limiter::Constrain(torques, -max_torque_, max_torque_);
     } else {
       float max_val = time_since_start_ms * slope_;
-      TorqueLimiter::Constrain(torques, -max_val, max_val);
+      torque_limiter::Constrain(torques, -max_val, max_val);
     }
   }else{
     LOG_ERROR("Soft start not initialized, constraining torque to zero");
-    TorqueLimiter::Constrain(torques, -0, 0);
+    torque_limiter::Constrain(torques, -0, 0);
   }
 }
 
@@ -41,10 +41,10 @@ void SoftStart::ConstrainTorque(float &torque) const {
   if(timer_initialized_) {
     float time_since_start_ms = SoftStart::timer_.tac() / 1000.0;
     if (time_since_start_ms > duration_ms_) {
-      torque = TorqueLimiter::Constrain(torque, -max_torque_, max_torque_);
+      torque_limiter::Constrain(torque, -max_torque_, max_torque_);
     } else {
       float max_val = time_since_start_ms * slope_;
-      torque = TorqueLimiter::Constrain(torque, -max_val, max_val);
+      torque_limiter::Constrain(torque, -max_val, max_val);
     }
   } else{
     LOG_ERROR("Soft start not initialized, constraining torque to zero");

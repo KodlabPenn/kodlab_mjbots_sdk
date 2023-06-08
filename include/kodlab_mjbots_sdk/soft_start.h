@@ -48,7 +48,8 @@ class SoftStart {
   static void InitializeTimer();
 };
 
-namespace TorqueLimiter {
+// namespace for torque limiting functions
+namespace torque_limiter {
 /*!
  * @brief constrains a single value between min_val and max_val
  * @param values[in]
@@ -56,7 +57,7 @@ namespace TorqueLimiter {
  * @param max_val maximum value allowed
  * @return constrained value
  */
-float Constrain(float value, float min_val, float max_val);
+void Constrain(float &value, float min_val, float max_val);
 
 /*!
  * @brief constrains all values in values between min_val and max_val
