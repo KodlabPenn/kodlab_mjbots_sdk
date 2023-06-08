@@ -269,7 +269,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   spinner.spin();
   dt_timer.tic();
   std::cout<<"Starting main loop"<<std::endl;
-  while (!CTRL_C_DETECTED) {
+  while (!CtrlCDetected()) {
     // Sleep and get current time
     float sleep_duration = spinner.predict_sleeping_time_micro();
     spinner.spin();

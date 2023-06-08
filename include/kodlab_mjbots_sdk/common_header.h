@@ -1,4 +1,14 @@
-// Taken from solo8 repo for handling ctrl+c
+/**
+ * @file common_header.h
+ * @author Shane Rozen-Levy (srozen01@seas.upenn.edu)
+ * @author J. Diego Caporale (jdcap@seas.upenn.edu)
+ * @brief Useful common helpers and signal handlers 
+ * @date 2023-06-07
+ * 
+ * @copyright BSD 3-Clause License, 
+ * Copyright (c) 2023 The Trustees of the University of Pennsylvania. 
+ * All Rights Reserved
+ */
 
 #pragma once
 #include <atomic>
@@ -9,10 +19,17 @@
 #include <vector>
 
 namespace kodlab {
-/*
- * @brief This boolean is here to kill cleanly the application upon ctrl+c
+/**
+ * @brief Sets the CtrlC flag to true
  */
-static std::atomic_bool CTRL_C_DETECTED(false);
+void ActivateCtrlC();
+
+/**
+ * @brief Returns the state of the CtrlC Flag
+ */
+bool CtrlCDetected();
+
+// Ctrl-C signal handling adapted from solo8 repo
 
 /**
  * @brief This function is the callback upon a ctrl+c call from the terminal.
@@ -20,7 +37,7 @@ static std::atomic_bool CTRL_C_DETECTED(false);
  * @param s is the id of the signal
  */
 static void my_handler(int) {
-  CTRL_C_DETECTED = true;
+  ActivateCtrlC();
 }
 
 /**
@@ -33,7 +50,6 @@ static void EnableCtrlC() {
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
   sigaction(SIGINT, &sigIntHandler, NULL);
-  CTRL_C_DETECTED = false;
 }
 
 /**
