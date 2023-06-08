@@ -32,8 +32,6 @@ namespace kodlab
         /*!
          * @brief constructs a robot_interface that contains the basic state of a jointed robot with attitude
          * @param joint_vect a vector of shared pointers to jointbase defining the motors in the robot
-         * @param soft_start_duration_ms how long in ms to spend ramping the torque
-         * @param robot_max_torque the maximum torque to allow per motor in the robot
          * @param imu_data_ptr [Optional] Shared pointer to imu_data to use or nullptr if robot should make its own
          */
         template <class JointDerived = JointBase>

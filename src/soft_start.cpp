@@ -41,7 +41,7 @@ void SoftStart::ConstrainTorque(float &torque) const {
   if(timer_initialized_) {
     float time_since_start_ms = SoftStart::timer_.tac() / 1000.0;
     if (time_since_start_ms > duration_ms_) {
-      TorqueLimiter::Constrain(torque, -max_torque_, max_torque_);
+      torque = TorqueLimiter::Constrain(torque, -max_torque_, max_torque_);
     } else {
       float max_val = time_since_start_ms * slope_;
       torque = TorqueLimiter::Constrain(torque, -max_val, max_val);
