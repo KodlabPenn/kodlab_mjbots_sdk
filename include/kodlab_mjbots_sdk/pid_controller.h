@@ -42,8 +42,7 @@ namespace kodlab {
  * error_d \mathrel{=} derivative\_setpoint - derivative\_state ,\\ error_i 
  * \mathrel{{+}{=}} error_p\cdot time\_step \f$
  * @note Deadband limits are on  \f$ error_p,\f$ \n \f$ if(\:deadband_{min}\:
- * \leq\:error_p\:\leq deadband_{max}\:): \;output \mathrel{=} 0,\; error_i 
- * \mathrel{=} 0\f$
+ * \leq\:error_p\:\leq deadband_{max}\:): \;error_p \mathrel{=} 0,\;
  * @note Accumulator limits are applied on integral error, \f$ error_i \f$, 
  * clamping it
  * @note  Saturation (control effort) limits are applied on the output effort,
@@ -501,6 +500,13 @@ class PIDController {
   virtual VectorNS UpdateWithError(const VectorNS & error_p, 
                                    const VectorNS &  error_d, 
                                    double time_step) {
+    //Checking if in deadband range
+    for(int i = 0; i < N; i++){
+      if ( error_p.coeff(i) <= deadband_.max().coeff(i) && 
+           deadband_.min().coeff(i) <= error_p.coeff(i)) {
+          error_p(i) = 0; 
+      } 
+
     //accumulating integral error
     i_error_ += error_p * time_step;
     
@@ -512,13 +518,6 @@ class PIDController {
     output_ = kp_.array() * error_p.array() + kd_.array() * error_d.array() + 
               ki_.array() * i_error_.array();
 
-    //Checking if in Deadband range
-    for(int i=0; i < N; i++){
-      if ( error_p.coeff(i) <= deadband_.max().coeff(i) && 
-           deadband_.min().coeff(i) <= error_p.coeff(i)) {
-          output_(i) =0; 
-          i_error_(i)=0;
-      } 
     }
     output_ = output_.cwiseMin(saturation_.max())
                      .cwiseMax(saturation_.min());
