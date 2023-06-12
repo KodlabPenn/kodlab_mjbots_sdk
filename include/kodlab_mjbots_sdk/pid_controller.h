@@ -36,16 +36,16 @@ namespace kodlab {
  * @tparam Scalar data type for the controller (float, double, etc.)
  * @tparam  N[optional] dimension of the controller
  * @note Class encapsulates a PID controller given gains \f$ k_p,k_i,k_d \f$ \n 
- * \f$ output \mathrel{=} k_p\cdot error_p \mathrel{+} k_d\cdot error_d 
- * \mathrel{+} k_i\cdot error_i\f$
- * @note  where : \f$ error_p \mathrel{=} setpoint \mathrel{-} state,\\ 
- * error_d \mathrel{=} derivative\_setpoint - derivative\_state ,\\ error_i 
- * \mathrel{{+}{=}} error_p\cdot time\_step \f$
- * @note Deadband limits are on  \f$ error_p,\f$ \n \f$ if(\:deadband_{min}\:
- * \leq\:error_p\:\leq deadband_{max}\:): \;error_p \mathrel{=} 0,\;
- * @note Accumulator limits are applied on integral error, \f$ error_i \f$, 
+ * \f$ output \mathrel{=} k_p\cdot p_{error} \mathrel{+} k_d\cdot d_{error} 
+ * \mathrel{+} k_i\cdot i_{error}\f$
+ * @note  where : \f$ p_{error} \mathrel{=} setpoint \mathrel{-} state,\\ 
+ * d_{error} \mathrel{=} derivative\_setpoint - derivative\_state ,\\ i_{error} 
+ * \mathrel{{+}{=}} p_{error}\cdot time\_step \f$
+ * @note Deadband limits are on  \f$ p_{error},\f$ \n \f$ if(\:deadband_{min}\:
+ * \leq\:p_{error}\:\leq deadband_{max}\:): \;p_{error} \mathrel{=} 0,\;
+ * @note Accumulator limits are applied on integral error, \f$ i_{error} \f$, 
  * clamping it
- * @note  Saturation (control effort) limits are applied on the output effort,
+ * @note Saturation (control effort) limits are applied on the output effort,
  * \f$ output \f$, clamping it
  */
 template <typename Scalar, int N=1>
@@ -61,11 +61,11 @@ class PIDController {
    * @param i_gain Derivative Gain
    * @param d_gain Integral Gain
    * @param time_step Timestep between updates in seconds [Default: 1ms]
-   * @param deadband Used to set range within setpoints where no correction 
+   * @param deadband Range within setpoints where no correction 
    * input is applied [Default: {0, 0} (disabled)]
-   * @param accumulator_limit Used to prevent runaway integrator/windup
+   * @param accumulator_limit Prevents runaway integrator/windup
    * [Default: {-inf, inf} (disabled)]
-   * @param saturation Used to set controller output limits
+   * @param saturation Controller output limits
    * [Default: {-inf, inf} (disabled)]
    * \overload
    */
@@ -73,8 +73,8 @@ class PIDController {
                 const VectorNS & i_gain,
                 const VectorNS & d_gain, 
                 double time_step = 0.001,
-                math::Range<VectorNS> deadband = { VectorNS::Zeros(), 
-                                                   VectorNS::Zeros() }, 
+                math::Range<VectorNS> deadband = { VectorNS::Zero(), 
+                                                   VectorNS::Zero() }, 
                 math::Range<VectorNS> accumulator_limit = 
                     {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                       std::numeric_limits<Scalar>::max() * VectorNS::Ones()},
@@ -89,7 +89,7 @@ class PIDController {
       ki_(i_gain),
       kd_(d_gain) {
     static_assert( std::is_arithmetic<Scalar>::value, 
-                   "PID Scalar type not arithmetic")
+                   "PID Scalar type not arithmetic");
     error_ = VectorNS::Zero();
     d_error_ = VectorNS::Zero();
     set_setpoints(VectorNS::Zero(), VectorNS::Zero());
@@ -101,11 +101,11 @@ class PIDController {
    * @param i_gain Derivative Gain
    * @param d_gain Integral Gain
    * @param time_step Timestep between updates in seconds [Default: 1ms]
-   * @param deadband Used to set range within setpoints where no correction 
+   * @param deadband Range within setpoints where no correction 
    * input is applied [Default: {0, 0} (disabled)]
-   * @param accumulator_limit Used to prevent runaway integrator/windup
+   * @param accumulator_limit Prevents runaway integrator/windup
    * [Default: {-inf, inf} (disabled)]
-   * @param saturation Used to set controller output limits
+   * @param saturation Controller output limits
    * [Default: {-inf, inf} (disabled)]
    * \overload
    */
@@ -113,8 +113,8 @@ class PIDController {
                 Scalar i_gain,
                 Scalar d_gain, 
                 double time_step = 0.001,
-                math::Range<VectorNS> deadband = {VectorNS::Zeros(), 
-                                                  VectorNS::Zeros()}, 
+                math::Range<VectorNS> deadband = {VectorNS::Zero(), 
+                                                  VectorNS::Zero()}, 
                 math::Range<VectorNS> accumulator_limit = 
                     {-std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
                       std::numeric_limits<Scalar>::max()*VectorNS::Ones()},
@@ -126,7 +126,7 @@ class PIDController {
       saturation_(saturation),
       time_step_(time_step){
     static_assert( std::is_arithmetic<Scalar>::value, 
-                   "PID Scalar type not arithmetic")
+                   "PID Scalar type not arithmetic");
     set_gains(p_gain, i_gain, d_gain); 
     error_ = VectorNS::Zero();
     d_error_ = VectorNS::Zero();
@@ -369,7 +369,7 @@ class PIDController {
    * @param derivative_setpoint Derivative State Target of the controller.
    * \overload
    */
-  void set_setpoints(Scalar setpoint, Scalar derivative_setpoint = 0){
+  void set_setpoints(Scalar setpoint, Scalar derivative_setpoint = 0.){
     //checking if using for scalar PID
     static_assert(N==1, "Using Scalar function in vector PID");
     set_setpoints(setpoint * VectorNS::Ones(), 
@@ -497,28 +497,35 @@ class PIDController {
    * @return Returns the Pid output
    * \overload
    */
-  virtual VectorNS UpdateWithError(const VectorNS & error_p, 
-                                   const VectorNS &  error_d, 
+  virtual VectorNS UpdateWithError( VectorNS & error_p, 
+                                    VectorNS &  error_d, 
                                    double time_step) {
     //Checking if in deadband range
     for(int i = 0; i < N; i++){
       if ( error_p.coeff(i) <= deadband_.max().coeff(i) && 
            deadband_.min().coeff(i) <= error_p.coeff(i)) {
           error_p(i) = 0; 
-      } 
+      }
 
-    //accumulating integral error
-    i_error_ += error_p * time_step;
+      //if ki is 0, stop accumulating
+      if (ki_(i) == 0) i_error_(i) = 0;
+
+      //else keep accumulating
+      else {
+        i_error_(i) += error_p(i)*time_step; 
+
+        //adding a limit on integral error to prevent windup
+        i_error_ = i_error_.array().
+                   min(accumulator_limit_.max().array()/ ki_.array()).
+                   max(accumulator_limit_.min().array()/ ki_.array());
+      }  
+    }
     
-    //adding a limit on integral error to prevent windup
-    i_error_ = i_error_.cwiseMin(accumulator_limit_.max())
-                       .cwiseMax(accumulator_limit_.min());
-
     // Finding the control output from the errors
     output_ = kp_.array() * error_p.array() + kd_.array() * error_d.array() + 
               ki_.array() * i_error_.array();
 
-    }
+    
     output_ = output_.cwiseMin(saturation_.max())
                      .cwiseMax(saturation_.min());
 

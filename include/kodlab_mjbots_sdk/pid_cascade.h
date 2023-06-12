@@ -22,25 +22,29 @@
 namespace kodlab {
 
 /**
- * @brief PIDCascade class that allows you to use scalar/vector PID control 
- * that is type agnostic and has deadband, windup(accumulator limit) ,
- * control-effort limit capabilities.
- * @tparam Scalar[optional] data type for the controller
+ * @brief Implements a type-agnostic PID controller
+ * @details Sets up a scalar/Eigen::Vector based PID controller
+ * that is type agnostic and has deadband, windup(accumulator) limit,
+ * saturation/control-effort limit capabilities. The class template is meant
+ * to be implicitly instantiated with Scalar and N deduced based on the
+ * argument of the constructor.
+ * @example 
+ * >>  
+ * @tparam Scalar data type for the controller (float, double, etc.)
  * @tparam  N[optional] dimension of the controller
  * @note Class encapsulates a PID cascade controller given gains 
  * \f$ k_p,k_i,k_d \f$ \n 
- * output\f$ \mathrel{=} k_d\cdot error_v \mathrel{+} k_i\cdot error_i\f$
- * @note  where : \f$ error_p \mathrel{=} setpoint \mathrel{-} state,\\ v_{cmd}
- * \mathrel{=} k_p\cdot error_p + derivative\_setpoint ,\; \\error_v \mathrel{=} 
- * v_{cmd} - derivative\_state ,\\ error_i \mathrel{{+}{=}} error_v\cdot 
- * time\_step \f$
- * @note Deadband limits are on  \f$ error_v,\f$ \n \f$ if(\:deadband_{min}\:
- * \leq\:error_v\:\leq deadband_{max}\:): \;output \mathrel{=} 0,\; error_i 
- * \mathrel{=} 0\f$
- * @note Accumulator limits are applied on \f$ error_i \f$ which clamps it with 
- * the limits as the boundary
- * @note  Saturation(control effort) limits are applied on output which 
- * clamps it with the limits as the boundary
+ * \f$ output \mathrel{=} k_d\cdot v_{error} \mathrel{+} k_i\cdot i_{error}\f$
+ * @note  where : \f$ p_{error}\mathrel{=} setpoint \mathrel{-} state,\\ v_{cmd}
+ * \mathrel{=} k_p\cdot p_{error} + derivative\_setpoint ,\; 
+ * \\v_{error} \mathrel{=} v_{cmd} - derivative\_state ,\\ i_{error} 
+ * \mathrel{{+}{=}} v_{error}\cdot time\_step \f$
+ * @note Deadband limits are on  \f$ v_{error},\f$ \n \f$ if(\:deadband_{min}\:
+ * \leq\:v_{error}\:\leq deadband_{max}\:): \; v_{error} \mathrel{=} 0\f$
+ * @note Accumulator limits are applied on integral error, \f$ i_{error} \f$, 
+ * clamping it
+ * @note Saturation (control effort) limits are applied on the output effort,
+ * \f$ output \f$, clamping it
  */
 
 template <typename Scalar, int N=1>
@@ -51,29 +55,31 @@ public:
   typedef Eigen::Matrix<Scalar,N,1> VectorNS;
   
   /**
-   * @brief Construct a vector Pid object
+   * @brief Construct a vector cascade Pid  object
    * @param p_gain Proportional Gain
    * @param i_gain Derivative Gain
    * @param d_gain Integral Gain
-   * @param time_step Time difference between 2 updates
-   * @param deadband Used to set range within setpoints where no correction 
-   * input is applied
-   * @param accumulator_limit Used to prevent runaway integrator/windup
-   * @param saturation controller output limits
+   * @param time_step Timestep between updates in seconds [Default: 1ms]
+   * @param deadband Range within setpoints where no correction 
+   * input is applied [Default: {0, 0} (disabled)]
+   * @param accumulator_limit Prevents runaway integrator/windup
+   * [Default: {-inf, inf} (disabled)]
+   * @param saturation Controller output limits
+   * [Default: {-inf, inf} (disabled)]
    * \overload
    */
   PIDCascade( const VectorNS & p_gain,
               const VectorNS & i_gain,
               const VectorNS & d_gain, 
               double time_step = 0.001,
-              Range<VectorNS> deadband = {-0.05*VectorNS::Ones(), 
-                                           0.05*VectorNS::Ones()}, 
-                Range<VectorNS> accumulator_limit = 
-                    {-std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
-                      std::numeric_limits<Scalar>::max()*VectorNS::Ones()},
-                Range<VectorNS> saturation = 
-                    {-std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
-                      std::numeric_limits<Scalar>::max()*VectorNS::Ones()})
+              math::Range<VectorNS> deadband = { VectorNS::Zero(), 
+                                                 VectorNS::Zero() }, 
+              math::Range<VectorNS> accumulator_limit = 
+                  {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
+                    std::numeric_limits<Scalar>::max() * VectorNS::Ones()},
+              math::Range<VectorNS> saturation = 
+                  {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
+                    std::numeric_limits<Scalar>::max() * VectorNS::Ones()})
               
     : 
       PIDController<Scalar, N>(p_gain, i_gain, d_gain, time_step, deadband,
@@ -83,29 +89,31 @@ public:
     }
 
   /**
-   * @brief Construct a scalar Pid object
+   * @brief Construct a scalar cascade Pid object
    * @param p_gain Proportional Gain
    * @param i_gain Derivative Gain
    * @param d_gain Integral Gain
-   * @param time_step Time difference between 2 updates
-   * @param deadband Used to set range within setpoints where no correction 
-   * input is applied
-   * @param accumulator_limit Used to prevent runaway integrator/windup
-   * @param saturation controller output limits
+   * @param time_step Timestep between updates in seconds [Default: 1ms]
+   * @param deadband Range within setpoints where no correction 
+   * input is applied [Default: {0, 0} (disabled)]
+   * @param accumulator_limit Prevents runaway integrator/windup
+   * [Default: {-inf, inf} (disabled)]
+   * @param saturation Controller output limits
+   * [Default: {-inf, inf} (disabled)]
    * \overload
    */
   PIDCascade( Scalar p_gain,
               Scalar i_gain,
               Scalar d_gain, 
               double time_step = 0.001,
-              Range<VectorNS> deadband = {-0.05*VectorNS::Ones(), 
-                                           0.05*VectorNS::Ones()}, 
-                Range<VectorNS> accumulator_limit = 
-                    {-std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
-                      std::numeric_limits<Scalar>::max()*VectorNS::Ones()},
-                Range<VectorNS> saturation = 
-                    {-std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
-                      std::numeric_limits<Scalar>::max()*VectorNS::Ones()})
+              math::Range<VectorNS> deadband = { VectorNS::Zero(), 
+                                                 VectorNS::Zero() }, 
+              math::Range<VectorNS> accumulator_limit = 
+                  {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
+                    std::numeric_limits<Scalar>::max() * VectorNS::Ones()},
+              math::Range<VectorNS> saturation = 
+                  {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
+                    std::numeric_limits<Scalar>::max() * VectorNS::Ones()})
     : 
       PIDController<Scalar, N>(p_gain, i_gain, d_gain, time_step, deadband,
                                accumulator_limit, saturation){
@@ -194,8 +202,8 @@ public:
    * @return Returns the Pid output
    * \fn
    */
-  VectorNS UpdateWithError(const VectorNS & error_p, 
-                           const VectorNS & error_v, 
+  VectorNS UpdateWithError( VectorNS & error_p, 
+                            VectorNS & error_v, 
                            double time_step) override  {
     
     //checking if within deadband range
@@ -203,22 +211,24 @@ public:
       if ( error_v.coeff(i) < deadband_.max().coeff(i) && 
            deadband_.min().coeff(i) < error_v.coeff(i)) {
         //implementing deadband control logic
-        output_(i) = ki_(i)*i_error_(i);
-        
+        error_v(i) = 0;  
       }
-      else {
-        //accumulating integral error
-        i_error_(i) += error_v(i)*time_step;
+      //if ki is 0, stop accumulating
+      if (ki_(i) == 0) i_error_(i) = 0;
 
+      //else keep accumulating
+      else{
+        i_error_(i) += error_v(i)*time_step; 
         //adding a limit on integral error to prevent windup
-        i_error_ = i_error_.cwiseMin(accumulator_limit_.max())
-                           .cwiseMax(accumulator_limit_.min());
-
-        //implementing cascade control logic
-        output_(i) = kd_(i)*error_v(i) + ki_(i)*i_error_(i);
+        i_error_ = i_error_.array().
+                    min(accumulator_limit_.max().array()/ ki_.array()).
+                    max(accumulator_limit_.min().array()/ ki_.array());
       }
     }
-    
+
+    //implementing cascade control logic
+    output_ = kd_.array() * error_v.array() + ki_.array()*i_error_.array();
+
     output_ = output_.cwiseMin(saturation_.max()).cwiseMax(saturation_.min());
     return output_;
   }
