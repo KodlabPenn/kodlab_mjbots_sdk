@@ -64,7 +64,7 @@ class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
     for (int servo = 0; servo < num_joints_; servo++) {
       log_data_->positions[servo]  = robot_->GetJointPositions()[servo];
       log_data_->velocities[servo] = robot_->GetJointVelocities()[servo];
-      log_data_->modes[servo] = static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
+      log_data_->modes[servo] = static_cast<int>(robot_interface_->GetJointModes()[servo]);
       log_data_->torques[servo] = robot_->GetJointTorqueCmd()[servo];
     }
 

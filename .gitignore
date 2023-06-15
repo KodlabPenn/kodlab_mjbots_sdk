@@ -9,3 +9,5 @@ python_scripts/python_types/*
 python_scripts/logs/*
 */.vscode/*
 .vscode/*
+build_experiment
+build_simulation
