@@ -30,8 +30,6 @@ namespace kodlab {
  * @warning Running multiple `LcmSubscriber` objects on a single CPU can result
  * in concurrency issues.  The authors do not endorse this usage, do so at your
  * own risk.
- * @todo Move implementation to source file once `CTRL_C_DETECTED` global
- *       variable made available to TU.
  */
 class LcmSubscriber : public AbstractRealtimeObject {
  public:
@@ -100,49 +98,4 @@ class LcmSubscriber : public AbstractRealtimeObject {
   void Run() override;
 
 };
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Implementation                                                             //
-////////////////////////////////////////////////////////////////////////////////
-
-inline LcmSubscriber::LcmSubscriber(int realtime_priority, int cpu) {
-  cpu_ = cpu;
-  realtime_priority_ = realtime_priority;
-}
-
-inline void LcmSubscriber::Init() {
-  Start();
-}
-
-inline int LcmSubscriber::RemoveSubscription(const std::string &channel_name) {
-  auto it = subs_.find(channel_name);
-  if (it != subs_.end()) {
-    int success = lcm_.unsubscribe(subs_[channel_name]);
-    subs_.erase(it);
-    return success;
-  } else {
-    LOG_WARN("Channel \"%s\" is not in subscription list.",
-             channel_name.c_str());
-  }
-  return -1;
-}
-
-[[nodiscard]] inline const lcm::Subscription *LcmSubscriber::get_subscription(const std::string &channel_name) const {
-  if (subs_.count(channel_name) == 1) {
-    return subs_.at(channel_name);
-  } else {
-    LOG_ERROR("Channel \"%s\" is not in subscription list.",
-             channel_name.c_str());
-    return nullptr;
-  }
-}
-
-inline void LcmSubscriber::Run() {
-  while (!CTRL_C_DETECTED) {
-    lcm_.handleTimeout(1000);
-  }
-}
-
 } // kodlab
-
