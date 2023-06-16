@@ -43,6 +43,19 @@ void MjbotsHardwareInterface::InitializeCommand() {
     if(send_pd_commands_){
       cmd.query.torque = ::mjbots::moteus::Resolution::kInt16;
     }
+    if(send_current_){
+      cmd.query.q_current = ::mjbots::moteus::Resolution::kInt16;
+      cmd.query.d_current = ::mjbots::moteus::Resolution::kInt16;
+    }
+    if(send_voltage_){
+      cmd.query.voltage = ::mjbots::moteus::Resolution::kInt16;
+    }
+    if(send_temperature_){
+      cmd.query.temperature = ::mjbots::moteus::Resolution::kInt16;
+    }
+    if(send_fault_){
+      cmd.query.fault = ::mjbots::moteus::Resolution::kInt8;
+    }
   }
 }
 
