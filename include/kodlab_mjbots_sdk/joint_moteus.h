@@ -132,6 +132,12 @@ class JointMoteus: public JointBase
               moteus_kd_(config.moteus_kd){}
         
         /**
+         * @brief Destroy the JointMoteus object, virtual to ensure proper 
+         * destruction of derived classes
+         */
+        virtual ~JointMoteus(){}
+
+        /**
          * @brief Update the joint of the moteus. Converts rot/s to rad/s and saves mode
          * 
          * @param reply_pos position reported by moteus [rot]
