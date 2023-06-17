@@ -22,6 +22,12 @@ class AbstractRealtimeObject {
   AbstractRealtimeObject(int realtime_priority, int cpu);
 
   /*!
+   * @brief Destroy the AbstractRealtimeObject. Virtual destructor for proper
+   * derived pointer destruction.
+   */
+  virtual ~AbstractRealtimeObject(){};
+
+  /*!
    * @brief joins the realtime thread
    */
   void Join();
