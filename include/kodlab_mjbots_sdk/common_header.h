@@ -3,6 +3,7 @@
  * @author Shane Rozen-Levy (srozen01@seas.upenn.edu)
  * @author J. Diego Caporale (jdcap@seas.upenn.edu)
  * @brief Useful common helpers and signal handlers 
+ * @note Ctrl-C handling was adapted from the ODRI Solo8 
  * @date 2023-06-07
  * 
  * @copyright BSD 3-Clause License, 
@@ -29,7 +30,6 @@ void ActivateCtrlC();
  */
 bool CtrlCDetected();
 
-// Ctrl-C signal handling adapted from solo8 repo
 
 /**
  * @brief This function is the callback upon a ctrl+c call from the terminal.
