@@ -73,15 +73,15 @@ class PIDController {
                 double time_step = 0.001,
                 math::Range<VectorNS> deadband = { VectorNS::Zero(), 
                                                    VectorNS::Zero() }, 
-                math::Range<VectorNS> accumulator_limit = 
+                math::Range<VectorNS> accumulator_limits = 
                     {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                       std::numeric_limits<Scalar>::max() * VectorNS::Ones()},
-                math::Range<VectorNS> saturation = 
+                math::Range<VectorNS> saturation_limits = 
                     {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                       std::numeric_limits<Scalar>::max() * VectorNS::Ones()})
     : deadband_(deadband),
-      accumulator_limit_(accumulator_limit),
-      saturation_(saturation),
+      accumulator_limits_(accumulator_limits),
+      saturation_limits_(saturation_limits),
       time_step_(time_step),
       kp_(p_gain),
       ki_(i_gain),
@@ -113,15 +113,15 @@ class PIDController {
                 double time_step = 0.001,
                 math::Range<VectorNS> deadband = {VectorNS::Zero(), 
                                                   VectorNS::Zero()}, 
-                math::Range<VectorNS> accumulator_limit = 
+                math::Range<VectorNS> accumulator_limits = 
                     {-std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
                       std::numeric_limits<Scalar>::max()*VectorNS::Ones()},
-                math::Range<VectorNS> saturation = 
+                math::Range<VectorNS> saturation_limits = 
                     {-std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
                       std::numeric_limits<Scalar>::max()*VectorNS::Ones()})
     : deadband_(deadband),
-      accumulator_limit_(accumulator_limit),
-      saturation_(saturation),
+      accumulator_limits_(accumulator_limits),
+      saturation_limits_(saturation_limits),
       time_step_(time_step){
     static_assert( std::is_arithmetic<Scalar>::value, 
                    "PID Scalar type not arithmetic");
@@ -167,17 +167,17 @@ class PIDController {
   /**
    * @brief Function to get Kp gain
    */
-  const VectorNS & get_kp_gain(){return kp_;}
+  const VectorNS & get_kp_gain() const {return kp_;}
 
   /**
    * @brief Function to get Ki gain
    */
-  const VectorNS & get_ki_gain(){return ki_;}
+  const VectorNS & get_ki_gain() const {return ki_;}
 
   /**
    * @brief Function to get Kd gain 
    */
-  const VectorNS & get_kd_gain(){return kd_;}
+  const VectorNS & get_kd_gain() const {return kd_;}
   
   /**
    * @brief Function to set the scalar deadband
@@ -225,22 +225,22 @@ class PIDController {
    * @brief Function to get deadband maxima
    * @return Max deadband range
    */
-  const VectorNS & get_deadband_max(){return deadband_.max();}
+  const VectorNS & get_deadband_max() const {return deadband_.max();}
 
   /**
    * @brief Function to get deadband minima
    * @return Min deadband range
    */
-  const VectorNS & get_deadband_min(){return deadband_.min();}
+  const VectorNS & get_deadband_min() const {return deadband_.min();}
 
   /**
    * @brief Function to set the scalar accumulator limit
    * @param limit accumulator limit
    * \overload 
    */
-  void set_accumulator(Scalar limit){ 
-    accumulator_limit_.set_min(-limit * VectorNS::Ones()); 
-    accumulator_limit_.set_max( limit * VectorNS::Ones());
+  void set_accumulator_limits(Scalar limit){ 
+    accumulator_limits_.set_min(-limit * VectorNS::Ones()); 
+    accumulator_limits_.set_max( limit * VectorNS::Ones());
   }
 
   /**
@@ -249,9 +249,9 @@ class PIDController {
    * @param max Accumulator limit upper bound
    * \overload 
    */
-  void set_accumulator(Scalar min, Scalar max){ 
-    accumulator_limit_.set_min( min * VectorNS::Ones()); 
-    accumulator_limit_.set_max( max * VectorNS::Ones());
+  void set_accumulator_limits(Scalar min, Scalar max){ 
+    accumulator_limits_.set_min( min * VectorNS::Ones()); 
+    accumulator_limits_.set_max( max * VectorNS::Ones());
   }
 
   /**
@@ -259,9 +259,9 @@ class PIDController {
    * @param limit accumulator limit
    * \overload 
    */
-  void set_accumulator(const VectorNS & limit){ 
-    accumulator_limit_.set_min(-limit);
-    accumulator_limit_.set_max(limit);
+  void set_accumulator_limits(const VectorNS & limit){ 
+    accumulator_limits_.set_min(-limit);
+    accumulator_limits_.set_max(limit);
   }
 
   /**
@@ -270,22 +270,26 @@ class PIDController {
    * @param max Accumulator limit upper bound
    * \overload
    */
-  void set_accumulator(const VectorNS & min, const VectorNS & max){ 
-    accumulator_limit_.set_min(min);
-    accumulator_limit_.set_max(max);
+  void set_accumulator_limits(const VectorNS & min, const VectorNS & max){ 
+    accumulator_limits_.set_min(min);
+    accumulator_limits_.set_max(max);
   }
 
   /**
    * @brief Function to get maximum accumulator limit
    * @return Max accumulator limit
    */
-  const VectorNS & get_accumulator_max(){return accumulator_limit_.max();}
+  const VectorNS & get_accumulator_max() const {
+    return accumulator_limits_.max();
+  }
 
   /**
    * @brief Function to get minimum accumulator limit
    * @return Min accumulator limit
    */
-  const VectorNS & get_accumulator_min(){return accumulator_limit_.min();}
+  const VectorNS & get_accumulator_min() const {
+    return accumulator_limits_.min();
+  }
 
   /**
    * @brief Function to set the vector saturation limits of the controller
@@ -293,8 +297,8 @@ class PIDController {
    * \overload 
    */
   void set_saturation_limits(const VectorNS & saturation) {
-    saturation_.set_min(-saturation);
-    saturation_.set_max(saturation);
+    saturation_limits_.set_min(-saturation);
+    saturation_limits_.set_max(saturation);
   }
 
   /**
@@ -304,8 +308,8 @@ class PIDController {
    * \fn
    */
   void set_saturation_limits(const VectorNS & min, const VectorNS & max) {
-    saturation_.set_min(min);
-    saturation_.set_max(max);
+    saturation_limits_.set_min(min);
+    saturation_limits_.set_max(max);
   }
 
   /**
@@ -314,9 +318,8 @@ class PIDController {
    * \overload 
    */
   void set_saturation_limits(Scalar saturation) {
-    
-    saturation_.set_min(-saturation * VectorNS::Ones());
-    saturation_.set_max( saturation * VectorNS::Ones());
+    saturation_limits_.set_min(-saturation * VectorNS::Ones());
+    saturation_limits_.set_max( saturation * VectorNS::Ones());
   }
 
   /**
@@ -326,28 +329,27 @@ class PIDController {
    * \overload 
    */
   void set_saturation_limits(Scalar min, Scalar max) {
-    
-    saturation_.set_min(min * VectorNS::Ones());
-    saturation_.set_max(max * VectorNS::Ones());
+    saturation_limits_.set_min(min * VectorNS::Ones());
+    saturation_limits_.set_max(max * VectorNS::Ones());
   }
   
   /**
    * @brief Function to get maximum control input
    * @return Max saturation limit
    */
-  const VectorNS & get_saturation_max(){return saturation_.max();}
+  const VectorNS & get_saturation_max() const {return saturation_limits_.max();}
 
   /**
    * @brief Function to get minimum control input
    * @return Min saturation limit
    */
-  const VectorNS & get_saturation_min(){return saturation_.min();}
+  const VectorNS & get_saturation_min() const {return saturation_limits_.min();}
 
   /**
    * @brief Function to get the dimensions
    * @return N
    */
-  int get_N(){ return N;}
+  int get_N() const { return N;}
 
   /**
    * @brief Function to reset the integral error to zero
@@ -383,19 +385,19 @@ class PIDController {
    * @brief Function to get state setpoint
    * @return State setpoint
    */
-  const VectorNS & get_state_setpoint(){return setpoint_;}
+  const VectorNS & get_state_setpoint() const {return setpoint_;}
 
   /**
    * @brief Function to get derivative state setpoint
    * @return derivative state setpoint
    */
-  const VectorNS & get_dstate_setpoint(){return derivative_setpoint_;}
+  const VectorNS & get_dstate_setpoint() const {return derivative_setpoint_;}
 
   /**
    * @brief Function to get state & derivative state setpoints
    * @return state & derivative state setpoints as std::pair
    */
-  std::pair<VectorNS, VectorNS> get_setpoints(){
+  std::pair<VectorNS, VectorNS> get_setpoints() const {
     
     return {setpoint_, derivative_setpoint_};
   }
@@ -511,16 +513,15 @@ class PIDController {
       }
 
       //if ki is 0, stop accumulating
-      if (ki_(i) == 0) i_error_(i) = 0;
-
-      //else keep accumulating
-      else {
+      if (ki_(i) == 0){
+        i_error_(i) = 0;
+      }else { //else keep accumulating
         i_error_(i) += error_p(i)*time_step; 
 
         //adding a limit on integral error to prevent windup
-        i_error_ = i_error_.array().
-                   min(accumulator_limit_.max().array()/ ki_.array()).
-                   max(accumulator_limit_.min().array()/ ki_.array());
+        i_error_(i) = std::clamp(i_error_(i),
+                                 accumulator_limits_.min()(i)/ki_(i),
+                                 accumulator_limits_.max()(i)/ki_(i));
       }  
     }
     
@@ -529,8 +530,8 @@ class PIDController {
               ki_.array() * i_error_.array();
 
     
-    output_ = output_.cwiseMin(saturation_.max())
-                     .cwiseMax(saturation_.min());
+    output_ = output_.cwiseMin(saturation_limits_.max())
+                     .cwiseMax(saturation_limits_.min());
 
     return output_;
   }
@@ -590,12 +591,12 @@ class PIDController {
   /**
    * @brief Accumulator effort limits intregral term (limits ` ki_ * i_error_`)
    */
-  math::Range<VectorNS> accumulator_limit_;
+  math::Range<VectorNS> accumulator_limits_;
   
   /**
    * @brief Control output limits
    */
-  math::Range<VectorNS> saturation_;
+  math::Range<VectorNS> saturation_limits_;
 
   /**
    * @brief Output of the function used internally
