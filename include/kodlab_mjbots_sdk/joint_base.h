@@ -75,6 +75,12 @@ class JointBase {
         );
 
         /**
+         * @brief Destroy the JointBase object, virtual to ensure proper 
+         * destruction of derived classes
+         */
+        virtual ~JointBase(){}
+
+        /**
          * @brief Update position and velocity using all the servo params (gear ratio, offset, direction)
          * 
          * @param servo_pos raw servo position
