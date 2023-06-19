@@ -31,8 +31,6 @@ namespace kodlab {
  * saturation/control-effort limit capabilities. The class template is meant
  * to be implicitly instantiated with Scalar and N deduced based on the
  * argument of the constructor.
- * @example 
- * >>  
  * @tparam Scalar data type for the controller (float, double, etc.)
  * @tparam  N[optional] dimension of the controller
  * @note Class encapsulates a PID controller given gains \f$ k_p,k_i,k_d \f$ \n 
@@ -42,9 +40,9 @@ namespace kodlab {
  * d_{error} \mathrel{=} derivative\_setpoint - derivative\_state ,\\ i_{error} 
  * \mathrel{{+}{=}} p_{error}\cdot time\_step \f$
  * @note Deadband limits are on  \f$ p_{error},\f$ \n \f$ if(\:deadband_{min}\:
- * \leq\:p_{error}\:\leq deadband_{max}\:): \;p_{error} \mathrel{=} 0,\;
- * @note Accumulator limits are applied on integral error, \f$ i_{error} \f$, 
- * clamping it
+ * \leq\:p_{error}\:\leq deadband_{max}\:): \;p_{error} \mathrel{=} 0,\;\f$
+ * @note Accumulator limits are applied on the integral term's effort, 
+ * \f$ k_i * i_{error} \f$, clamping it
  * @note Saturation (control effort) limits are applied on the output effort,
  * \f$ output \f$, clamping it
  */
@@ -56,16 +54,16 @@ class PIDController {
   typedef Eigen::Matrix<Scalar,N,1> VectorNS;
   
   /**
-   * @brief Construct a vector Pid object
+   * @brief Construct a vector PID object
    * @param p_gain Proportional Gain
    * @param i_gain Derivative Gain
    * @param d_gain Integral Gain
    * @param time_step Timestep between updates in seconds [Default: 1ms]
    * @param deadband Range within setpoints where no correction 
    * input is applied [Default: {0, 0} (disabled)]
-   * @param accumulator_limit Prevents runaway integrator/windup
+   * @param accumulator_limits Prevents runaway integrator/windup
    * [Default: {-inf, inf} (disabled)]
-   * @param saturation Controller output limits
+   * @param saturation_limits Controller output limits
    * [Default: {-inf, inf} (disabled)]
    * \overload
    */
@@ -96,7 +94,7 @@ class PIDController {
   }
   
   /**
-   * @brief Construct a scalar Pid object
+   * @brief Construct a scalar PID object
    * @param p_gain Proportional Gain
    * @param i_gain Derivative Gain
    * @param d_gain Integral Gain
@@ -132,6 +130,11 @@ class PIDController {
     d_error_ = VectorNS::Zero();
     set_setpoints(VectorNS::Zero(), VectorNS::Zero());    
   }
+
+  /**
+   * @brief Destructor
+   */
+  virtual ~PIDController() {}
 
   /**
    * @brief Function to set the vector PID gains 
@@ -532,13 +535,7 @@ class PIDController {
     return output_;
   }
 
-  /**
-   * @brief Destructor
-   */
-  virtual ~PIDController() {}
-
-
-protected:
+ protected:
   
   /**
    * @brief State setpoint 
@@ -591,7 +588,7 @@ protected:
   math::Range<VectorNS> deadband_;
 
   /**
-   * @brief Accumulator limits of i_error_
+   * @brief Accumulator effort limits intregral term (limits ` ki_ * i_error_`)
    */
   math::Range<VectorNS> accumulator_limit_;
   

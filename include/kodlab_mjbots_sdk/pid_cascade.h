@@ -1,8 +1,8 @@
 /**
- * @file pid.h
- * @author Chandravaran Kunjeti (kunjeti@seas.upenn.edu)
+ * @file pid_cascade.h
  * @author Raghavesh Viswanath (vrag@seas.upenn.edu)
- * @brief Class implementation of PID
+ * @author J. Diego Caporale (jdcap@seas.upenn.edu)
+ * @brief Class implementation of PID with a cascade architecture
  * @date 5/18/2023
  * @copyright 2023 The Trustees of the University of Pennsylvania.
  * All rights reserved.
@@ -17,19 +17,18 @@
 #include <algorithm>
 #include <Eigen/Dense>
 #include <tuple>
+
 #include "pid_controller.h"
 
 namespace kodlab {
 
 /**
- * @brief Implements a type-agnostic PID controller
+ * @brief Implements a type-agnostic PID controller with a cascade architecture
  * @details Sets up a scalar/Eigen::Vector based PID controller
  * that is type agnostic and has deadband, windup(accumulator) limit,
  * saturation/control-effort limit capabilities. The class template is meant
  * to be implicitly instantiated with Scalar and N deduced based on the
  * argument of the constructor.
- * @example 
- * >>  
  * @tparam Scalar data type for the controller (float, double, etc.)
  * @tparam  N[optional] dimension of the controller
  * @note Class encapsulates a PID cascade controller given gains 
@@ -41,30 +40,32 @@ namespace kodlab {
  * \mathrel{{+}{=}} v_{error}\cdot time\_step \f$
  * @note Deadband limits are on  \f$ v_{error},\f$ \n \f$ if(\:deadband_{min}\:
  * \leq\:v_{error}\:\leq deadband_{max}\:): \; v_{error} \mathrel{=} 0\f$
- * @note Accumulator limits are applied on integral error, \f$ i_{error} \f$, 
- * clamping it
+ * @note Accumulator limits are applied on the integral term's effort, 
+ * \f$ k_i * i_{error} \f$, clamping it
  * @note Saturation (control effort) limits are applied on the output effort,
  * \f$ output \f$, clamping it
  */
-
 template <typename Scalar, int N=1>
 class PIDCascade: public PIDController<Scalar, N> {
 
 public:
 
   typedef Eigen::Matrix<Scalar,N,1> VectorNS;
+  using PIDController<Scalar,N>::Update;
   
   /**
-   * @brief Construct a vector cascade Pid  object
+   * @brief Construct a vector cascade PID object
    * @param p_gain Proportional Gain
    * @param i_gain Derivative Gain
    * @param d_gain Integral Gain
    * @param time_step Timestep between updates in seconds [Default: 1ms]
    * @param deadband Range within setpoints where no correction 
    * input is applied [Default: {0, 0} (disabled)]
-   * @param accumulator_limit Prevents runaway integrator/windup
+   * @param accumulator_limits Prevents runaway integrator/windup
    * [Default: {-inf, inf} (disabled)]
-   * @param saturation Controller output limits
+   * @param saturation_limits Controller output limits
+   * [Default: {-inf, inf} (disabled)]
+   * @param velocity_limits Velocity command limits
    * [Default: {-inf, inf} (disabled)]
    * \overload
    */
@@ -89,16 +90,18 @@ public:
     }
 
   /**
-   * @brief Construct a scalar cascade Pid object
+   * @brief Construct a scalar cascade PID object
    * @param p_gain Proportional Gain
    * @param i_gain Derivative Gain
    * @param d_gain Integral Gain
    * @param time_step Timestep between updates in seconds [Default: 1ms]
    * @param deadband Range within setpoints where no correction 
    * input is applied [Default: {0, 0} (disabled)]
-   * @param accumulator_limit Prevents runaway integrator/windup
+   * @param accumulator_limits Prevents runaway integrator/windup
    * [Default: {-inf, inf} (disabled)]
-   * @param saturation Controller output limits
+   * @param saturation_limits Controller output limits
+   * [Default: {-inf, inf} (disabled)]
+   * @param velocity_limits Velocity command limits
    * [Default: {-inf, inf} (disabled)]
    * \overload
    */
@@ -122,8 +125,8 @@ public:
     }
 
   /**
-   * @brief Function to set maximum velocity
-   * @param max_vel velocity limit for the controller.
+   * @brief Function to set maximum velocity magnitudes
+   * @param max_vel velocity limits for the controller
    * \overload
    */
   void set_max_velocity(VectorNS max_vel) { max_vel_ = max_vel;}
@@ -188,7 +191,7 @@ public:
     v_cmd_ = v_cmd_.cwiseMin(max_vel_).cwiseMax(-max_vel_);
     
     // Velocity error
-    v_error_ = v_cmd_-derivative_state;
+    v_error_ = v_cmd_ - derivative_state;
     
     // Calling UpdateWithError.   
     return UpdateWithError(error_, v_error_, time_step);
@@ -197,9 +200,9 @@ public:
   /**
    * @brief Function to update the cascade PID output given the respective 
    * errors
-   * @param error_p Proportional Error
+   * @param error_p Proportional Error (unused)
    * @param error_d Derivative Error
-   * @return Returns the Pid output
+   * @return Returns the PID output
    * \fn
    */
   VectorNS UpdateWithError( VectorNS & error_p, 
@@ -227,7 +230,7 @@ public:
     }
 
     //implementing cascade control logic
-    output_ = kd_.array() * error_v.array() + ki_.array()*i_error_.array();
+    output_ = kd_.array() * error_v.array() + ki_.array() * i_error_.array();
 
     output_ = output_.cwiseMin(saturation_.max()).cwiseMax(saturation_.min());
     return output_;
@@ -259,7 +262,7 @@ protected:
   VectorNS v_cmd_ ;
 
   /**
-   * @brief Maximum Velocity 
+   * @brief Velocity command limits
    */
   VectorNS max_vel_ ;
 
