@@ -28,9 +28,9 @@ namespace kodlab {
  * @brief Implements a type-agnostic PID controller
  * @details Sets up a scalar/Eigen::Vector based PID controller
  * that is type agnostic and has deadband, windup(accumulator) limit,
- * saturation/control-effort limit capabilities. The class template is meant
- * to be implicitly instantiated with Scalar and N deduced based on the
- * argument of the constructor.
+ * saturation/control-effort limit capabilities. The class template can be
+ * implicitly instantiated with Scalar and N deduced based on the argument of 
+ * the constructor.
  * @tparam Scalar data type for the controller (float, double, etc.)
  * @tparam  N[optional] dimension of the controller
  * @note Class encapsulates a PID controller given gains \f$ k_p,k_i,k_d \f$ \n 
@@ -46,12 +46,13 @@ namespace kodlab {
  * @note Saturation (control effort) limits are applied on the output effort,
  * \f$ output \f$, clamping it
  */
-template <typename Scalar, int N=1>
+template <typename Scalar, int N>
 class PIDController {
 
  public:
 
   typedef Eigen::Matrix<Scalar,N,1> VectorNS;
+  typedef math::Range<VectorNS> RangeNS;
   
   /**
    * @brief Construct a vector PID object
@@ -71,21 +72,20 @@ class PIDController {
                 const VectorNS & i_gain,
                 const VectorNS & d_gain, 
                 double time_step = 0.001,
-                math::Range<VectorNS> deadband = { VectorNS::Zero(), 
-                                                   VectorNS::Zero() }, 
-                math::Range<VectorNS> accumulator_limits = 
+                RangeNS deadband = {VectorNS::Zero(), VectorNS::Zero()}, 
+                RangeNS accumulator_limits = 
                     {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                       std::numeric_limits<Scalar>::max() * VectorNS::Ones()},
-                math::Range<VectorNS> saturation_limits = 
+                RangeNS saturation_limits = 
                     {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                       std::numeric_limits<Scalar>::max() * VectorNS::Ones()})
-    : deadband_(deadband),
-      accumulator_limits_(accumulator_limits),
-      saturation_limits_(saturation_limits),
-      time_step_(time_step),
-      kp_(p_gain),
-      ki_(i_gain),
-      kd_(d_gain) {
+                : deadband_(deadband),
+                  accumulator_limits_(accumulator_limits),
+                  saturation_limits_(saturation_limits),
+                  time_step_(time_step),
+                  kp_(p_gain),
+                  ki_(i_gain),
+                  kd_(d_gain){
     static_assert( std::is_arithmetic<Scalar>::value, 
                    "PID Scalar type not arithmetic");
     error_ = VectorNS::Zero();
@@ -111,18 +111,18 @@ class PIDController {
                 Scalar i_gain,
                 Scalar d_gain, 
                 double time_step = 0.001,
-                math::Range<VectorNS> deadband = {VectorNS::Zero(), 
+                RangeNS deadband = {VectorNS::Zero(), 
                                                   VectorNS::Zero()}, 
-                math::Range<VectorNS> accumulator_limits = 
+                RangeNS accumulator_limits = 
                     {-std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
                       std::numeric_limits<Scalar>::max()*VectorNS::Ones()},
-                math::Range<VectorNS> saturation_limits = 
+                RangeNS saturation_limits = 
                     {-std::numeric_limits<Scalar>::max()*VectorNS::Ones(), 
                       std::numeric_limits<Scalar>::max()*VectorNS::Ones()})
-    : deadband_(deadband),
-      accumulator_limits_(accumulator_limits),
-      saturation_limits_(saturation_limits),
-      time_step_(time_step){
+                : deadband_(deadband),
+                  accumulator_limits_(accumulator_limits),
+                  saturation_limits_(saturation_limits),
+                  time_step_(time_step){
     static_assert( std::is_arithmetic<Scalar>::value, 
                    "PID Scalar type not arithmetic");
     set_gains(p_gain, i_gain, d_gain); 
@@ -143,41 +143,41 @@ class PIDController {
    * @param i_gain Integral Gain
    * \overload
    */
-  void set_gains(VectorNS p_gain, VectorNS i_gain, VectorNS d_gain) {
+  void set_gains(const VectorNS & p_gain, 
+                 const VectorNS & i_gain, 
+                 const VectorNS & d_gain) {
     kp_ = p_gain;
     ki_ = i_gain;
     kd_ = d_gain;
   }
 
   /**
-   * @brief Function to set the scalar PID gains
+   * @brief Function to set the PID gains. If N > 1, gains for all dims equal
    * @param p_gain Proportional Gain
    * @param d_gain Derivative Gain
    * @param i_gain Integral Gain
    * \overload
    */
   void set_gains(Scalar p_gain, Scalar i_gain, Scalar d_gain) {
-    //checking if using for scalar PID
-    static_assert(N == 1, "Using Scalar function in vector PID");
-    kp_ = p_gain*VectorNS::Ones();
-    ki_ = i_gain*VectorNS::Ones();
-    kd_ = d_gain*VectorNS::Ones();
+    kp_ = p_gain * VectorNS::Ones();
+    ki_ = i_gain * VectorNS::Ones();
+    kd_ = d_gain * VectorNS::Ones();
   }
   
   /**
    * @brief Function to get Kp gain
    */
-  const VectorNS & get_kp_gain() const {return kp_;}
+  const VectorNS & get_kp_gains() const {return kp_;}
 
   /**
    * @brief Function to get Ki gain
    */
-  const VectorNS & get_ki_gain() const {return ki_;}
+  const VectorNS & get_ki_gains() const {return ki_;}
 
   /**
    * @brief Function to get Kd gain 
    */
-  const VectorNS & get_kd_gain() const {return kd_;}
+  const VectorNS & get_kd_gains() const {return kd_;}
   
   /**
    * @brief Function to set the scalar deadband
@@ -409,7 +409,7 @@ class PIDController {
    * @param setpoint Desired state of the controller
    * @param derivative_setpoint Desired derivative state of the controller
    * @param time_step   Time difference between 2 updates
-   * @return Returns the Pid output
+   * @return Returns the PID output
    * \overload
    */
   VectorNS Update(const VectorNS & state,
@@ -429,7 +429,7 @@ class PIDController {
    * @param setpoint Desired state of the controller
    * @param derivative_setpoint Desired derivative state of the controller
    * @param time_step   Time difference between 2 updates
-   * @return Returns the Pid output
+   * @return Returns the PID output
    * \overload 
    */
   Scalar Update(Scalar state, 
@@ -452,7 +452,7 @@ class PIDController {
    * @param state Current state for the controller.
    * @param derivative_state Current derivative state of the controller.
    * @param time_step   Time difference between 2 updates
-   * @return Returns the Pid output
+   * @return Returns the PID output
    * \overload
    */
   virtual VectorNS Update(const VectorNS & state, 
@@ -471,7 +471,7 @@ class PIDController {
    * @brief Function to update setpoints and PID output.
    * @param state Scalar state for the controller.
    * @param derivative_state Scalar derivative state of the controller.
-   * @return Returns the Pid output
+   * @return Returns the PID output
    * \overload 
    */
   Scalar Update(Scalar state, Scalar derivative_state) {
@@ -482,12 +482,13 @@ class PIDController {
     return Update(state * VectorNS::Ones(), 
                   derivative_state * VectorNS::Ones())(0);
   }
+  
   /**
    * @brief Function to update the PID output given the state and derivative 
    * state
    * @param state Current state for the controller.
    * @param derivative_state Current derivative state of the controller.  
-   * @return Returns the Pid output
+   * @return Returns the PID output
    * \overload 
    */
   VectorNS Update(const VectorNS & state, const VectorNS & derivative_state) {
@@ -499,12 +500,13 @@ class PIDController {
    * @brief Function to update the PID output given the respective errors
    * @param error_p Proportional Error
    * @param error_d Derivative Error
-   * @return Returns the Pid output
+   * @return Returns the PID output
    * \overload
    */
-  virtual VectorNS UpdateWithError( VectorNS & error_p, 
-                                    VectorNS &  error_d, 
+  virtual VectorNS UpdateWithError(const VectorNS & error_p_in, 
+                                   const VectorNS & error_d_in, 
                                    double time_step) {
+    VectorNS error_p = error_p_in; //copy for zeroing out
     //Checking if in deadband range
     for(int i = 0; i < N; i++){
       if ( error_p.coeff(i) <= deadband_.max().coeff(i) && 
@@ -526,7 +528,7 @@ class PIDController {
     }
     
     // Finding the control output from the errors
-    output_ = kp_.array() * error_p.array() + kd_.array() * error_d.array() + 
+    output_ = kp_.array() * error_p.array() + kd_.array() * error_d_in.array() + 
               ki_.array() * i_error_.array();
 
     
@@ -586,17 +588,17 @@ class PIDController {
   /**
    * @brief Deadband of the system
    */
-  math::Range<VectorNS> deadband_;
+  RangeNS deadband_;
 
   /**
    * @brief Accumulator effort limits intregral term (limits ` ki_ * i_error_`)
    */
-  math::Range<VectorNS> accumulator_limits_;
+  RangeNS accumulator_limits_;
   
   /**
    * @brief Control output limits
    */
-  math::Range<VectorNS> saturation_limits_;
+  RangeNS saturation_limits_;
 
   /**
    * @brief Output of the function used internally

@@ -17,8 +17,11 @@
 #include <algorithm>
 #include <Eigen/Dense>
 #include <tuple>
+#include <utility>
+#include <type_traits>
 
-#include "pid_controller.h"
+#include "kodlab_mjbots_sdk/pid_controller.h"
+#include "kodlab_mjbots_sdk/math.h"
 
 namespace kodlab {
 
@@ -26,9 +29,9 @@ namespace kodlab {
  * @brief Implements a type-agnostic PID controller with a cascade architecture
  * @details Sets up a scalar/Eigen::Vector based PID controller
  * that is type agnostic and has deadband, windup(accumulator) limit,
- * saturation/control-effort limit capabilities. The class template is meant
- * to be implicitly instantiated with Scalar and N deduced based on the
- * argument of the constructor.
+ * saturation/control-effort limit capabilities. The class template can be
+ * implicitly instantiated with Scalar and N deduced based on the argument of 
+ * the constructor.
  * @tparam Scalar data type for the controller (float, double, etc.)
  * @tparam  N[optional] dimension of the controller
  * @note Class encapsulates a PID cascade controller given gains 
@@ -47,13 +50,15 @@ namespace kodlab {
  * @note Saturation (control effort) limits are applied on the output effort,
  * \f$ output \f$, clamping it
  */
-template <typename Scalar, int N=1>
+template <typename Scalar, int N>
 class PIDCascade: public PIDController<Scalar, N> {
 
 public:
 
   typedef Eigen::Matrix<Scalar,N,1> VectorNS;
+  typedef math::Range<VectorNS> RangeNS;
   using PIDController<Scalar,N>::Update;
+  using PIDController<Scalar,N>::UpdateWithError;
   
   /**
    * @brief Construct a vector cascade PID object
@@ -75,22 +80,24 @@ public:
               const VectorNS & i_gain,
               const VectorNS & d_gain, 
               double time_step = 0.001,
-              math::Range<VectorNS> deadband = { VectorNS::Zero(), 
-                                                 VectorNS::Zero() }, 
-              math::Range<VectorNS> accumulator_limits = 
+              RangeNS deadband = { VectorNS::Zero(), VectorNS::Zero() }, 
+              RangeNS accumulator_limits = 
                   {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                     std::numeric_limits<Scalar>::max() * VectorNS::Ones()},
-              math::Range<VectorNS> saturation_limits = 
+              RangeNS saturation_limits = 
                   {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                     std::numeric_limits<Scalar>::max() * VectorNS::Ones()},
-              math::Range<VectorNS> velocity_limits = 
+              RangeNS velocity_limits = 
                   {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                     std::numeric_limits<Scalar>::max() * VectorNS::Ones()})
-      : PIDController<Scalar, N>(p_gain, i_gain, d_gain, time_step, deadband,
-                                accumulator_limits, saturation_limits){
-    
-    set_velocity_limits(velocity_limits.min(),velocity_limits.max());
-  }
+              : PIDController<Scalar, N>( p_gain, 
+                                          i_gain,
+                                          d_gain,
+                                          time_step,
+                                          deadband,
+                                          accumulator_limits,
+                                          saturation_limits),
+                v_limits_(velocity_limits){}
 
   /**
    * @brief Construct a scalar cascade PID object
@@ -112,28 +119,31 @@ public:
               Scalar i_gain,
               Scalar d_gain, 
               double time_step = 0.001,
-              math::Range<VectorNS> deadband = { VectorNS::Zero(), 
-                                                 VectorNS::Zero() }, 
-              math::Range<VectorNS> accumulator_limits = 
+              RangeNS deadband = { VectorNS::Zero(), VectorNS::Zero() }, 
+              RangeNS accumulator_limits = 
                   {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                     std::numeric_limits<Scalar>::max() * VectorNS::Ones()},
-              math::Range<VectorNS> saturation_limits = 
+              RangeNS saturation_limits = 
                   {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                     std::numeric_limits<Scalar>::max() * VectorNS::Ones()},
-              math::Range<VectorNS> velocity_limits = 
+              RangeNS velocity_limits = 
                   {-std::numeric_limits<Scalar>::max() * VectorNS::Ones(), 
                     std::numeric_limits<Scalar>::max() * VectorNS::Ones()})
-      : PIDController<Scalar, N>(p_gain, i_gain, d_gain, time_step, deadband,
-                                accumulator_limits, saturation_limits){
-    set_velocity_limits(velocity_limits.min(),velocity_limits.max());
-  }
+              : PIDController<Scalar, N>(p_gain, 
+                                         i_gain,
+                                         d_gain,
+                                         time_step,
+                                         deadband,
+                                         accumulator_limits,
+                                         saturation_limits),
+                v_limits_(velocity_limits){}
 
   /**
    * @brief Function to set maximum velocity magnitudes
    * @param max_vels velocity limits for the controller
    * \overload
    */
-  void set_velocity_limits(VectorNS max_vels) {
+  void set_velocity_limits(const VectorNS & max_vels) {
     v_limits_.set_min(-max_vels);
     v_limits_.set_max( max_vels);
   }
@@ -144,7 +154,8 @@ public:
    * @param max_vels max velocity limits for the controller
    * \overload
    */
-  void set_velocity_limits(VectorNS min_vels, VectorNS max_vels) {
+  void set_velocity_limits(const VectorNS & min_vels, 
+                           const VectorNS & max_vels) {
     v_limits_.set_min(min_vels);
     v_limits_.set_max(max_vels);
   }
@@ -191,7 +202,7 @@ public:
    * @param state Current state for the controller.
    * @param derivative_state Current derivative state of the controller.
    * @param time_step   Time difference between 2 updates
-   * @return Returns the Pid output
+   * @return Returns the PID output
    * \overload
    */
   VectorNS Update (const VectorNS & state,
@@ -220,10 +231,10 @@ public:
    * @return Returns the PID output
    * \fn
    */
-  VectorNS UpdateWithError(const VectorNS & error_p, 
-                           VectorNS error_v, 
+  VectorNS UpdateWithError(const VectorNS & error_p_in, 
+                           const VectorNS & error_v_in, 
                            double time_step) override  {
-    
+    VectorNS error_v = error_v_in; //copy for zeroing out
     //checking if within deadband range
     for (int i=0; i < N; i++){
       if ( error_v.coeff(i) < deadband_.max().coeff(i) && 
@@ -279,7 +290,7 @@ protected:
   /**
    * @brief Velocity command limits
    */
-  math::Range<VectorNS> v_limits_ ;
+  RangeNS v_limits_ ;
 
 };
 
