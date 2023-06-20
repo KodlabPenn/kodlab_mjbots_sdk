@@ -15,6 +15,7 @@
 #include <atomic>
 #include <signal.h>  // manage the ctrl+c signal
 #include <type_traits>
+#include <typeinfo>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -60,7 +61,7 @@ template<typename T>
 class ValidatedCache
 {
 
-private:
+protected:
   /**
    * @brief Validation status of \c data_
    */
@@ -88,10 +89,16 @@ public:
   ValidatedCache(const T &data, const bool &valid) : data_(data), valid_(valid) {}
 
   /**
+   * @brief Destroy the ValidatedCache object. Virtual destructor for proper 
+   * derived pointer destruction.
+   */
+   virtual ~ValidatedCache(){};
+
+  /**
    * @brief Returns the data status
    * @return \c true if data is valid, \c false otherwise
    */
-  bool valid() const { return valid_; }
+  virtual bool valid() const { return valid_; }
 
   /**
    * @brief Marks the class invalid so that future calls will change the cached
@@ -103,10 +110,19 @@ public:
    * @brief Sets the class data and marks it valid
    * @param data valid data
    */
-  void set(const T &data)
+  virtual void set(const T &data)
   {
     data_ = data;
     valid_ = true;
+  }
+
+  /**
+   * @brief Uses operator= to set the class data and marks it valid
+   * @param data valid data
+   */
+  void operator=(const T &data)
+  {
+    set(data);
   }
 
   /**
@@ -115,9 +131,9 @@ public:
    */
   T get()
   {
-    if (!valid_)
+    if (!valid())
     {
-      std::cerr << "[WARN] Returning invalid data." << std::endl;
+      std::cerr << "[WARN] Returning invalid data of type " << typeid(data_).name() << std::endl;
     }
     return data_;
   }

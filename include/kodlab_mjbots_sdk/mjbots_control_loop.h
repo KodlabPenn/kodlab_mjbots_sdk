@@ -19,6 +19,7 @@
 #include "real_time_tools/hard_spinner.hpp"
 #include "VoidLcm.hpp"
 #include "common_header.h"
+#include "kodlab_mjbots_sdk/loop_cache.h" // Set up loop id for loop-tied caches
 
 namespace kodlab::mjbots {
 /*!
@@ -255,6 +256,8 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   lcm_sub_->Init();
   Init();
   SoftStart::InitializeTimer();
+  kodlab::LoopId::init(); // Set loop id/count to uint(-1), first update 
+                          // will be in loop 0
 
   float prev_msg_duration = 0;
 
@@ -289,6 +292,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
     }
 
     // Calculate torques and log
+    kodlab::LoopId::increment(); // invalidate any caches that are tied to the loop by incrementing the id
     Update();      //TODO should we give full control to the robot_ instead of feeding update thorugh?
     // robot_->Update();
     PrepareLog();
