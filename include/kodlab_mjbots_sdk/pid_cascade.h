@@ -24,6 +24,7 @@
 #include "kodlab_mjbots_sdk/math.h"
 
 namespace kodlab {
+namespace controller {
 
 /**
  * @brief Implements a type-agnostic PID controller with a cascade architecture
@@ -294,5 +295,6 @@ protected:
 
 };
 
+} // namespace controller
 } // namespace kodlab
  

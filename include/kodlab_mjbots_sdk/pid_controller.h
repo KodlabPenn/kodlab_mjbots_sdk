@@ -23,6 +23,7 @@
 #include "kodlab_mjbots_sdk/math.h"
 
 namespace kodlab {
+namespace controller {
 
 /**
  * @brief Implements a type-agnostic PID controller
@@ -607,6 +608,5 @@ class PIDController {
 
 };
 
-} // namespace kodlab
- 
- 
+} // namespace controller
+} // namespace kodlab 
