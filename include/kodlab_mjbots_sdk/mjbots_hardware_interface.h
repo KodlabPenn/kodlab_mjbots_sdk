@@ -107,6 +107,12 @@ class MjbotsHardwareInterface  {
   void Shutdown();
 
   /*!
+    * @brief Get a vector of shared_ptrs to joints 
+    * @return a vector of shared pointers to the desired joints
+    */
+  std::vector<std::shared_ptr<JointMoteus>> GetJoints();
+
+  /*!
    * @brief accessor for the joint modes
    * @return the joint modes
    */

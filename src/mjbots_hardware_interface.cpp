@@ -185,6 +185,10 @@ void MjbotsHardwareInterface::SendCommand() {
   moteus_interface_->Cycle(moteus_data_);
 }
 
+std::vector<std::shared_ptr<JointMoteus>> MjbotsHardwareInterface::GetJoints() {
+  return joints;
+}
+
 std::vector<::mjbots::moteus::Mode> MjbotsHardwareInterface::GetJointModes() {
   std::vector<::mjbots::moteus::Mode>modes(modes_.begin(), modes_.end());
   return modes;
