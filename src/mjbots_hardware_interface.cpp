@@ -83,7 +83,11 @@ MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<Joi
                                                  std::optional<::mjbots::pi3hat::Euler> imu_world_offset_deg,
                                                  bool dry_run,
                                                  bool print_torques,
-                                                 bool send_pd_commands)
+                                                 bool send_pd_commands,
+                                                 bool send_current,
+                                                 bool send_voltage,
+                                                 bool send_temperature,
+                                                 bool send_fault)
     : imu_data_(imu_data_ptr ? imu_data_ptr : std::make_shared<::kodlab::IMUData<float>>()),
       dry_run_(dry_run),
       print_torques_(print_torques),
