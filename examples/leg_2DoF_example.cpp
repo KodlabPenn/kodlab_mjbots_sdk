@@ -15,6 +15,8 @@
 #include "kodlab_mjbots_sdk/cartesian_leg.h"
 #include "kodlab_mjbots_sdk/log.h"  // provides console logging macros
 
+namespace kodlab::examples {
+
 class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
   using MjbotsControlLoop::MjbotsControlLoop;
 
@@ -154,6 +156,9 @@ class Hopping : public kodlab::mjbots::MjbotsControlLoop<LegLog, LegGains> {
   const float kSoftVelocityThreshold = 0.08;/// Threshold error from 0 in rad/s for terminating soft start
 };
 
+} // kodlab::examples
+
+
 int main(int argc, char **argv) {
   //Setup joints
   std::vector<kodlab::mjbots::JointMoteus> joints;
@@ -166,7 +171,7 @@ int main(int argc, char **argv) {
   options.input_channel_name = "leg_gains";
 
   // Create control loop
-  Hopping control_loop(std::move(joints), options);
+  kodlab::examples::Hopping control_loop(std::move(joints), options);
 
   // Starts the loop, and then join it
   control_loop.Start();

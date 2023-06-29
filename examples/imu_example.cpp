@@ -15,6 +15,8 @@
 #include "kodlab_mjbots_sdk/imu_data.h"
 #include "IMULog.hpp"
 
+namespace kodlab::examples {
+
 class AttitudeExample : public kodlab::mjbots::MjbotsControlLoop<IMULog,
                                                                  VoidLcm>
 {
@@ -92,6 +94,9 @@ private:
 
 };
 
+} // kodlab::examples
+
+
 int main(int argc, char **argv)
 {
   // Setup Joints
@@ -119,7 +124,7 @@ int main(int argc, char **argv)
   options.imu_world_offset_deg.yaw = 0;
 
   // Create Control Loop
-  AttitudeExample control_loop(joints, options);
+  kodlab::examples::AttitudeExample control_loop(joints, options);
 
   // Starts the Loop, Then Joins It
   control_loop.Start();
