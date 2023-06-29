@@ -33,6 +33,10 @@ struct MoteusJointConfig{
     float moteus_kp = 0;
     float moteus_kd = 0;
     float soft_start_duration_ms = 1;
+    float temperature = 0;
+    float q_current = 0;
+    float d_current = 0;
+    float voltage = 0;
 };
 
 /**         
@@ -58,6 +62,10 @@ class JointMoteus: public JointBase
          * @param moteus_kp     /// Value of kp set on moteus in units of N m/rev
          * @param moteus_kd     /// Value of kd set on moteus in units of N m s/rev
          * @param soft_start_duration_ms /// Duration of torque limit ramp (soft start) in ms
+         * @param temperature   /// Value of the board temperature in units of Celsius
+         * @param q_current     /// Value of current in the Q phase in units of Amperes
+         * @param d_current     /// Value of current in the D phase in units of Amperes
+         * @param voltage       /// Value of the current input voltage 
          */
         JointMoteus(
             std::string name,
@@ -71,12 +79,20 @@ class JointMoteus: public JointBase
             float pos_max = std::numeric_limits<float>::infinity(),
             float soft_start_duration_ms = 1,
             float moteus_kp = 0,
-            float moteus_kd = 0)
+            float moteus_kd = 0,
+            float temperature = 0,
+            float q_current = 0,
+            float d_current = 0,
+            float voltage = 0)
             : JointBase(name, direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max, soft_start_duration_ms),
               can_bus_(can_bus),
               can_id_(can_id),
               moteus_kp_(moteus_kp),
-              moteus_kd_(moteus_kd)  {}
+              moteus_kd_(moteus_kd),
+              temperature_(temperature),
+              q_current_(q_current),
+              d_current_(d_current),
+              voltage_(voltage) {}
 
         /**
          * @brief Construct a new Joint Moteus object without name
@@ -92,6 +108,10 @@ class JointMoteus: public JointBase
          * @param moteus_kp     /// Value of kp set on moteus in units of N m/rev
          * @param moteus_kd     /// Value of kd set on moteus in units of N m s/rev
          * @param soft_start_duration_ms /// Duration of torque limit ramp (soft start) in ms
+         * @param temperature   /// Value of the board temperature in units of Celsius
+         * @param q_current     /// Value of current in the Q phase in units of Amperes
+         * @param d_current     /// Value of current in the D phase in units of Amperes
+         * @param voltage       /// Value of the current input voltage 
          */
         JointMoteus(
             int can_id,
@@ -104,12 +124,20 @@ class JointMoteus: public JointBase
             float pos_max = std::numeric_limits<float>::infinity(),
             float soft_start_duration_ms = 1,
             float moteus_kp = 0,
-            float moteus_kd = 0)
+            float moteus_kd = 0,
+            float temperature = 0,
+            float q_current = 0,
+            float d_current = 0,
+            float voltage = 0)
             : JointBase("", direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max, soft_start_duration_ms),
               can_bus_(can_bus),
               can_id_(can_id),
               moteus_kp_(moteus_kp),
-              moteus_kd_(moteus_kd) {}
+              moteus_kd_(moteus_kd),
+              temperature_(temperature),
+              q_current_(q_current),
+              d_current_(d_current),
+              voltage_(voltage) {}
 
 
         /**
@@ -129,20 +157,43 @@ class JointMoteus: public JointBase
               can_id_( config.can_id),
               can_bus_( config.can_bus),
               moteus_kp_(config.moteus_kp),
-              moteus_kd_(config.moteus_kd){}
+              moteus_kd_(config.moteus_kd),
+              temperature_(config.temperature),
+              q_current_(config.q_current),
+              d_current_(config.d_current),
+              voltage_(config.voltage) {}
         
         /**
-         * @brief Update the joint of the moteus. Converts rot/s to rad/s and saves mode
+         * @brief Update the joint of the moteus. Converts rot/s to rad/s and saves registers
          * 
          * @param reply_pos position reported by moteus [rot]
          * @param reply_vel velocity reported by moteus [rot/s]
          * @param reply_torque torque measured by the moteus [Nm]
          * @param mode      moteus mode
+         * @param reply_q_current current in the Q phase reported by moteus [A]
+         * @param reply_d_current current in the D phase reported by moteus [A]
+         * @param reply_voltage voltage reported by the moteus [V]
+         * @param reply_temperature temperature reported by the moteus [C]
+         * @param fault     fault code
          */
-        void UpdateMoteus(float reply_pos, float reply_vel, float reply_torque, ::mjbots::moteus::Mode mode ){
-            UpdateState( 2 * M_PI * reply_pos, 2 * M_PI * reply_vel, reply_torque);
-            mode_ = mode;
-        }
+        void UpdateMoteus(
+            float reply_pos,
+            float reply_vel,
+            float reply_torque,
+            ::mjbots::moteus::Mode mode,
+            float reply_q_current,
+            float reply_d_current,
+            float reply_voltage,
+            float reply_temperature,
+            ::mjbots::moteus::Fault fault){
+              UpdateState( 2 * M_PI * reply_pos, 2 * M_PI * reply_vel, reply_torque);
+              mode_ = mode;
+              q_current_ = reply_q_current;
+              d_current_ = reply_d_current;
+              voltage_ = reply_voltage;
+              temperature_ = reply_temperature;
+              fault_ = fault;
+            }
 
         /**
          * @brief Get the can id 
@@ -164,6 +215,41 @@ class JointMoteus: public JointBase
          * @return const ::mjbots::moteus::Mode& 
          */
         const ::mjbots::moteus::Mode & get_mode_reference()   const {return mode_; }
+
+        /**
+         * @brief Get the temperature register
+         * 
+         * @return float
+         */
+        virtual float get_temperature() const {return temperature_;}
+
+        /**
+         * @brief Get the q_current register
+         * 
+         * @return float
+         */
+        virtual float get_q_current() const {return q_current_;}
+
+        /**
+         * @brief Get the d_current register
+         * 
+         * @return float
+         */
+        virtual float get_d_current() const {return d_current_;}
+
+        /**
+         * @brief Get the voltage register
+         * 
+         * @return float
+         */
+        virtual float get_voltage() const {return voltage_;}
+
+        /**
+         * @brief Get the fault register
+         * 
+         * @return const ::mjbots::moteus::Fault&
+         */
+        const ::mjbots::moteus::Fault & get_fault() const {return fault_;}
 
         /*!
          * @brief accessor for kp_scale
@@ -220,6 +306,11 @@ class JointMoteus: public JointBase
         ::mjbots::moteus::Mode mode_ = ::mjbots::moteus::Mode::kStopped; /// joint's moteus mode
         float moteus_kp_ = 0;
         float moteus_kd_ = 0;
+        float temperature_ = 0;
+        float q_current_ = 0;
+        float d_current_ = 0;
+        float voltage_ = 0;
+        ::mjbots::moteus::Fault fault_ = ::mjbots::moteus::Fault::kSuccess; // fault mode
 };
 }//namespace mjbots
 }//namespace kodlab

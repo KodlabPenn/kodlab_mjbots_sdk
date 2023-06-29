@@ -133,6 +133,32 @@ enum class Mode {
   kNumModes,
 };
 
+enum class Fault {
+  kSuccess = 0,
+
+  kDmaStreamTransferError = 1,
+  kDmaStreamFifoError = 2,
+  kUartOverrunError = 3,
+  kUartFramingError = 4,
+  kUartNoiseError = 5,
+  kUartBufferOverrunError = 6,
+  kUartParityError = 7,
+
+  kCalibrationFault = 32,
+  kMotorDriverFault = 33,
+  kOverVoltage = 34,
+  kEncoderFault = 35,
+  kMotorNotConfigured = 36,
+  kPwmCycleOverrun = 37,
+  kOverTemperature = 38,
+  kStartOutsideLimit = 39,
+  kUnderVoltage = 40,
+  kConfigChanged = 41,
+  kThetaInvalid = 42,
+  kPositionInvalid = 43,
+  kDriverEnableFault = 44,
+};
+
 enum class Resolution {
   kInt8,
   kInt16,
@@ -661,7 +687,7 @@ struct QueryResult {
   bool rezero_state = false;
   double voltage = std::numeric_limits<double>::quiet_NaN();
   double temperature = std::numeric_limits<double>::quiet_NaN();
-  int fault = 0;
+  Fault fault = Fault::kSuccess;
 };
 
 inline QueryResult ParseQueryResult(const uint8_t* data, size_t size) {
@@ -710,7 +736,7 @@ inline QueryResult ParseQueryResult(const uint8_t* data, size_t size) {
         break;
       }
       case Register::kFault: {
-        result.fault = parser.ReadInt(res);
+        result.fault = static_cast<Fault>(parser.ReadInt(res));
         break;
       }
       default: {

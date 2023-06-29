@@ -146,7 +146,12 @@ void MjbotsHardwareInterface::ProcessReply() {
       std::cout<<"Missing can frame for servo: " << joint->get_can_id()<< std::endl;
     } else{
       joint->UpdateMoteus(servo_reply.position, servo_reply.velocity,
-                          send_pd_commands_ ? servo_reply.torque : 0,servo_reply.mode);
+                          send_pd_commands_ ? servo_reply.torque : 0, servo_reply.mode, 
+                          send_current_ ? servo_reply.q_current : 0,
+                          send_current_ ? servo_reply.d_current : 0, 
+                          send_voltage_ ? servo_reply.voltage : 0,
+                          send_temperature_ ? servo_reply.temperature : 0,
+                          servo_reply.fault);
     }
   }
   imu_data_->Update(*(moteus_data_.attitude));
