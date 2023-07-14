@@ -16,24 +16,12 @@
 
 namespace kodlab{
 namespace mjbots{
+
 /**
- * @brief struct for storing or passing moteus joint configurations
+ * @brief Forward definition of struct for storing moteus joint configurations
  * 
  */
-struct MoteusJointConfig{
-    int can_id;
-    int can_bus;
-    std::string name = "";
-    int direction = 1; 
-    float zero_offset = 0;
-    float gear_ratio = 1.0;
-    float max_torque = std::numeric_limits<float>::infinity();
-    float pos_min = -std::numeric_limits<float>::infinity();
-    float pos_max = std::numeric_limits<float>::infinity();
-    float moteus_kp = 0;
-    float moteus_kd = 0;
-    float soft_start_duration_ms = 1;
-};
+struct MoteusJointConfig;
 
 /**         
  * @brief A JointBase derived class that encapsulates parameters and functions of 
@@ -43,6 +31,30 @@ struct MoteusJointConfig{
 class JointMoteus: public JointBase
 {
     public:
+        /**
+         * @brief Define a default resolution struct
+         * 
+         */
+        static const ::mjbots::moteus::QueryCommand kDefaultQuery;
+
+        /**
+         * @brief Define a resolution struct that includes torques
+         * 
+         */
+        static const ::mjbots::moteus::QueryCommand kTorqueQuery;
+
+        /**
+         * @brief Define a debug resolution struct
+         * 
+         */
+        static const ::mjbots::moteus::QueryCommand kDebugQuery;
+
+        /**
+         * @brief Define a resolution struct that includes all registers
+         * 
+         */
+        static const ::mjbots::moteus::QueryCommand kComprehensiveQuery;
+
         /**
          * @brief Construct a new Joint Moteus object
          * 
@@ -56,6 +68,7 @@ class JointMoteus: public JointBase
          * @param pos_min       /// Minimum joint pose limit before taking protective measures such as torque limiting or shut off (Default:-inf)
          * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
          * @param soft_start_duration_ms /// Duration of torque limit ramp (soft start) in ms
+         * @param query_type    /// QueryCommand struct containing register resolutions
          * @param moteus_kp     /// Value of kp set on moteus in units of N m/rev
          * @param moteus_kd     /// Value of kd set on moteus in units of N m s/rev
          */
@@ -70,7 +83,7 @@ class JointMoteus: public JointBase
             float pos_min = -std::numeric_limits<float>::infinity(),
             float pos_max = std::numeric_limits<float>::infinity(),
             float soft_start_duration_ms = 1,
-            // ::mjbots::moteus::QueryCommand query_type=kDefaultQuery,
+            ::mjbots::moteus::QueryCommand query_type = kDefaultQuery,
             float moteus_kp = 0,
             float moteus_kd = 0
         );
@@ -86,9 +99,10 @@ class JointMoteus: public JointBase
          * @param max_torque    /// Maximum torque limit of the joint [N m] (Default:inf)
          * @param pos_min       /// Minimum joint pose limit before taking protective measures such as torque limiting or shut off (Default:-inf)
          * @param pos_max       /// Maximum joint pose limit before taking protective measures such as torque limiting or shut off (Default:inf)
+         * @param soft_start_duration_ms /// Duration of torque limit ramp (soft start) in ms
+         * @param query_type    /// QueryCommand struct containing register resolutions
          * @param moteus_kp     /// Value of kp set on moteus in units of N m/rev
          * @param moteus_kd     /// Value of kd set on moteus in units of N m s/rev
-         * @param soft_start_duration_ms /// Duration of torque limit ramp (soft start) in ms
          */
         JointMoteus(
             int can_id,
@@ -100,6 +114,7 @@ class JointMoteus: public JointBase
             float pos_min = -std::numeric_limits<float>::infinity(),
             float pos_max = std::numeric_limits<float>::infinity(),
             float soft_start_duration_ms = 1,
+            ::mjbots::moteus::QueryCommand query_type = kDefaultQuery,
             float moteus_kp = 0,
             float moteus_kd = 0
         );
@@ -112,7 +127,7 @@ class JointMoteus: public JointBase
         JointMoteus(MoteusJointConfig config);
         
         /**
-         * @brief Update the joint of the moteus. Converts rot/s to rad/s and saves registers
+         * @brief Update the joint of the moteus. Converts rot/s to rad/s and saves other state values.
          * 
          * @param reply_pos position reported by moteus [rot]
          * @param reply_vel velocity reported by moteus [rot/s]
@@ -214,17 +229,10 @@ class JointMoteus: public JointBase
          */
         [[nodiscard]] float get_moteus_velocity_target()const;
 
-
     private:
-        // std::map<string, QueryCommand > qc_map =
-        // {
-        //   {"DEFAULT", kDefaultQuery},
-        //   {"ALL", kAllQuery},
-        //   {"CURRENT", kCurrentQuery},
-        //   {"DEBUG", kDebugQuery},
-        // }
         int can_id_;   /// the can id of this joint's moteus
         int can_bus_;  /// the can bus the moteus communicates on
+        ::mjbots::moteus::QueryCommand query_type_;
         ::mjbots::moteus::Mode mode_ = ::mjbots::moteus::Mode::kStopped; /// joint's moteus mode
         float moteus_kp_ = 0;
         float moteus_kd_ = 0;
@@ -233,22 +241,27 @@ class JointMoteus: public JointBase
         float d_current_ = 0;
         float voltage_ = 0;
         ::mjbots::moteus::Fault fault_ = ::mjbots::moteus::Fault::kSuccess; // fault mode
-        ::mjbots::moteus::QueryCommand query_resolutions_;
-        // static const ::mjbots::moteus::QueryCommand kDefaultQuery = 
-        // {
-        //   Resolution::kInt8;
-        //   Resolution::kInt16;
-        //   Resolution::kInt16;
-        //   Resolution::kIgnore;
-        //   Resolution::kIgnore;
-        //   = Resolution::kIgnore;
-        //   state = Resolution::kIgnore;
-        //   = Resolution::kIgnore;
-        //   ture = Resolution::kIgnore;
-        //   Resolution::kIgnore;
-        
-        // }
-
 };
+
+/**
+ * @brief struct for storing or passing moteus joint configurations
+ * 
+ */
+struct MoteusJointConfig{
+    int can_id;
+    int can_bus;
+    ::mjbots::moteus::QueryCommand query_type = JointMoteus::kDefaultQuery;
+    std::string name = "";
+    int direction = 1; 
+    float zero_offset = 0;
+    float gear_ratio = 1.0;
+    float max_torque = std::numeric_limits<float>::infinity();
+    float pos_min = -std::numeric_limits<float>::infinity();
+    float pos_max = std::numeric_limits<float>::infinity();
+    float moteus_kp = 0;
+    float moteus_kd = 0;
+    float soft_start_duration_ms = 1;
+};
+
 }//namespace mjbots
 }//namespace kodlab

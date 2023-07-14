@@ -43,6 +43,7 @@ set(SOURCE_LIST "pi3hat.cpp"
                 "robot_base.cpp"
                 "joint_base.cpp"
                 "cartesian_leg.cpp"
+                "joint_moteus.cpp"
         )
 
 # Make an automatic library - will be static or dynamic based on user setting

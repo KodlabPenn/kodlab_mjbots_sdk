@@ -15,6 +15,62 @@
 namespace kodlab{
 namespace mjbots{
 
+// kDefaultQuery defintion
+const ::mjbots::moteus::QueryCommand JointMoteus::kDefaultQuery = {
+  ::mjbots::moteus::Resolution::kInt8,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore 
+};
+
+// kTorqueQuery definition
+const ::mjbots::moteus::QueryCommand JointMoteus::kTorqueQuery = {
+  ::mjbots::moteus::Resolution::kInt8,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore
+};
+
+// kDebugQuery definition
+const ::mjbots::moteus::QueryCommand JointMoteus::kDebugQuery = {
+  ::mjbots::moteus::Resolution::kInt8,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt8
+};
+
+// kComprehensiveQuery definition
+const ::mjbots::moteus::QueryCommand JointMoteus::kComprehensiveQuery = {
+  ::mjbots::moteus::Resolution::kInt8,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kIgnore,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt16,
+  ::mjbots::moteus::Resolution::kInt8
+};
+
 JointMoteus::JointMoteus(std::string name,
                          int can_id,
                          int can_bus,
@@ -25,12 +81,13 @@ JointMoteus::JointMoteus(std::string name,
                          float pos_min,
                          float pos_max,
                          float soft_start_duration_ms,
-                         // ::mjbots::moteus::QueryCommand query_type=kDefaultQuery,
+                         ::mjbots::moteus::QueryCommand kDefaultQuery,
                          float moteus_kp,
                          float moteus_kd)
     : JointBase(name, direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max, soft_start_duration_ms),
       can_bus_(can_bus),
       can_id_(can_id),
+      query_type_(kDefaultQuery),
       moteus_kp_(moteus_kp),
       moteus_kd_(moteus_kd) {}
 
@@ -43,12 +100,13 @@ JointMoteus::JointMoteus(int can_id,
                          float pos_min,
                          float pos_max,
                          float soft_start_duration_ms,
-                         // ::mjbots::moteus::QueryCommand query_type=kDefaultQuery,
+                         ::mjbots::moteus::QueryCommand kDefaultQuery,
                          float moteus_kp,
                          float moteus_kd)
     : JointBase("", direction, zero_offset, gear_ratio, max_torque, pos_min, pos_max, soft_start_duration_ms),
       can_bus_(can_bus),
       can_id_(can_id),
+      query_type_(kDefaultQuery),
       moteus_kp_(moteus_kp),
       moteus_kd_(moteus_kd) {}
 
@@ -63,6 +121,7 @@ JointMoteus::JointMoteus(MoteusJointConfig config)
                 config.soft_start_duration_ms),
         can_id_(config.can_id),
         can_bus_(config.can_bus),
+        query_type_(config.query_type),
         moteus_kp_(config.moteus_kp),
         moteus_kd_(config.moteus_kd) {}
         
