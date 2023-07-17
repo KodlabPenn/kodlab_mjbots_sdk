@@ -129,25 +129,9 @@ class JointMoteus: public JointBase
         /**
          * @brief Update the joint of the moteus. Converts rot/s to rad/s and saves other state values.
          * 
-         * @param reply_pos position reported by moteus [rot]
-         * @param reply_vel velocity reported by moteus [rot/s]
-         * @param reply_torque torque measured by the moteus [Nm]
-         * @param mode moteus mode
-         * @param reply_q_current current in the Q phase reported by moteus [A]
-         * @param reply_d_current current in the D phase reported by moteus [A]
-         * @param reply_voltage voltage reported by the moteus [V]
-         * @param reply_temperature temperature reported by the moteus [C]
-         * @param fault fault code
+         * @param reply_message reply message sent by moteus to pi3hat
          */
-        void UpdateMoteus(float reply_pos,
-                          float reply_vel,
-                          float reply_torque,
-                          ::mjbots::moteus::Mode mode,
-                          float reply_q_current,
-                          float reply_d_current,
-                          float reply_voltage,
-                          float reply_temperature,
-                          ::mjbots::moteus::Fault fault);
+        void UpdateMoteus(::mjbots::moteus::QueryResult reply_message);
 
         /**
          * @brief Get the can id 
@@ -169,6 +153,13 @@ class JointMoteus: public JointBase
          * @return const ::mjbots::moteus::Mode& 
          */
         const ::mjbots::moteus::Mode & get_mode_reference() const;
+
+        /**
+         * @brief Get the QueryCommand object
+         * 
+         * @return const ::mjbots::moteus::QueryCommand
+         */
+        const ::mjbots::moteus::QueryCommand get_query_command() const;
 
         /**
          * @brief Get the temperature register

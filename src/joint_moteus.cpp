@@ -125,22 +125,14 @@ JointMoteus::JointMoteus(MoteusJointConfig config)
         moteus_kp_(config.moteus_kp),
         moteus_kd_(config.moteus_kd) {}
         
-void JointMoteus::UpdateMoteus(float reply_pos,
-                  float reply_vel,
-                  float reply_torque,
-                  ::mjbots::moteus::Mode mode,
-                  float reply_q_current,
-                  float reply_d_current,
-                  float reply_voltage,
-                  float reply_temperature,
-                  ::mjbots::moteus::Fault fault){
-                    UpdateState(2 * M_PI * reply_pos, 2 * M_PI * reply_vel, reply_torque);
-                    mode_ = mode;
-                    q_current_ = reply_q_current;
-                    d_current_ = reply_d_current;
-                    voltage_ = reply_voltage;
-                    temperature_ = reply_temperature;
-                    fault_ = fault;
+void JointMoteus::UpdateMoteus(::mjbots::moteus::QueryResult reply_message){
+                    UpdateState(2 * M_PI * reply_message.position, 2 * M_PI * reply_message.velocity, reply_message.torque);
+                    mode_ = reply_message.mode;
+                    q_current_ = reply_message.q_current;
+                    d_current_ = reply_message.d_current;
+                    voltage_ = reply_message.voltage;
+                    temperature_ = reply_message.temperature;
+                    fault_ = reply_message.fault;
 }
 
 int JointMoteus::get_can_id() const {
@@ -153,6 +145,10 @@ int JointMoteus::get_can_bus() const {
 
 const ::mjbots::moteus::Mode & JointMoteus::get_mode_reference() const {
   return mode_;
+}
+
+const ::mjbots::moteus::QueryCommand JointMoteus::get_query_command() const {
+  return query_type_;
 }
 
 float JointMoteus::get_temperature() const {

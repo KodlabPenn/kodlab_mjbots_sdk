@@ -50,10 +50,6 @@ class MjbotsHardwareInterface  {
    * @param dry_run if true, sends zero-torques to Moteus controllers
    * @param print_torques if true, prints torque commands
    * @param send_pd_commands if true, packets to the moteus include pd gains and setpoints
-   * @param send_current if true, packets to the moteus include q_current and d_current registers
-   * @param send_voltage if true, packets to the moteus include voltage register
-   * @param send_temperature if true, packets to the moteus include board temperature register
-   * @param send_fault if true, packets to the moteus include fault code register
    * 
    */
   MjbotsHardwareInterface(std::vector<std::shared_ptr<JointMoteus>> joint_list,
@@ -64,11 +60,7 @@ class MjbotsHardwareInterface  {
                        std::optional<::mjbots::pi3hat::Euler > imu_world_offset_deg = std::nullopt,
                        bool dry_run = false,
                        bool print_torques = false,
-                       bool send_pd_commands = false,
-                       bool send_current = false,
-                       bool send_voltage = false,
-                       bool send_temperature = false,
-                       bool send_fault = false
+                       bool send_pd_commands = false
                        );
 
   /**
@@ -144,10 +136,6 @@ class MjbotsHardwareInterface  {
   bool dry_run_;                                     ///< dry run active flag
   bool print_torques_;                               ///< print torques active flag
   bool send_pd_commands_;                            ///< Include pd gains and setpoints in the moteus packet
-  bool send_current_;                                ///< Include q_current and d_current registers in the moteus packet
-  bool send_voltage_;                                ///< Include voltage register in the moteus packet
-  bool send_temperature_;                            ///< Include board temperature register in the moteus packet
-  bool send_fault_;                                  ///< Include fault code register in the moteus packet
 
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
 

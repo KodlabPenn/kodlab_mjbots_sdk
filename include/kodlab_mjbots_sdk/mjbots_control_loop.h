@@ -41,10 +41,6 @@ struct ControlLoopOptions {
   bool dry_run = false;  ///< If true, torques sent to moteus boards will always be zero
   bool print_torques = false;  ///< If true, torque commands will be printed to console
   bool send_pd_commands = false; ///< If true, the control loop will send pd setpoints & gains in addition to ffwd torque commands
-  bool send_current = false;  ///< If true, the control loop will send d_current and q_current registers
-  bool send_voltage = false;  ///< If true, the control loop will send voltage registers
-  bool send_temperature = false;  ///< If true, the control loop will send board temperature registers
-  bool send_fault = false;  ///< If true, the control loop will send fault code registers
 };
 
 /*!
@@ -196,11 +192,8 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
       robot_->GetIMUDataSharedPtr(), options.imu_world_offset_deg,
       options.dry_run,
       options.print_torques,
-      options.send_pd_commands,
-      options.send_current,
-      options.send_voltage,
-      options.send_temperature,
-      options.send_fault);
+      options.send_pd_commands
+);
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }

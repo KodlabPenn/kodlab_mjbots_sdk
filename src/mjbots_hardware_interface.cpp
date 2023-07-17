@@ -14,11 +14,6 @@
 
 namespace kodlab::mjbots {
 void MjbotsHardwareInterface::InitializeCommand() {
-  for (const auto &joint : joints) {
-    commands_.push_back({});
-    commands_.back().id = joint->get_can_id(); //id
-  }
-
   ::mjbots::moteus::PositionResolution res; // This is just for the command
   if(send_pd_commands_){
     res.position = ::mjbots::moteus::Resolution::kInt16;
@@ -37,25 +32,13 @@ void MjbotsHardwareInterface::InitializeCommand() {
   }
   res.stop_position = ::mjbots::moteus::Resolution::kIgnore;
   res.watchdog_timeout = ::mjbots::moteus::Resolution::kIgnore;
-  for (auto &cmd : commands_) {
-    cmd.resolution = res;
-    cmd.mode = ::mjbots::moteus::Mode::kStopped;
-    if(send_pd_commands_){
-      cmd.query.torque = ::mjbots::moteus::Resolution::kInt16;
-    }
-    if(send_current_){
-      cmd.query.q_current = ::mjbots::moteus::Resolution::kInt16;
-      cmd.query.d_current = ::mjbots::moteus::Resolution::kInt16;
-    }
-    if(send_voltage_){
-      cmd.query.voltage = ::mjbots::moteus::Resolution::kInt16;
-    }
-    if(send_temperature_){
-      cmd.query.temperature = ::mjbots::moteus::Resolution::kInt16;
-    }
-    if(send_fault_){
-      cmd.query.fault = ::mjbots::moteus::Resolution::kInt8;
-    }
+
+  for (const auto &joint : joints) {
+    commands_.push_back({});
+    commands_.back().id = joint->get_can_id(); //id
+    commands_.back().query = joint->get_query_command(); //query
+    commands_.back().resolution = res;
+    commands_.back().mode = ::mjbots::moteus::Mode::kStopped;
   }
 }
 
@@ -83,11 +66,7 @@ MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<Joi
                                                  std::optional<::mjbots::pi3hat::Euler> imu_world_offset_deg,
                                                  bool dry_run,
                                                  bool print_torques,
-                                                 bool send_pd_commands,
-                                                 bool send_current,
-                                                 bool send_voltage,
-                                                 bool send_temperature,
-                                                 bool send_fault)
+                                                 bool send_pd_commands)
     : imu_data_(imu_data_ptr ? imu_data_ptr : std::make_shared<::kodlab::IMUData<float>>()),
       dry_run_(dry_run),
       print_torques_(print_torques),
@@ -149,13 +128,7 @@ void MjbotsHardwareInterface::ProcessReply() {
     if(std::isnan(servo_reply.position)){
       std::cout<<"Missing can frame for servo: " << joint->get_can_id()<< std::endl;
     } else{
-      joint->UpdateMoteus(servo_reply.position, servo_reply.velocity,
-                          send_pd_commands_ ? servo_reply.torque : 0, servo_reply.mode, 
-                          send_current_ ? servo_reply.q_current : 0,
-                          send_current_ ? servo_reply.d_current : 0, 
-                          send_voltage_ ? servo_reply.voltage : 0,
-                          send_temperature_ ? servo_reply.temperature : 0,
-                          servo_reply.fault);
+      joint->UpdateMoteus(servo_reply);
     }
   }
   imu_data_->Update(*(moteus_data_.attitude));
