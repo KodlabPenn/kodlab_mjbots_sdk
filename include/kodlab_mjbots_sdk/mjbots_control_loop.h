@@ -40,7 +40,7 @@ struct ControlLoopOptions {
                                             /// 400, 200, 100.
   bool dry_run = false;  ///< If true, torques sent to moteus boards will always be zero
   bool print_torques = false;  ///< If true, torque commands will be printed to console
-  bool send_pd_commands = false; ///< If true, the control loop will send pd setpoints & gains in addition to ffwd torque commands
+  bool use_pd_commands = false; ///< If true, the control loop will send pd setpoints & gains in addition to ffwd torque commands
 };
 
 /*!
@@ -192,7 +192,7 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
       robot_->GetIMUDataSharedPtr(), options.imu_world_offset_deg,
       options.dry_run,
       options.print_torques,
-      options.send_pd_commands
+      options.use_pd_commands
 );
   num_joints_ = robot_->joints.size();
   SetupOptions(options);

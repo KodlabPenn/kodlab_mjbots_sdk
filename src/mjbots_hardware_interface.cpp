@@ -15,7 +15,7 @@
 namespace kodlab::mjbots {
 void MjbotsHardwareInterface::InitializeCommand() {
   ::mjbots::moteus::PositionResolution res; // This is just for the command
-  if(send_pd_commands_){
+  if(use_pd_commands_){
     res.position = ::mjbots::moteus::Resolution::kInt16;
     res.velocity = ::mjbots::moteus::Resolution::kInt16;
     res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
@@ -66,11 +66,11 @@ MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<Joi
                                                  std::optional<::mjbots::pi3hat::Euler> imu_world_offset_deg,
                                                  bool dry_run,
                                                  bool print_torques,
-                                                 bool send_pd_commands)
+                                                 bool use_pd_commands)
     : imu_data_(imu_data_ptr ? imu_data_ptr : std::make_shared<::kodlab::IMUData<float>>()),
       dry_run_(dry_run),
       print_torques_(print_torques),
-      send_pd_commands_(send_pd_commands)
+      use_pd_commands_(use_pd_commands)
 { 
   LOG_IF_WARN(dry_run_, "\nDRY RUN: NO TORQUES COMMANDED");
   joints = joint_ptrs;
@@ -139,7 +139,7 @@ void MjbotsHardwareInterface::SendCommand() {
 
   for (int servo = 0; servo < num_joints_; servo++) {// TODO Move to a seperate update method (allow non-ff torque commands)?
     commands_[servo].position.feedforward_torque = (dry_run_ ? 0 : joints[servo]->get_servo_torque());
-    if(send_pd_commands_){
+    if(use_pd_commands_){
       commands_[servo].position.position = joints[servo]->get_moteus_position_target();
       commands_[servo].position.velocity = joints[servo]->get_moteus_velocity_target();
       commands_[servo].position.kp_scale = dry_run_ ? 0 : joints[servo]->get_kp_scale();
