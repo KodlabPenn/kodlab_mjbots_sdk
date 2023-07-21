@@ -21,11 +21,11 @@ void MjbotsHardwareInterface::InitializeCommand() {
     res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
     res.kp_scale = ::mjbots::moteus::Resolution::kInt16;
     res.kd_scale = ::mjbots::moteus::Resolution::kInt16;
-    res.maximum_torque = ::mjbots::moteus::Resolution::kInt8;
+    res.maximum_torque = ::mjbots::moteus::Resolution::kInt16;
   }else{
     res.position = ::mjbots::moteus::Resolution::kIgnore;
     res.velocity = ::mjbots::moteus::Resolution::kIgnore;
-    res.feedforward_torque = ::mjbots::moteus::Resolution::kInt32;
+    res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
     res.kp_scale = ::mjbots::moteus::Resolution::kIgnore;
     res.kd_scale = ::mjbots::moteus::Resolution::kIgnore;
     res.maximum_torque = ::mjbots::moteus::Resolution::kIgnore;
