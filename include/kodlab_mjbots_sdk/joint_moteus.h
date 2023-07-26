@@ -148,6 +148,13 @@ class JointMoteus: public JointBase
         int get_can_bus() const;
 
         /**
+         * @brief Get the QueryCommand object
+         * 
+         * @return const ::mjbots::moteus::QueryCommand
+         */
+        const ::mjbots::moteus::QueryCommand get_query_command() const;
+
+        /**
          * @brief Get the mode reference 
          * 
          * @return const ::mjbots::moteus::Mode& 
@@ -155,11 +162,32 @@ class JointMoteus: public JointBase
         const ::mjbots::moteus::Mode & get_mode_reference() const;
 
         /**
-         * @brief Get the QueryCommand object
+         * @brief Get the position, overrides joint_base.h
          * 
-         * @return const ::mjbots::moteus::QueryCommand
+         * @return float 
          */
-        const ::mjbots::moteus::QueryCommand get_query_command() const;
+        float get_position() const override;
+
+        /**
+         * @brief Get the velocity, overrides joint_base.h
+         * 
+         * @return float
+         */
+        float get_velocity() const override;
+
+        /**
+         * @brief Get the torque command, overrides joint_base.h
+         * 
+         * @return float
+         */
+        float get_servo_torque() const override;
+
+        /**
+         * @brief Get the measured joint torque, overrides joint_base.h
+         * 
+         * @return float
+         */
+        float get_measured_torque() const override;
 
         /**
          * @brief Get the temperature register

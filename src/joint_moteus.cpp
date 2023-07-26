@@ -16,7 +16,7 @@ namespace kodlab{
 namespace mjbots{
 
 // kDefaultQuery defintion
-const ::mjbots::moteus::QueryCommand JointMoteus::kDefaultQuery = {
+const ::mjbots::moteus::QueryCommand JointMoteus::kDefaultQuery{
   ::mjbots::moteus::Resolution::kInt8,
   ::mjbots::moteus::Resolution::kInt16,
   ::mjbots::moteus::Resolution::kInt16,
@@ -26,11 +26,11 @@ const ::mjbots::moteus::QueryCommand JointMoteus::kDefaultQuery = {
   ::mjbots::moteus::Resolution::kIgnore,
   ::mjbots::moteus::Resolution::kIgnore,
   ::mjbots::moteus::Resolution::kIgnore,
-  ::mjbots::moteus::Resolution::kIgnore 
+  ::mjbots::moteus::Resolution::kIgnore
 };
 
 // kTorqueQuery definition
-const ::mjbots::moteus::QueryCommand JointMoteus::kTorqueQuery = {
+const ::mjbots::moteus::QueryCommand JointMoteus::kTorqueQuery{
   ::mjbots::moteus::Resolution::kInt8,
   ::mjbots::moteus::Resolution::kInt16,
   ::mjbots::moteus::Resolution::kInt16,
@@ -44,7 +44,7 @@ const ::mjbots::moteus::QueryCommand JointMoteus::kTorqueQuery = {
 };
 
 // kDebugQuery definition
-const ::mjbots::moteus::QueryCommand JointMoteus::kDebugQuery = {
+const ::mjbots::moteus::QueryCommand JointMoteus::kDebugQuery{
   ::mjbots::moteus::Resolution::kInt8,
   ::mjbots::moteus::Resolution::kInt16,
   ::mjbots::moteus::Resolution::kInt16,
@@ -58,7 +58,7 @@ const ::mjbots::moteus::QueryCommand JointMoteus::kDebugQuery = {
 };
 
 // kComprehensiveQuery definition
-const ::mjbots::moteus::QueryCommand JointMoteus::kComprehensiveQuery = {
+const ::mjbots::moteus::QueryCommand JointMoteus::kComprehensiveQuery{
   ::mjbots::moteus::Resolution::kInt8,
   ::mjbots::moteus::Resolution::kInt16,
   ::mjbots::moteus::Resolution::kInt16,
@@ -143,32 +143,98 @@ int JointMoteus::get_can_bus() const {
   return can_bus_;
 }
 
-const ::mjbots::moteus::Mode & JointMoteus::get_mode_reference() const {
-  return mode_;
-}
-
 const ::mjbots::moteus::QueryCommand JointMoteus::get_query_command() const {
   return query_type_;
 }
 
+const ::mjbots::moteus::Mode & JointMoteus::get_mode_reference() const {
+  if(query_type_.mode == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("Mode resolution is set to kIgnore, while attempting to log register");
+    return ::mjbots::moteus::Mode::kStopped;
+  } else {
+    return mode_;
+  }
+}
+
+float JointMoteus::get_position() const {
+  if(query_type_.position == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("Position resolution is set to kIgnore, while attempting to log register");
+    return 0;
+  } else {
+    return position_;
+  }
+}
+
+float JointMoteus::get_velocity() const {
+  if(query_type_.velocity == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("Velocity resolution is set to kIgnore, while attempting to log register");
+    return 0;
+  } else {
+    return velocity_;
+  }
+}
+
+float JointMoteus::get_servo_torque() const {
+  if(query_type_.torque == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("Torque resolution is set to kIgnore, while attempting to log register");
+    return 0;
+  } else {
+    return servo_torque_;
+  }
+}
+
+float JointMoteus::get_measured_torque() const {
+  if(query_type_.torque == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("Torque resolution is set to kIgnore, while attempting to log register");
+    return 0;
+  } else {
+    return measured_torque_;
+  }
+}
+
 float JointMoteus::get_temperature() const {
-  return temperature_;
+  if(query_type_.temperature == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("Temperature resolution is set to kIgnore, while attempting to log register");
+    return 0;
+  } else {
+    return temperature_;
+  }
 }
 
 float JointMoteus::get_q_current() const {
-  return q_current_;
+  if(query_type_.q_current == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("Q Current resolution is set to kIgnore, while attempting to log register");
+    return 0;
+  } else {
+    return q_current_;
+  }
 }
 
 float JointMoteus::get_d_current() const {
-  return d_current_;
+  if(query_type_.d_current == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("D Current resolution is set to kIgnore, while attempting to log register");
+    return 0;
+  } else {
+    return d_current_;
+  }
 }
 
 float JointMoteus::get_voltage() const {
-  return voltage_;
+  if(query_type_.voltage == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("Voltage resolution is set to kIgnore, while attemping to log register");
+    return 0;
+  } else {
+    return voltage_;
+  }
 }
 
 const ::mjbots::moteus::Fault & JointMoteus::get_fault() const {
-  return fault_;
+  if(query_type_.fault == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("Fault code resolution is set to kIgnore, while attempting to log register");
+    return ::mjbots::moteus::Fault::kSuccess;
+  } else {
+    return fault_;
+  }
 }
 
 [[nodiscard]] float JointMoteus::get_kp_scale() const {
