@@ -135,6 +135,14 @@ void JointMoteus::UpdateMoteus(::mjbots::moteus::QueryResult reply_message){
                     fault_ = reply_message.fault;
 }
 
+bool JointMoteus::is_open_loop() {
+  if(query_type_.position == ::mjbots::moteus::Resolution::kIgnore ||
+  query_type_.velocity == ::mjbots::moteus::Resolution::kIgnore){
+    open_loop_flag_ = true;
+  }
+  return open_loop_flag_;
+}
+
 int JointMoteus::get_can_id() const {
   return can_id_;
 }

@@ -41,6 +41,7 @@ struct ControlLoopOptions {
   bool dry_run = false;  ///< If true, torques sent to moteus boards will always be zero
   bool print_torques = false;  ///< If true, torque commands will be printed to console
   bool use_pd_commands = false; ///< If true, the control loop will send pd setpoints & gains in addition to ffwd torque commands
+  bool open_loop = false; ///< If true, open loop control of the robot is permitted
 };
 
 /*!
@@ -162,7 +163,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
 
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options)
-  : MjbotsControlLoop<log_type, input_type,robot_type>( make_share_vector(joints), options){}
+  : MjbotsControlLoop<log_type, input_type,robot_type>(make_share_vector(joints), options){}
 
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(
@@ -192,10 +193,19 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
       robot_->GetIMUDataSharedPtr(), options.imu_world_offset_deg,
       options.dry_run,
       options.print_torques,
-      options.use_pd_commands
-);
+      options.use_pd_commands,
+      options.open_loop
+  );
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
+
+  // Open loop check
+  for(size_t i = 0; i < num_joints_; ++i){
+      if(!options.open_loop && joints_moteus[i]->is_open_loop()){
+        LOG_FATAL("Open loop option not set, not receiving position and/or velocity");
+        kodlab::ActivateCtrlC();
+      }
+  }
 }
 
 template<class log_type, class input_type, class robot_type>

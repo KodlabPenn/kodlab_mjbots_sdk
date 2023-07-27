@@ -134,6 +134,13 @@ class JointMoteus: public JointBase
         void UpdateMoteus(::mjbots::moteus::QueryResult reply_message);
 
         /**
+         * @brief Determines whether open loop options should be enabled
+         * 
+         * @return bool 
+         */
+        bool is_open_loop();
+
+        /**
          * @brief Get the can id 
          * 
          * @return int 
@@ -249,6 +256,7 @@ class JointMoteus: public JointBase
         [[nodiscard]] float get_moteus_velocity_target()const;
 
     private:
+        bool open_loop_flag_ = false;  // if true, open loop controller expected
         int can_id_;   /// the can id of this joint's moteus
         int can_bus_;  /// the can bus the moteus communicates on
         ::mjbots::moteus::QueryCommand query_type_;
