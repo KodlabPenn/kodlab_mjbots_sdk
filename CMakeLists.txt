@@ -22,3 +22,17 @@ add_subdirectory(src)
 add_subdirectory(examples)
 add_subdirectory(thirdparty/real_time_tools)
 add_subdirectory(thirdparty/yaml-cpp)
+add_subdirectory(thirdparty/pinocchio)
+
+
+# #add_subdirectory(thirdparty/console_bridge)
+# #add_subdirectory(thirdparty/urdfdom_headers)
+# add_subdirectory(thirdparty/urdfdom)
+
+# #add_library(thirdparty/urdfdom_headers)
+# #add_library(thirdparty/urdfdom)
+# #add_subdirectory(thirdparty/pinocchio)
+# #add_library(pinocchio STATIC ${CMAKE_SOURCE_DIR}/third-party/pinocchio)
+# # target_include_directories(pinocchio SYSTEM INTERFACE 
+# #     ${CMAKE_SOURCE_DIR}/third-party/pinocchio
+# # )

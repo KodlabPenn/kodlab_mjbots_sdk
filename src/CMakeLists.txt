@@ -47,16 +47,19 @@ set(SOURCE_LIST "pi3hat.cpp"
 add_library(kodlab_mjbots_sdk  ${SOURCE_LIST} ${HEADER_LIST})
 
 # We need this directory, and users of our library will need it too
-target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty/Eigen ../lcm_types
+target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty/Eigen ../lcm_types 
         $ENV{RASPBIAN_ROOTFS}/opt/vc/include
         $ENV{RASPBIAN_ROOTFS}/usr/local/include
+        "/home/kodlab/Desktop/kodlab_mjbots_sdk/build/thirdparty/pinocchio/include"
         ../thirdparty/real_time_tools/include
         ../thirdparty/yaml-cpp/include
         )
 
 target_link_libraries(kodlab_mjbots_sdk PUBLIC $ENV{RASPBIAN_ROOTFS}/opt/vc/lib/libbcm_host.so)
 
+
 target_link_libraries(kodlab_mjbots_sdk PRIVATE ${LCM_NAMESPACE}lcm)
+target_link_libraries(kodlab_mjbots_sdk PRIVATE $ENV{RASPBIAN_ROOTFS}/usr/lib/arm-linux-gnueabihf/libtinyxml.so)
 
 # All users of this library will need at least C++11
 target_compile_features(kodlab_mjbots_sdk PUBLIC cxx_std_14)

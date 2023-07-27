@@ -7,11 +7,15 @@
 [submodule "thirdparty/pinocchio"]
 	path = thirdparty/pinocchio
 	url = git@github.com:bosky2001/pinocchio.git
-
-	
-# [submodule "thirdparty/urdfdom"]
-# 	path = thirdparty/urdfdom
-# 	url = git@github.com:bosky2001/urdfdom.git
-# [submodule "thirdparty/urdfdom_headers"]
-# 	path = thirdparty/urdfdom_headers
-# 	url = git@github.com:bosky2001/urdfdom_headers.git
+[submodule "thirdparty/urdfdom"]
+	path = thirdparty/urdfdom
+	url = git@github.com:bosky2001/urdfdom.git
+[submodule "thirdparty/urdfdom_headers"]
+	path = thirdparty/urdfdom_headers
+	url = git@github.com:bosky2001/urdfdom_headers.git
+[submodule "thirdparty/console_bridge"]
+	path = thirdparty/console_bridge
+	url = https://github.com/ros/console_bridge.git
+[submodule "thirdparty/ticpp"]
+	path = thirdparty/ticpp
+	url = https://github.com/wxFormBuilder/ticpp.git

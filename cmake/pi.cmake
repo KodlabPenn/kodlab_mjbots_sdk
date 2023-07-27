@@ -89,7 +89,7 @@ set(LIB_DIRS
 	"${SYSROOT_PATH}/usr/lib/${TOOLCHAIN_HOST}/lapack"
 )
 # You can additionally check the linker paths if you add the flags ' -Xlinker --verbose'
-set(COMMON_FLAGS "-I${SYSROOT_PATH}/usr/include ")
+set(COMMON_FLAGS "-I${SYSROOT_PATH}/usr/include -Wno-conversion -Wno-attributes")
 FOREACH(LIB ${LIB_DIRS})
 	set(COMMON_FLAGS "${COMMON_FLAGS} -L${LIB} -Wl,-rpath-link,${LIB}")
 ENDFOREACH()

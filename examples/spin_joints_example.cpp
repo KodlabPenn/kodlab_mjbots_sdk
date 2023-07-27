@@ -15,12 +15,19 @@
 #include <sys/mman.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include "kodlab_mjbots_sdk/momentum_observer.h"
+
 
 class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
   void Update() override {
     std::vector<float> torques(num_joints_, 0);
     robot_->SetTorques(torques);
+    pinocchio::Model model;
+    const std::string urdf_filename = std::string("twist.urdf") ;
+    
+    Observer mom_obs(urdf_filename);
+    mom_obs.get_cutoff();
   }
 
   void PrepareLog() override {
@@ -45,9 +52,9 @@ class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
 int main(int argc, char **argv) {
   //Setup joints
   std::vector<kodlab::mjbots::JointMoteus> joints;
-  joints.emplace_back(100, 4, 1, -1.3635165,   1, 1);
-  joints.emplace_back(101, 4,-1,  2.688, 5.0/3.0, 1);
-  joints.emplace_back(108, 4, 1, -0.4674585,   1, 1);
+  // joints.emplace_back(100, 4, 1, -1.3635165,   1, 1);
+  // joints.emplace_back(101, 4,-1,  2.688, 5.0/3.0, 1);
+  // joints.emplace_back(108, 4, 1, -0.4674585,   1, 1);
 
   // Define robot options
   kodlab::mjbots::ControlLoopOptions options;
