@@ -117,6 +117,7 @@ enum Register : uint32_t {
 };
 
 enum class Mode {
+  kUnset = -1,
   kStopped = 0,
   kFault = 1,
   kEnabling = 2,
@@ -134,6 +135,7 @@ enum class Mode {
 };
 
 enum class Fault {
+  kUnset = -1,
   kSuccess = 0,
 
   kDmaStreamTransferError = 1,
@@ -678,7 +680,7 @@ inline void EmitQueryCommand(
 }
 
 struct QueryResult {
-  Mode mode = Mode::kStopped;
+  Mode mode = Mode::kUnset;
   double position = std::numeric_limits<double>::quiet_NaN();
   double velocity = std::numeric_limits<double>::quiet_NaN();
   double torque = std::numeric_limits<double>::quiet_NaN();
@@ -687,7 +689,20 @@ struct QueryResult {
   bool rezero_state = false;
   double voltage = std::numeric_limits<double>::quiet_NaN();
   double temperature = std::numeric_limits<double>::quiet_NaN();
-  Fault fault = Fault::kSuccess;
+  Fault fault = Fault::kUnset;
+
+  bool all_unset() const {
+    return mode == Mode::kUnset &&
+        position == std::numeric_limits<double>::quiet_NaN() &&
+        velocity == std::numeric_limits<double>::quiet_NaN() &&
+        torque == std::numeric_limits<double>::quiet_NaN() &&
+        q_current == std::numeric_limits<double>::quiet_NaN() &&
+        d_current == std::numeric_limits<double>::quiet_NaN() &&
+        rezero_state == false &&
+        voltage == std::numeric_limits<double>::quiet_NaN() &&
+        temperature == std::numeric_limits<double>::quiet_NaN() &&
+        fault == Fault::kUnset;
+  }
 };
 
 inline QueryResult ParseQueryResult(const uint8_t* data, size_t size) {

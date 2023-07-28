@@ -127,7 +127,7 @@ void MjbotsHardwareInterface::ProcessReply() {
   // Copy results to object so controller can use
   for (auto & joint : joints) {
     const auto servo_reply = Get(replies_, joint->get_can_id());
-    if(std::isnan(servo_reply.position)){
+    if(joint->get_query_command().any_set() && servo_reply.all_unset()){
       std::cout<<"Missing can frame for servo: " << joint->get_can_id()<< std::endl;
     } else{
       joint->UpdateMoteus(servo_reply);

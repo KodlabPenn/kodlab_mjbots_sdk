@@ -186,6 +186,13 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
     joints_moteus.push_back(
         std::dynamic_pointer_cast<kodlab::mjbots::JointMoteus>(j));
   }
+  // Open loop check
+  for(const auto & j : joints_moteus){
+      if(!options.open_loop && j->is_open_loop()){
+        LOG_FATAL("Open loop option not set, not receiving position and/or velocity");
+        kodlab::ActivateCtrlC();
+      }
+  }
   // Initialize mjbots_interface
   mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(
       std::move(joints_moteus), options.realtime_params,
@@ -198,14 +205,6 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
   );
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
-
-  // Open loop check
-  for(size_t i = 0; i < num_joints_; ++i){
-      if(!options.open_loop && joints_moteus[i]->is_open_loop()){
-        LOG_FATAL("Open loop option not set, not receiving position and/or velocity");
-        kodlab::ActivateCtrlC();
-      }
-  }
 }
 
 template<class log_type, class input_type, class robot_type>

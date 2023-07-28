@@ -136,11 +136,14 @@ void JointMoteus::UpdateMoteus(::mjbots::moteus::QueryResult reply_message){
 }
 
 bool JointMoteus::is_open_loop() {
+  bool rv;
   if(query_type_.position == ::mjbots::moteus::Resolution::kIgnore ||
   query_type_.velocity == ::mjbots::moteus::Resolution::kIgnore){
-    open_loop_flag_ = true;
+    rv = true;
+  } else {
+    rv = false;
   }
-  return open_loop_flag_;
+  return rv;
 }
 
 int JointMoteus::get_can_id() const {
@@ -158,10 +161,15 @@ const ::mjbots::moteus::QueryCommand JointMoteus::get_query_command() const {
 const ::mjbots::moteus::Mode & JointMoteus::get_mode_reference() const {
   if(query_type_.mode == ::mjbots::moteus::Resolution::kIgnore){
     LOG_WARN("Mode resolution is set to kIgnore, while attempting to log register");
-    return ::mjbots::moteus::Mode::kStopped;
-  } else {
-    return mode_;
   }
+  return mode_;
+}
+
+const ::mjbots::moteus::Mode JointMoteus::get_mode() const {
+  if(query_type_.mode == ::mjbots::moteus::Resolution::kIgnore){
+    LOG_WARN("Mode resolution is set to kIgnore, while attempting to log register");
+  }
+  return mode_;
 }
 
 float JointMoteus::get_position() const {

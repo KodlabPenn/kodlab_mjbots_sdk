@@ -169,6 +169,13 @@ class JointMoteus: public JointBase
         const ::mjbots::moteus::Mode & get_mode_reference() const;
 
         /**
+         * @brief Get the mode 
+         * 
+         * @return const ::mjbots::moteus::Mode
+         */
+        const ::mjbots::moteus::Mode get_mode() const;
+
+        /**
          * @brief Get the position, overrides joint_base.h
          * 
          * @return float 
@@ -256,7 +263,6 @@ class JointMoteus: public JointBase
         [[nodiscard]] float get_moteus_velocity_target()const;
 
     private:
-        bool open_loop_flag_ = false;  // if true, open loop controller expected
         int can_id_;   /// the can id of this joint's moteus
         int can_bus_;  /// the can bus the moteus communicates on
         ::mjbots::moteus::QueryCommand query_type_;
