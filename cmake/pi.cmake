@@ -47,17 +47,18 @@ if("$ENV{RASPBIAN_ROOTFS}" STREQUAL "")
 else()
 	set(SYSROOT_PATH "$ENV{RASPBIAN_ROOTFS}")
 endif()
-set(TOOLCHAIN_HOST "arm-linux-gnueabihf")
+set(TOOLCHAIN_HOST "aarch64-linux-gnu")
+set(TOOLCHAIN_HOST2 "aarch64-linux-gnu")
 
 message(STATUS "Using sysroot path: ${SYSROOT_PATH}")
 
-set(TOOLCHAIN_CC "${TOOLCHAIN_HOST}-gcc")
-set(TOOLCHAIN_CXX "${TOOLCHAIN_HOST}-g++")
-set(TOOLCHAIN_LD "${TOOLCHAIN_HOST}-ld")
-set(TOOLCHAIN_AR "${TOOLCHAIN_HOST}-ar")
-set(TOOLCHAIN_RANLIB "${TOOLCHAIN_HOST}-ranlib")
-set(TOOLCHAIN_STRIP "${TOOLCHAIN_HOST}-strip")
-set(TOOLCHAIN_NM "${TOOLCHAIN_HOST}-nm")
+set(TOOLCHAIN_CC "${TOOLCHAIN_HOST2}-gcc")
+set(TOOLCHAIN_CXX "${TOOLCHAIN_HOST2}-g++")
+set(TOOLCHAIN_LD "${TOOLCHAIN_HOST2}-ld")
+set(TOOLCHAIN_AR "${TOOLCHAIN_HOST2}-ar")
+set(TOOLCHAIN_RANLIB "${TOOLCHAIN_HOST2}-ranlib")
+set(TOOLCHAIN_STRIP "${TOOLCHAIN_HOST2}-strip")
+set(TOOLCHAIN_NM "${TOOLCHAIN_HOST2}-nm")
 
 set(CMAKE_CROSSCOMPILING TRUE)
 set(CMAKE_SYSROOT "${SYSROOT_PATH}")
@@ -78,8 +79,8 @@ set(CMAKE_CXX_COMPILER ${TOOLCHAIN_CXX})
 
 # List of library dirs where LD has to look. Pass them directly through gcc. LD_LIBRARY_PATH is not evaluated by arm-*-ld
 set(LIB_DIRS 
-	"/opt/cross-pi-gcc/arm-linux-gnueabihf/lib"
-	"/opt/cross-pi-gcc/lib"
+	"/opt/cross-pi-gcc-10.2.0-64/aarch64-linux-gnu/lib"
+	"/opt/cross-pi-gcc-10.2.0-64/lib"
 	"${SYSROOT_PATH}/opt/vc/lib"
 	"${SYSROOT_PATH}/lib/${TOOLCHAIN_HOST}"
 	"${SYSROOT_PATH}/usr/local/lib"
@@ -97,7 +98,7 @@ ENDFOREACH()
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${SYSROOT_PATH}/usr/lib/${TOOLCHAIN_HOST}")
 
 if(RASPBERRY_VERSION VERSION_GREATER 3)
-	set(CMAKE_C_FLAGS "-mcpu=cortex-a72 -mfloat-abi=hard -mfpu=neon-fp-armv8  -O3  ${COMMON_FLAGS}" CACHE STRING "Flags for Raspberry PI 4")
+	set(CMAKE_C_FLAGS "-mcpu=cortex-a72  -march=armv8-a+fp+simd -O3  ${COMMON_FLAGS}" CACHE STRING "Flags for Raspberry PI 4")
 	set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING "Flags for Raspberry PI 4")
 elseif(RASPBERRY_VERSION VERSION_GREATER 2)
 	set(CMAKE_C_FLAGS "-mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8  -O3  ${COMMON_FLAGS}" CACHE STRING "Flags for Raspberry PI 3")
