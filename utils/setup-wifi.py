@@ -137,64 +137,11 @@ def set_config_var(name, value):
 def main():
     if os.getuid() != 0:
         raise RuntimeError('must be run as root')
+    ssid = input("Enter desired SSID: ")
+    password = input("Enter desired wifi password: ")
+    ip_address_extension = input("Enter desired ip address last 3 digits (between 0 and 255): ")
+    print("Your ip address will be: 192.168.16."+ip_address_extension)
 
-    # Some useful utilities
-    run('apt install --yes socat setserial screen')
-
-    # Things necessary to be an AP
-    run('apt install --yes hostapd dnsmasq')
-
-    run('apt-get update')
-
-    # Get correct time
-    run('apt install --yes ntp')
-
-    # Things necessary install bcm
-    run('apt-get install --yes libraspberrypi-dev raspberrypi-kernel-headers')
-
-    run('apt-get update')
-    run('apt-get update')
-
-    # Things necessary install other dependencies
-    run('apt-get install --yes cmake libglib2.0-dev libboost-all-dev git python3-pip')
-    run('pip3 install moteus_pi3hat')
-
-    run('git clone https://github.com/lcm-proj/lcm  /home/pi/lcm&& cd /home/pi/lcm && mkdir /home/pi/lcm/build && cd /home/pi/lcm/build && cmake .. && make && sudo make install')
-    run('git clone https://github.com/KodlabPenn/libbot2  /home/pi/libbot2 && cd /home/pi/libbot2 && sudo make BUILD_PREFIX=/usr/local')
-
-
-    # P1 Camera - Yes
-    run('raspi-config nonint do_camera 0')
-
-    # P2 SSH - Yes
-    run('raspi-config nonint do_ssh 0')
-
-    # P6 Serial
-    #  Login shell - No
-    #  Serial enabled - Yes
-    #
-    # NOTE: The version of raspi-config we have now doesn't support
-    # enabling the UART from noninteractive mode.
-    run('raspi-config nonint do_serial 1')
-
-    # This we have to manually enable the UART once it is done.
-    set_config_var('enable_uart', '1')
-
-    # We have US keyboards!
-    ensure_contents('/etc/default/keyboard', '''
-XKBMODEL="pc105"
-XKBLAYOUT="us"
-XKBVARIANT=""
-XKBOPTIONS=""
-BACKSPACE="guess"
-''')
-
-
-    # Switch to use the PL011 UART
-    #  https://www.raspberrypi.org/documentation/configuration/uart.md
-    ensure_present('/boot/config.txt', 'dtoverlay=pi3-disable-bt')
-
-    ensure_keyword_present('/boot/cmdline.txt', 'isolcpus', '1,2,3')
 
     ensure_contents('/etc/network/interfaces',
                     '''
@@ -211,7 +158,7 @@ iface eth0 inet dhcp
 
 allow-hotplug wlan0
 iface wlan0 inet static
-    address 192.168.16.33
+    address 192.168.16.''' + ip_address_extension + '''
     netmask 255.255.255.0
     network 192.168.16.0
     broadcast 192.168.16.255
@@ -230,7 +177,7 @@ country_code=US
 
 interface=wlan0
 driver=nl80211
-ssid=mjbots-unset
+ssid= ''' + ssid + '''
 hw_mode=a
 ieee80211n=1
 require_ht=1
@@ -252,7 +199,7 @@ auth_algs=1
 ignore_broadcast_ssid=0
 
 wpa=2
-wpa_passphrase=WalkingRobots
+wpa_passphrase=''' + password + '''
 wpa_key_mgmt=WPA-PSK
 wpa_pairwise=TKIP
 rsn_pairwise=CCMP
@@ -261,7 +208,7 @@ rsn_pairwise=CCMP
 #     ensure_contents('/etc/systemd/system/hostapd.service.d/10-select-ssid.conf',
 #                     '''
 # [Service]
-# ExecStartPre=bash -c "SSID=kodlab-robot; perl -pi -e \"s/ssid=.*/ssid=$SSID/\" /etc/hostapd/hostapd.conf"
+# ExecStartPre=bash -c "SSID= ''' + ssid + '''; perl -pi -e \"s/ssid=.*/ssid=$SSID/\" /etc/hostapd/hostapd.conf"
 # ''')
 
     ensure_present('/etc/default/hostapd',
@@ -283,28 +230,6 @@ dhcp-range=192.168.16.100,192.168.16.150,255.255.255.0,24h
 
 
     subprocess.check_call("systemctl daemon-reload", shell=True)
-
-    ensure_present('/etc/rc.local', 'sleep10')
-    ensure_present('/etc/rc.local', 'ifconfig wlan0 multicast')
-    ensure_present('/etc/rc.local', 'sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev wlan0')
-    ensure_present('/etc/rc.local', '/home/pi/performance_governor.sh')
-    ensure_present('/etc/rc.local', 'bot-lcm-tunnel')
-    ensure_present('/etc/ld.so.conf', '/usr/local/lib')
-    run('ldconfig')
-
-    run('wget https://raw.githubusercontent.com/abhiTronix/raspberry-pi-cross-compilers/master/utils/SSymlinker')
-
-    run('''
-    sudo chmod +x SSymlinker
-    ./SSymlinker -s /usr/include/aarch64-linux-gnu/asm -d /usr/include
-    ./SSymlinker -s /usr/include/aarch64-linux-gnu/gnu -d /usr/include
-    ./SSymlinker -s /usr/include/aarch64-linux-gnu/bits -d /usr/include
-    ./SSymlinker -s /usr/include/aarch64-linux-gnu/sys -d /usr/include
-    ./SSymlinker -s /usr/lib/aarch64-linux-gnu/crtn.o -d /usr/lib/crtn.o
-    ./SSymlinker -s /usr/lib/aarch64-linux-gnu/crt1.o -d /usr/lib/crt1.o
-    ./SSymlinker -s /usr/lib/aarch64-linux-gnu/crti.o -d /usr/lib/crti.o
-    ''')
-
 
 if __name__ == '__main__':
     main()
