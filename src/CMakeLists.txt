@@ -56,7 +56,7 @@ target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty/Eig
         ../thirdparty/yaml-cpp/include
         )
 
-target_link_libraries(kodlab_mjbots_sdk PUBLIC $ENV{RASPBIAN_ROOTFS}/opt/vc/lib/libbcm_host.so)
+target_link_libraries(kodlab_mjbots_sdk PUBLIC bcm_host)
 
 target_link_libraries(kodlab_mjbots_sdk PRIVATE ${LCM_NAMESPACE}lcm)
 
