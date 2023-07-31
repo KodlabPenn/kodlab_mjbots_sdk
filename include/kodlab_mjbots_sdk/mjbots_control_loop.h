@@ -314,17 +314,14 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   }
 
   // Might be related to use of new
-  std::cout << "\nCTRL C Detected. Sending stop command and then segaulting" << std::endl;
-  std::cout << "TODO: Don't segfault" << std::endl;
+  std::cout << "\nCTRL C Detected. Sending stop command and then stopping" << std::endl;
 
+  lcm_sub_->Join();
   // Send a few stop commands
   mjbots_interface_->Stop();
 
   // try to Shutdown, but fail
   mjbots_interface_->Shutdown();
-  if (input_) {
-    lcm_sub_->Join();
-  }
 }
 
 template<class log_type, class input_type, class robot_type>
