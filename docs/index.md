@@ -1,17 +1,16 @@
-# Welcome to MkDocs
+# Overview
+The kodlab_mjbots_sdk has a few key key features added to the 
+pi3_hat library developed by mjbots: https://github.com/mjbots/pi3hat
+1. Cross compiling support from ubuntu 20.04 to Raspberry pi
+2. Integration with NYU realtime_tools library: https://github.com/machines-in-motion/real_time_tools 
+for better realtime performance
+3. Integration with LCM (https://lcm-proj.github.io/) for remote logging and remote input to the robot
+4.  The `MjbotsControlLoop` object which handles the structure of the control loop for
+the easy creation of new controllers
+5. The `MjbotsHardwareInterface` which provides a convenient interface for communicating with any number
+of moteus motor controllers 
+6. The `RobotBase` class which provides an interface for updating robot state and joint torques.
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
-
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+Note: This library only supports torque commands. If you wish to use
+position control, you either must close the loop yourself or modify the 
+library to allow for the position loop to Run on the moteus.
