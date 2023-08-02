@@ -231,4 +231,17 @@ Colored terminal output is provided by default via
 [ANSI escape codes](https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797).
 This can be disabled by defining the `NO_COLOR` macro.
 
+## Building
+Current command to build clean is
+
+    cd .. && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=<path to sdk>/cmake/pi.cmake && make
+
+Normal build is 
+
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=~/mjbots/kodlab_mjbots_sdk/cmake/pi.cmake
+
+## Running Code
+To Run code, first scp the binary onto the pi, and then Run it as sudo using:
+
+    sudo ./code_binary
 
