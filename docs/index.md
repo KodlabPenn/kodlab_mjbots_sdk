@@ -14,3 +14,10 @@ of moteus motor controllers
 Note: This library only supports torque commands. If you wish to use
 position control, you either must close the loop yourself or modify the 
 library to allow for the position loop to Run on the moteus.
+
+# Citation
+To cite this repo please use the information in the CITATION.cff file
+
+# Acknowledgement
+This work was supported by ONR grant #N00014- 16-1-2817, a Vannevar Bush Fellowship held by Daniel Koditschek,
+sponsored by the Basic Research Office of the Assistant Secretary of Defense for Research and Engineering.
