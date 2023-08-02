@@ -1,0 +1,10 @@
+struct IMULog
+{
+  float timestamp;
+  float margin;
+  float message_duration;
+  float attitude_quaternion[4];
+  float attitude_euler[3];
+  float angular_velocity[3];
+  float linear_acceleration[3];
+}
