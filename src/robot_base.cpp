@@ -9,12 +9,14 @@
  */
 #include "kodlab_mjbots_sdk/robot_base.h"
 
-std::vector<float> kodlab::RobotBase::GetJointPositions() { //Copy of positions
+std::vector<float> kodlab::RobotBase::GetJointPositions() const{
+  // Return a copy of positions
   std::vector<float>pos(positions_.begin(), positions_.end());
   return pos;
 }
 
-std::vector<float> kodlab::RobotBase::GetJointVelocities() { //Copy of velocities
+std::vector<float> kodlab::RobotBase::GetJointVelocities() const {
+  // Return a copy of velocities
   std::vector<float>vel(velocities_.begin(), velocities_.end());
   return vel;
 }
@@ -38,7 +40,8 @@ std::vector<std::shared_ptr<kodlab::JointBase>> kodlab::RobotBase::GetJoints(std
   return kodlab::RobotBase::GetJoints(joint_vect);
 }
 
-std::vector<float> kodlab::RobotBase::GetJointTorqueCmd() { //Copy of torque_cmds
+std::vector<float> kodlab::RobotBase::GetJointTorqueCmd() const {
+  // Return a copy of torque_cmds
   std::vector<float>torques(torque_cmd_.begin(), torque_cmd_.end());
   return torques;
 }

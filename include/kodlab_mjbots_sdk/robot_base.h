@@ -98,16 +98,17 @@ namespace kodlab
         }
 
         /*!
-         * @brief accessor for joint positions, takes into account direction and offset
+         * @brief accessor for joint positions, takes into account direction 
+         * and offset
          * @return the joint positions
          */
-        std::vector<float> GetJointPositions();
+        std::vector<float> GetJointPositions() const;
 
         /*!
          * @brief accessor for joint velocities, takes into account direction
          * @return the joint velocities
          */
-        std::vector<float> GetJointVelocities();
+        std::vector<float> GetJointVelocities() const;
 
         /*!
          * @brief setter for torque command
@@ -119,19 +120,20 @@ namespace kodlab
          * @brief accessor for the torque md, takes into account direction
          * @return the torque cmd
          */
-        std::vector<float> GetJointTorqueCmd();
+        std::vector<float> GetJointTorqueCmd() const;
 
         /*!
         * @brief accessor for the IMU data of the robot
         * @return const reference to the IMU data object for the robot
         */
-        const ::kodlab::IMUData<float>& GetIMUData(){return *imu_data_;}
+        const ::kodlab::IMUData<float>& GetIMUData() const {return *imu_data_;}
 
         /*!
         * @brief accessor for the IMU data of the robot
         * @return const IMU data shared pointer for the robot
         */
-        const std::shared_ptr<::kodlab::IMUData<float>> GetIMUDataSharedPtr(){return imu_data_;}
+        const std::shared_ptr<::kodlab::IMUData<float>> 
+              GetIMUDataSharedPtr() const {return imu_data_;}
 
         /*!
         * @brief Setter for the robot's IMU data pointer. Releases the previously owned IMU data object
@@ -174,7 +176,8 @@ namespace kodlab
          * @param name the name of the joint
          * @return the index of the joint
          */
-        int joint_index_by_name_fatal(const std::string& name){return joint_name_to_index_.at(name);};
+        int joint_index_by_name_fatal(const std::string& name) const {
+              return joint_name_to_index_.at(name);};
 
     protected:
         std::vector<std::reference_wrapper<const float>> positions_;  /// Vector of the motor positions (references to the members of joints_)

@@ -134,6 +134,12 @@ class JointMoteus: public JointBase
         void UpdateMoteus(::mjbots::moteus::QueryResult reply_message);
 
         /**
+         * @brief Destroy the JointMoteus object, virtual to ensure proper 
+         * destruction of derived classes
+         */
+        virtual ~JointMoteus(){}
+
+        /**
          * @brief Determines whether open loop options should be enabled
          * 
          * @return bool 

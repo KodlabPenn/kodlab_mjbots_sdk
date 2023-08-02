@@ -79,7 +79,12 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    * \overload 
    */
   MjbotsControlLoop(std::shared_ptr<RobotClass>robot_in, const ControlLoopOptions &options);
-
+  /*!
+   * @brief Destroy the MjbotsControlLoop object. Virtual destructor for proper
+   * derived pointer destruction.
+   */
+  virtual ~MjbotsControlLoop(){}
+  
  protected:
 
   /*!
