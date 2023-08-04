@@ -1,7 +1,9 @@
-site_name: My Docs
+site_name: Kodlab MJBots SDK
 nav:
   - Home: index.md
   - Usage: usage.md
   - Setup: setup.md
 theme:
   name: readthedocs
+  favicon: img/favicon.ico
+  logo: img/favicon.ico
