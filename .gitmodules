@@ -1,6 +1,6 @@
 [submodule "thirdparty/real_time_tools"]
 	path = thirdparty/real_time_tools
-	url = https://github.com:KodlabPenn/real_time_tools.git
+	url = https://github.com/KodlabPenn/real_time_tools.git
 [submodule "thirdparty/yaml-cpp"]
 	path = thirdparty/yaml-cpp
-	url = https://github.com:jbeder/yaml-cpp.git
+	url = https://github.com/jbeder/yaml-cpp.git
