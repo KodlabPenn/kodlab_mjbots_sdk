@@ -1,6 +1,6 @@
 site_name: My Docs
 nav:
-  - Home: home.md
+  - Home: index.md
   - Usage: usage.md
   - Setup: setup.md
 theme:
