@@ -1,11 +1,26 @@
 # Using Docker with MJBots
-We have compiled a compatible docker image with all the necessary components to compile the Kodlab MJBots SDK, and communicate with the Pi with LCM.
+We have compiled a compatible docker image with all the necessary components to compile the Kodlab MJBots SDK, and communicate with the Pi with LCM. This Docker image should work with any operating system that Docker supports, however this tutorial assumes your operating system has BASH commands.
 
 ## Installing Docker
-TODO: Add instructions/links for docker installations on major OS versions
+Download the docker application from the [Docker Website](https://docs.docker.com/get-docker/). If you are unfamiliar with Docker, read through their [getting started section](https://docs.docker.com/get-started/)  to gain an understanding of the underlying structure of Docker. 
 
 ## Setting up Docker for the SDK
-After cloning the repository, and running the `git submodule init` and `git submodule update` commands, the next setup step is usually to make lcm by running the `./scrips/make_lcm.sh` script. However, this command should be run inside the docker container. To do this, run the `./Docker/run.sh` executable which will spin up a new container and open a bash interface 
+The first step to setting up Docker, is to acquire the Docker Image. There are two ways to do this, by either cloning the **kodlab-cross** image from Docker Hub, or by building the **kodlab-cross** Docker Image from source. 
+
+### Cloning the image from Docker Hub
+
+-To be implemented- Right now, you must build from source.
+
+### Building from Source
+**WARNING:** Building the image from source can take over an hour. 
+
+To build from source, go into the `Docker` folder with 
+`cd Docker` 
+then run the `build.sh` script with
+`./build.sh`
+which should create the **kodlab-cross** image using the included Dockerfile. This is the command that will take a while.
+
+and running the `git submodule init` and `git submodule update` commands, the next setup step is usually to make lcm by running the `./scrips/make_lcm.sh` script. However, this command should be run inside the docker container. To do this, run the `./Docker/run.sh` executable which will spin up a new container and open a bash interface 
 
 ## Building the SDK with Docker
 
@@ -15,3 +30,6 @@ After completing the setup above, you should now be able to compile the SDK usin
 NOTE: Need to talk about `Docker/run_latest.sh` to open multiple terminal windows from the same container. (Can maybe set up a script to do this automatically?)
 
 There are some notable differences when using LCM with Docker. The main one being a build error when attempting to run `lcm-logger`. To fix this, run `sudo ldconfig -v` before establishing the lcm tunnel to resolve this issue. 
+
+## CLion with Docker
+ Coming soon...
