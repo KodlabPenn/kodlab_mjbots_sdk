@@ -488,47 +488,7 @@ class MultiplexParser {
     }
     throw std::logic_error("unreachable");
   }
-
-  int ReadInt(Resolution res) {
-    return static_cast<int>(ReadMapped(res, 1.0, 1.0, 1.0));
-  }
-
-  double ReadPosition(Resolution res) {
-    return ReadMapped(res, 0.01, 0.0001, 0.00001);
-  }
-
-  double ReadVelocity(Resolution res) {
-    return ReadMapped(res, 0.1, 0.00025, 0.00001);
-  }
-
-  double ReadTorque(Resolution res) {
-    return ReadMapped(res, 0.5, 0.01, 0.001);
-  }
-
-  double ReadPwm(Resolution res) {
-    return ReadMapped(res, 1.0 / 127.0, 1.0 / 32767.0, 1.0 / 2147483647.0);
-  }
-
-  double ReadVoltage(Resolution res) {
-    return ReadMapped(res, 0.5, 0.1, 0.001);
-  }
-
-  double ReadTemperature(Resolution res) {
-    return ReadMapped(res, 1.0, 0.1, 0.001);
-  }
-
-  double ReadTime(Resolution res) {
-    return ReadMapped(res, 0.01, 0.001, 0.000001);
-  }
-
-  double ReadCurrent(Resolution res) {
-    return ReadMapped(res, 1.0, 0.1, 0.001);
-  }
-
-  void Ignore(Resolution res) {
-    offset_ += ResolutionSize(res);
-  }
-
+ 
  private:
   int ResolutionSize(Resolution res) {
     switch (res) {
@@ -548,6 +508,69 @@ class MultiplexParser {
   int remaining_ = 0;
   Resolution current_resolution_ = Resolution::kIgnore;
   uint32_t current_register_ = 0;
+};
+
+class ReadMoteus {
+ public:
+  ReadMoteus(const CanFrame* frame)
+      : parser_(&frame->data[0], frame->size) {}
+  ReadMoteus(const uint8_t* data, uint8_t size)
+      : parser_(data, size) {}
+
+  int ReadInt(Resolution res) {
+    return static_cast<int>(parser_.ReadMapped(res, 1.0, 1.0, 1.0));
+  }
+
+  double ReadPosition(Resolution res) {
+    return parser_.ReadMapped(res, 0.01, 0.0001, 0.00001);
+  }
+
+  double ReadVelocity(Resolution res) {
+    return parser_.ReadMapped(res, 0.1, 0.00025, 0.00001);
+  }
+
+  double ReadTorque(Resolution res) {
+    return parser_.ReadMapped(res, 0.5, 0.01, 0.001);
+  }
+
+  double ReadPwm(Resolution res) {
+    return parser_.ReadMapped(res, 1.0 / 127.0, 1.0 / 32767.0, 1.0 / 2147483647.0);
+  }
+
+  double ReadVoltage(Resolution res) {
+    return parser_.ReadMapped(res, 0.5, 0.1, 0.001);
+  }
+
+  double ReadTemperature(Resolution res) {
+    return parser_.ReadMapped(res, 1.0, 0.1, 0.001);
+  }
+
+  double ReadTime(Resolution res) {
+    return parser_.ReadMapped(res, 0.01, 0.001, 0.000001);
+  }
+
+  double ReadCurrent(Resolution res) {
+    return parser_.ReadMapped(res, 1.0, 0.1, 0.001);
+  }
+
+  void Ignore(Resolution res) {
+    offset_ += ResolutionSize(res);
+  }
+
+ private:
+  int ResolutionSize(Resolution res) {
+    switch (res) {
+      case Resolution::kInt8: return 1;
+      case Resolution::kInt16: return 2;
+      case Resolution::kInt32: return 4;
+      case Resolution::kFloat: return 4;
+      default: { break; }
+    }
+    return 1;
+  }
+
+  MultiplexParser parser_;
+  size_t offset_ = 0;
 };
 
 struct PositionCommand {
@@ -707,6 +730,7 @@ struct QueryResult {
 
 inline QueryResult ParseQueryResult(const uint8_t* data, size_t size) {
   MultiplexParser parser(data, size);
+  ReadMoteus read_moteus(data, size);
 
   QueryResult result;
   while (true) {
@@ -715,53 +739,77 @@ inline QueryResult ParseQueryResult(const uint8_t* data, size_t size) {
     const auto res = std::get<2>(entry);
     switch (static_cast<Register>(std::get<1>(entry))) {
       case Register::kMode: {
-        result.mode = static_cast<Mode>(parser.ReadInt(res));
+        result.mode = static_cast<Mode>(read_moteus.ReadInt(res));
         break;
       }
       case Register::kPosition: {
-        result.position = parser.ReadPosition(res);
+        result.position = read_moteus.ReadPosition(res);
         break;
       }
       case Register::kVelocity: {
-        result.velocity = parser.ReadVelocity(res);
+        result.velocity = read_moteus.ReadVelocity(res);
         break;
       }
       case Register::kTorque: {
-        result.torque = parser.ReadTorque(res);
+        result.torque = read_moteus.ReadTorque(res);
         break;
       }
       case Register::kQCurrent: {
-        result.q_current = parser.ReadCurrent(res);
+        result.q_current = read_moteus.ReadCurrent(res);
         break;
       }
       case Register::kDCurrent: {
-        result.d_current = parser.ReadCurrent(res);
+        result.d_current = read_moteus.ReadCurrent(res);
         break;
       }
       case Register::kRezeroState: {
-        result.rezero_state = parser.ReadInt(res) != 0;
+        result.rezero_state = read_moteus.ReadInt(res) != 0;
         break;
       }
       case Register::kVoltage: {
-        result.voltage = parser.ReadVoltage(res);
+        result.voltage = read_moteus.ReadVoltage(res);
         break;
       }
       case Register::kTemperature: {
-        result.temperature = parser.ReadTemperature(res);
+        result.temperature = read_moteus.ReadTemperature(res);
         break;
       }
       case Register::kFault: {
-        result.fault = static_cast<Fault>(parser.ReadInt(res));
+        result.fault = static_cast<Fault>(read_moteus.ReadInt(res));
         break;
       }
       default: {
-        parser.Ignore(res);
+        read_moteus.Ignore(res);
       }
     }
   }
 
   return result;
 }
+
+}
+namespace powerdist {
+
+enum class Register {
+  kState = 0x000,
+  kFaultCode = 0x001,
+  kSwitchStatus = 0x002,
+  kLockTime = 0x003,
+  kBootTime = 0x004,
+  kOutputVoltage = 0x010,
+  kOutputCurrent = 0x011,
+  kTemperature = 0x012,
+  kEnergy = 0x013,
+};
+
+enum State {
+  kPowerOff,
+  kPrecharging,
+  kPowerOn,
+  kFault,
+
+  kNumStates,
+};
 
 }
 }
