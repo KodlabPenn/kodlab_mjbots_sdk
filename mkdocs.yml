@@ -3,6 +3,7 @@ nav:
   - Home: index.md
   - Usage: usage.md
   - Setup: setup.md
+  - Docker: docker.md
 theme:
   name: readthedocs
   favicon: img/favicon.ico
