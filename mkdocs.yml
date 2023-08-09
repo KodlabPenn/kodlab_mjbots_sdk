@@ -1,9 +1,9 @@
 site_name: Kodlab MJBots SDK
 nav:
   - Home: index.md
-  - Usage: usage.md
   - Setup: setup.md
   - Docker: docker.md
+  - Usage: usage.md
 theme:
   name: readthedocs
   favicon: img/favicon.ico
