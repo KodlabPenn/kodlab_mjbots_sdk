@@ -50,7 +50,6 @@ class MjbotsHardwareInterface  {
    * @param dry_run if true, sends zero-torques to Moteus controllers
    * @param print_torques if true, prints torque commands
    * @param use_pd_commands if true, packets to the moteus include pd gains and setpoints
-   * @param open_loop if true, open loop control of the robot is permitted
    */
   MjbotsHardwareInterface(std::vector<std::shared_ptr<JointMoteus>> joint_list,
                        const RealtimeParams &realtime_params,
@@ -60,8 +59,7 @@ class MjbotsHardwareInterface  {
                        std::optional<::mjbots::pi3hat::Euler > imu_world_offset_deg = std::nullopt,
                        bool dry_run = false,
                        bool print_torques = false,
-                       bool use_pd_commands = false,
-                       bool open_loop = false
+                       bool use_pd_commands = false
                        );
 
   /**
@@ -137,7 +135,6 @@ class MjbotsHardwareInterface  {
   bool dry_run_;                                     ///< dry run active flag
   bool print_torques_;                               ///< print torques active flag
   bool use_pd_commands_;                            ///< Include pd gains and setpoints in the moteus packet
-  bool open_loop_;                                  ///< Open loop controller flag
 
   std::map<int, int> servo_bus_map_;       /// map from servo id to servo bus
 

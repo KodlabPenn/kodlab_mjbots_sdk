@@ -1,7 +1,7 @@
 /**
  * @file joint_moteus.h
  * @author J. Diego Caporale (jdcap@seas.upenn.edu)
- * @brief Moteus powered joint class header
+ * @brief Moteus powered joint class
  * @date 2022-02-22
  * 
  * @copyright BSD 3-Clause License, Copyright (c) 2021 The Trustees of the University of Pennsylvania. All Rights Reserved
@@ -31,30 +31,6 @@ struct MoteusJointConfig;
 class JointMoteus: public JointBase
 {
     public:
-        /**
-         * @brief Define a default resolution struct
-         * 
-         */
-        static const ::mjbots::moteus::QueryCommand kDefaultQuery;
-
-        /**
-         * @brief Define a resolution struct that includes torques
-         * 
-         */
-        static const ::mjbots::moteus::QueryCommand kTorqueQuery;
-
-        /**
-         * @brief Define a debug resolution struct
-         * 
-         */
-        static const ::mjbots::moteus::QueryCommand kDebugQuery;
-
-        /**
-         * @brief Define a resolution struct that includes all registers
-         * 
-         */
-        static const ::mjbots::moteus::QueryCommand kComprehensiveQuery;
-
         /**
          * @brief Construct a new Joint Moteus object
          * 
@@ -140,11 +116,13 @@ class JointMoteus: public JointBase
         virtual ~JointMoteus(){}
 
         /**
-         * @brief Determines whether open loop options should be enabled
+         * @brief Determines whether the QueryCommand struct ignores position
+         * and velocity when requesting data from the moteus, potentially
+         * characteristic of an open-loop controller
          * 
          * @return bool 
          */
-        bool is_open_loop();
+        bool is_open_loop_query();
 
         /**
          * @brief Get the can id 
@@ -161,84 +139,88 @@ class JointMoteus: public JointBase
         int get_can_bus() const;
 
         /**
-         * @brief Get the QueryCommand object
+         * @brief Get the QueryCommand object, which contains resolutions
          * 
-         * @return const ::mjbots::moteus::QueryCommand
+         * @return ::mjbots::moteus::QueryCommand
          */
-        const ::mjbots::moteus::QueryCommand get_query_command() const;
+        [[nodiscard]] ::mjbots::moteus::QueryCommand get_query_command() const;
 
         /**
-         * @brief Get the mode reference 
+         * @brief Get the mode reference
          * 
          * @return const ::mjbots::moteus::Mode& 
          */
         const ::mjbots::moteus::Mode & get_mode_reference() const;
 
         /**
-         * @brief Get the mode 
+         * @brief Get the current operational mode of the servo
          * 
-         * @return const ::mjbots::moteus::Mode
+         * @return ::mjbots::moteus::Mode
          */
-        const ::mjbots::moteus::Mode get_mode() const;
+        [[nodiscard]] ::mjbots::moteus::Mode get_mode() const;
 
         /**
-         * @brief Get the position, overrides joint_base.h
+         * @brief Get the current position of the servo, measured in rotations
+         * of the output shaft. Overrides function in joint_base.h
          * 
          * @return float 
          */
         float get_position() const override;
 
         /**
-         * @brief Get the velocity, overrides joint_base.h
+         * @brief Get the current velocity of the servo, measured in Hz at the 
+         * output shaft. Overrides function in joint_base.h
          * 
          * @return float
          */
         float get_velocity() const override;
 
         /**
-         * @brief Get the torque command, overrides joint_base.h
+         * @brief Get the torque command. Overrides function in joint_base.h
          * 
          * @return float
          */
         float get_servo_torque() const override;
 
         /**
-         * @brief Get the measured joint torque, overrides joint_base.h
+         * @brief Get the measured joint torque. Overrides function in
+         * joint_base.h
          * 
          * @return float
          */
         float get_measured_torque() const override;
 
         /**
-         * @brief Get the temperature register
+         * @brief Get the board temperature, measured in degrees Celsius
          * 
          * @return float
          */
-        float get_temperature() const;
+        [[nodiscard]] float get_temperature() const;
 
         /**
-         * @brief Get the q_current register
+         * @brief Get the current in the Q phase, measured in Amperes
          * 
          * @return float
          */
-        float get_q_current() const;
+        [[nodiscard]] float get_q_current() const;
 
         /**
-         * @brief Get the d_current register
+         * @brief Get the current in the D phase, measured in Amperes
          * 
          * @return float
          */
-        float get_d_current() const;
+        [[nodiscard]] float get_d_current() const;
 
         /**
-         * @brief Get the voltage register
+         * @brief Get the input voltage
          * 
          * @return float
          */
-        float get_voltage() const;
+        [[nodiscard]] float get_voltage() const;
 
         /**
-         * @brief Get the fault register
+         * @brief Get the fault code, which will be set if the current
+         * operational mode of the servo is set to 1 (Fault)
          * 
          * @return const ::mjbots::moteus::Fault&
          */
@@ -267,6 +249,27 @@ class JointMoteus: public JointBase
          * @return the moteus velocity target in units of revolutions/s
          */
         [[nodiscard]] float get_moteus_velocity_target()const;
+
+        /**
+         * @brief Define a default resolution struct
+         */
+        static const ::mjbots::moteus::QueryCommand kDefaultQuery;
+
+        /**
+         * @brief Define a resolution struct that includes torques
+         */
+        static const ::mjbots::moteus::QueryCommand kTorqueQuery;
+
+        /**
+         * @brief Define a resolution struct that adds fields commonly used in
+         * debugging (board temperature and fault code) to kTorqueQuery
+         */
+        static const ::mjbots::moteus::QueryCommand kDebugQuery;
+
+        /**
+         * @brief Define a resolution struct that includes all useful registers
+         */
+        static const ::mjbots::moteus::QueryCommand kComprehensiveQuery;
 
     private:
         int can_id_;   /// the can id of this joint's moteus
@@ -301,6 +304,5 @@ struct MoteusJointConfig{
     float moteus_kd = 0;
     float soft_start_duration_ms = 1;
 };
-
 }//namespace mjbots
 }//namespace kodlab

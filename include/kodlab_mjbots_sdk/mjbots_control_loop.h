@@ -193,8 +193,8 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
   }
   // Open loop check
   for(const auto & j : joints_moteus){
-      if(!options.open_loop && j->is_open_loop()){
-        LOG_FATAL("Open loop option not set, not receiving position and/or velocity");
+      if(!options.open_loop && j->is_open_loop_query()){
+        LOG_FATAL("ControlLoopOptions has open_loop = false, but joint moteus QueryCommand struct does not query position and/or velocity from moteus");
         kodlab::ActivateCtrlC();
       }
   }
@@ -205,8 +205,7 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
       robot_->GetIMUDataSharedPtr(), options.imu_world_offset_deg,
       options.dry_run,
       options.print_torques,
-      options.use_pd_commands,
-      options.open_loop
+      options.use_pd_commands
   );
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
