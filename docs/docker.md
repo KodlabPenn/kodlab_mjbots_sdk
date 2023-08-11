@@ -50,7 +50,7 @@ You can now close the container by typing `exit` in the command window.
 
 ## Building the SDK with Docker
 
-You should now be able to compile the SDK using docker. To do this run the command
+You should now be able to compile the SDK using docker. To do this, replace the `<KODLAB_MJBOTS_SDK ABSOLUTE PATH>` and `<RASPBERRYPI ABSOLUTE PATH>` placeholders in the command below and run it.
 
 `docker run --rm --platform=linux/amd64 --mount type=bind,source=<KODLAB_MJBOTS_SDK ABSOLUTE PATH> --mount type=bind,source=<RASPBERRYPI ABSOLUTE PATH>,target=/root/raspberrypi masondmitchell/kodlab_mjbots_cross_compile bash -c "cd kodlab_mjbots_sdk && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=/root/kodlab_mjbots_sdk/cmake/pi.cmake && make"`
 
