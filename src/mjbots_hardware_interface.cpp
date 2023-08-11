@@ -66,13 +66,11 @@ MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<Joi
                                                  std::optional<::mjbots::pi3hat::Euler> imu_world_offset_deg,
                                                  bool dry_run,
                                                  bool print_torques,
-                                                 bool use_pd_commands,
-                                                 bool open_loop)
+                                                 bool use_pd_commands)
     : imu_data_(imu_data_ptr ? imu_data_ptr : std::make_shared<::kodlab::IMUData<float>>()),
       dry_run_(dry_run),
       print_torques_(print_torques),
-      use_pd_commands_(use_pd_commands),
-      open_loop_(open_loop)
+      use_pd_commands_(use_pd_commands)
 { 
   LOG_IF_WARN(dry_run_, "\nDRY RUN: NO TORQUES COMMANDED");
   joints = joint_ptrs;
