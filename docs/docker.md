@@ -15,7 +15,7 @@ You can download the **kodlab-cross** image from the Docker Hub using the follow
 
 and that's it! You should be able to run containers with fully set up environments to build the codebase. 
 
-However, if you run into problems during this step, or you want to edit the environment locally then building from source might be the better option. 
+However, if you run into problems during this step, or you want to edit the environment locally, then building from source might be the better option. 
 
 ### Building from Source
 **WARNING:** Building the image from source can take over an hour. 
