@@ -5,11 +5,17 @@ We have compiled a compatible docker image with all the necessary components to 
 Download the docker application from the [Docker Website](https://docs.docker.com/get-docker/). If you are unfamiliar with Docker, read through their [getting started section](https://docs.docker.com/get-started/)  to gain an understanding of the underlying structure of Docker. 
 
 ## Setting up Docker for the SDK
-The first step to setting up Docker, is to acquire the Docker Image. There are two ways to do this, by either cloning the **kodlab-cross** image from Docker Hub, or by building the **kodlab-cross** Docker Image from source. 
+The first step to setting up Docker after install, is to acquire the correct Docker Image. There are two ways to do this. You can either clone the **kodlab-cross** image from Docker Hub, or build the **kodlab-cross** Docker Image from source. 
 
 ### Cloning the image from Docker Hub
 
--To be implemented- Right now, you must build from source.
+You can download the **kodlab-cross** image from the Docker Hub using the following command:
+
+`docker image pull masondmitchell/kodlab_mjbots_cross_compile`
+
+and that's it! You should be able to run containers with fully set up environments to build the codebase. 
+
+However, if you run into problems during this step, or you want to edit the environment locally then building from source might be the better option. 
 
 ### Building from Source
 **WARNING:** Building the image from source can take over an hour. 
