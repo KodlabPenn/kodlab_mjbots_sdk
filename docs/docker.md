@@ -78,7 +78,11 @@ Docker will spin up a new container using the **kodlab-cross** docker image, and
 ## Using LCM With Docker
 NOTE: Need to talk about `Docker/run_latest.sh` to open multiple terminal windows from the same container. (Can maybe set up a script to do this automatically?)
 
-There are some notable differences when using LCM with Docker. The main one being a build error when attempting to run `lcm-logger`. To fix this, run `sudo ldconfig -v` before establishing the lcm tunnel to resolve this issue. 
+There are some notable differences when using LCM with Docker. The main one being a build error when attempting to run `lcm-logger`. To fix this, run 
+```console
+sudo ldconfig -v
+```
+before establishing the lcm tunnel to resolve this issue. 
 
 ## VSCode with Docker
  Coming soon...
