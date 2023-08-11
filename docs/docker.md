@@ -3,8 +3,10 @@ We have compiled a compatible docker image with all the necessary components to 
 
 ## Repository Setup
 Clone the [kodlab_mjbots_sdk repository](https://github.com/KodlabPenn/kodlab_mjbots_sdk), `cd` into the folder, and run
-`git submodule init
-git submodule update`
+```console
+git submodule init
+git submodule update
+```
 
 ## Installing Docker
 Download the docker application from the [Docker Website](https://docs.docker.com/get-docker/). If you are unfamiliar with Docker, read through their [getting started section](https://docs.docker.com/get-started/)  to gain an understanding of the underlying structure of Docker. 
@@ -16,7 +18,9 @@ The first step to setting up Docker after install, is to acquire the correct Doc
 
 You can download the **kodlab-cross** image from the Docker Hub using the following command:
 
-`docker image pull masondmitchell/kodlab_mjbots_cross_compile`
+```console
+docker image pull masondmitchell/kodlab_mjbots_cross_compile
+```
 
 and that's it! You should be able to run containers with fully set up environments to build the codebase. 
 
@@ -26,16 +30,22 @@ However, if you run into problems during this step, or you want to edit the envi
 **WARNING:** Building the image from source can take over an hour. 
 
 To build from source, go into the `Docker` folder with 
-`cd Docker` 
+```console
+cd Docker
+``` 
 then run the `build.sh` script with
-`./build.sh` 
+```console
+./build.sh
+```
 or instead run the terminal command:
-`docker build --progress tty -t masondmitchell/kodlab_mjbots_cross_compile .`
+```console
+docker build --progress tty -t masondmitchell/kodlab_mjbots_cross_compile .
+```
 which should create the **kodlab-cross** image using the included Dockerfile. This will take a while.
 
 ## Container and LCM Setup with Docker
 
-The next setup step is usually to make lcm by running the `./scripts/make_lcm.sh` script. However, this command should be run **inside the docker container**. 
+The next setup step is usually to make lcm by running the `make_lcm.sh` script. However, this command should be run **inside the docker container**. 
 
 So, we must open a docker container using the **kodlab-cross** image. This docker container does not have any users, so the home directory is `/root`. This is where we want to mount our [kodlab_mjbots_sdk repository](https://github.com/KodlabPenn/kodlab_mjbots_sdk), as well as our `raspberrypi/rootfs` folder (**NEEDS HOSTED ON GITHUB**). To do this, the run command to open the container needs an [absolute path](https://www.computerhope.com/issues/ch001708.htm) to both of these folders that are stored on your own machine. You can find these by going into the `kodlab_mjbots_sdk` and `raspberrypi` folders in terminal, and running `pwd`. Replace the `<KODLAB_MJBOTS_SDK ABSOLUTE PATH>` and `<RASPBERRYPI ABSOLUTE PATH>` placeholders in the command below and run it.
 
@@ -46,7 +56,10 @@ docker run --platform=linux/amd64 --mount type=bind,source=<KODLAB_MJBOTS_SDK AB
 This will spin up a new container with the mounted folders in their correct target locations, and open an interactive bash interface in your terminal window. 
 
 You now need to run the `make_lcm.sh` script while inside the container in order to configure lcm correctly. You can do this by running the command:
-`./root/kodlab_mjbots_sdk/scripts/make_lcm.sh`.
+
+```console
+./root/kodlab_mjbots_sdk/scripts/make_lcm.sh
+```
 
 You can now close the container by typing `exit` in the command window. 
 
