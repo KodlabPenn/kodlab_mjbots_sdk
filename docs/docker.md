@@ -5,6 +5,8 @@ We have compiled a compatible docker image with all the necessary components to 
 Clone the [kodlab_mjbots_sdk repository](https://github.com/KodlabPenn/kodlab_mjbots_sdk), `cd` into the folder, and run
 ```console
 git submodule init
+```
+```console
 git submodule update
 ```
 
