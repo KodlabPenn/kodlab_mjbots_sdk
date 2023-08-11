@@ -39,7 +39,7 @@ The next setup step is usually to make lcm by running the `./scripts/make_lcm.sh
 
 So, we must open a docker container using the **kodlab-cross** image. This docker container does not have any users, so the home directory is `/root`. This is where we want to mount our [kodlab_mjbots_sdk repository](https://github.com/KodlabPenn/kodlab_mjbots_sdk), as well as our `raspberrypi/rootfs` folder (**NEEDS HOSTED ON GITHUB**). To do this, the run command to open the container needs an [absolute path](https://www.computerhope.com/issues/ch001708.htm) to both of these folders that are stored on your own machine. You can find these by going into the `kodlab_mjbots_sdk` and `raspberrypi` folders in terminal, and running `pwd`. Replace the `<KODLAB_MJBOTS_SDK ABSOLUTE PATH>` and `<RASPBERRYPI ABSOLUTE PATH>` placeholders in the command below and run it.
 
-```bash
+```console
 docker run --platform=linux/amd64 --mount type=bind,source=<KODLAB_MJBOTS_SDK ABSOLUTE PATH>,target=/root/kodlab_mjbots_sdk --mount type=bind,source=<RASPBERRYPI ABSOLUTE PATH>,target=/root/raspberrypi -it masondmitchell/kodlab_mjbots_cross_compile
 ```
 
@@ -54,7 +54,7 @@ You can now close the container by typing `exit` in the command window.
 
 You should now be able to compile the SDK using docker. To do this, replace the `<KODLAB_MJBOTS_SDK ABSOLUTE PATH>` and `<RASPBERRYPI ABSOLUTE PATH>` placeholders in the command below and run it.
 
-```bash
+```console
 docker run --rm --platform=linux/amd64 --mount type=bind,source=<KODLAB_MJBOTS_SDK ABSOLUTE PATH> --mount type=bind,source=<RASPBERRYPI ABSOLUTE PATH>,target=/root/raspberrypi masondmitchell/kodlab_mjbots_cross_compile bash -c "cd kodlab_mjbots_sdk && rm -R build/ && mkdir build && cd build/ && cmake .. -DCMAKE_TOOLCHAIN_FILE=/root/kodlab_mjbots_sdk/cmake/pi.cmake && make"
 ```
 
