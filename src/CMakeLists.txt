@@ -1,10 +1,13 @@
 # Note that headers are optional, and do not affect add_library, but they will not
 # show up in IDEs unless they are listed in add_library.
 # Optionally glob, but only for CMake 3.12 or later:
+option(Simulation "Simulation" OFF)
+
 set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/moteus_protocol.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_hardware_interface.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/robot_interface.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/common_header.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/type_traits.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/polar_leg.h"
@@ -30,10 +33,14 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3ha
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/behavior_manager.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pid_controller.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pid_cascade.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/interfaces.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_robot.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_spin_joints_behavior.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_control_io_behavior.h"
-        )
+)
+set(SIM_HEADER_LIST                    
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_simulation_interface.h"
+)
 
 set(SOURCE_LIST "pi3hat.cpp" 
                 "common_header.cpp"
@@ -45,25 +52,56 @@ set(SOURCE_LIST "pi3hat.cpp"
                 "robot_base.cpp"
                 "joint_base.cpp"
                 "cartesian_leg.cpp"
-        )
+)
+set(SIM_SOURCE_LIST
+                "mjbots_simulation_interface.cpp"
+)
+
+set(ALL_SOURCE 
+        ${SOURCE_LIST} 
+        ${SIM_SOURCE_LIST}
+)
+
+set(ALL_HEADER 
+        ${HEADER_LIST} 
+        ${SIM_HEADER_LIST}
+)
+
+
+
 
 # Make an automatic library - will be static or dynamic based on user setting
-add_library(kodlab_mjbots_sdk  ${SOURCE_LIST} ${HEADER_LIST})
-
+if(Simulation)
+        add_library(kodlab_mjbots_sdk  ${ALL_SOURCE} ${ALL_HEADER} )
+else()
+        add_library(kodlab_mjbots_sdk  ${SOURCE_LIST} ${HEADER_LIST} )
+endif()
 # We need this directory, and users of our library will need it too
-target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty/Eigen ../lcm_types
+target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty/Eigen ../lcm_types ../thirdparty/lodepng
         $ENV{RASPBIAN_ROOTFS}/opt/vc/include
         $ENV{RASPBIAN_ROOTFS}/usr/local/include
         ../thirdparty/real_time_tools/include
         ../thirdparty/yaml-cpp/include
         )
-
-target_link_libraries(kodlab_mjbots_sdk PUBLIC $ENV{RASPBIAN_ROOTFS}/opt/vc/lib/libbcm_host.so)
+        
+if(Simulation)
+        # Link library with mujoco and dependencies
+        include(AddMujocoAndDependencies)
+        target_link_libraries(kodlab_mjbots_sdk PUBLIC mujoco::mujoco)
+        target_link_libraries(kodlab_mjbots_sdk PUBLIC glfw)
+        target_link_libraries(kodlab_mjbots_sdk PUBLIC ${CMAKE_DL_LIBS})
+        target_link_libraries(kodlab_mjbots_sdk PUBLIC lodepng)
+else()
+        target_link_libraries(kodlab_mjbots_sdk PUBLIC $ENV{RASPBIAN_ROOTFS}/opt/vc/lib/libbcm_host.so)
+endif()
 
 target_link_libraries(kodlab_mjbots_sdk PRIVATE ${LCM_NAMESPACE}lcm)
 
-# All users of this library will need at least C++11
-target_compile_features(kodlab_mjbots_sdk PUBLIC cxx_std_14)
+# All users of this library will need at least C++17
+target_compile_features(kodlab_mjbots_sdk PUBLIC cxx_std_17)
+
+
+
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)

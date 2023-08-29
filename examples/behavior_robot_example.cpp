@@ -48,7 +48,7 @@ class SimpleRobotBehaviorLoop : public kodlab::mjbots::MjbotsBehaviorLoop<
       log_data_->positions[servo] = robot_->GetJointPositions()[servo];
       log_data_->velocities[servo] = robot_->GetJointVelocities()[servo];
       log_data_->modes[servo] =
-          static_cast<int>(mjbots_interface_->GetJointModes()[servo]);
+          static_cast<int>(robot_interface_->GetJointModes()[servo]);
       log_data_->torques[servo] = robot_->GetJointTorqueCmd()[servo];
     }
     for (int servo = num_joints_; servo < 13; servo++)

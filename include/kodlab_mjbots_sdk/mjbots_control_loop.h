@@ -5,12 +5,15 @@
 // J. Diego Caporale <jdcap@seas.upenn.edu>
 
 
+
 #pragma once
 #include <type_traits>
 #include "kodlab_mjbots_sdk/joint_moteus.h"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
 #include "kodlab_mjbots_sdk/robot_base.h"
-#include "kodlab_mjbots_sdk/mjbots_hardware_interface.h"
+#include <iostream>
+#include "kodlab_mjbots_sdk/interfaces.h"
+
 #include "kodlab_mjbots_sdk/lcm_subscriber.h"
 #include "kodlab_mjbots_sdk/lcm_message_handler.h"
 #include "kodlab_mjbots_sdk/lcm_publisher.h"
@@ -19,6 +22,11 @@
 #include "real_time_tools/hard_spinner.hpp"
 #include "VoidLcm.hpp"
 #include "common_header.h"
+
+#include <boost/assign/std/vector.hpp>
+#include <vector>
+
+
 
 namespace kodlab::mjbots {
 /*!
@@ -41,6 +49,9 @@ struct ControlLoopOptions {
   bool dry_run = false;  ///< If true, torques sent to moteus boards will always be zero
   bool print_torques = false;  ///< If true, torque commands will be printed to console
   bool send_pd_commands = false; ///< If true, the control loop will send pd setpoints & gains in addition to ffwd torque commands
+  std::string xml_model_path=""; /// Path of robot xml model file
+  std::vector<double> initial_positions; /// initial positions of the robot
+  std::vector<double> initial_vels; /// initial velocities of the robot
 };
 
 /*!
@@ -91,7 +102,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
    * @details This function is called at the beginning of the `Run` function,
    *          and can be used for initialization in child implementations.
    * @note This function is called in the `Run` function directly after `robot_`
-   *       and `mjbots_interface_` are initialized.  Any initialization desired
+   *       and `robot_interface_` are initialized.  Any initialization desired
    *       before this point should be written into the derived class
    *       constructors.
    * @note This function is included to provide a user-overridable
@@ -149,7 +160,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
   void SetupOptions(const ControlLoopOptions &options);
 
   std::shared_ptr<RobotClass> robot_;     /// ptr to the robot object
-  std::shared_ptr<kodlab::mjbots::MjbotsHardwareInterface> mjbots_interface_;   ///ptr to mjbots_interface object, if unique causes issues, also should be initialized inside thread
+  std::shared_ptr<INTERFACE_TYPE> robot_interface_; //INTERFACE_TYPE is a child class of RobotInterface 
   int frequency_;                         /// frequency of the controller in Hz
   int num_joints_;                        /// Number of motors
   ControlLoopOptions options_;            /// Options struct
@@ -183,24 +194,25 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
     lcm_sub_(std::make_shared<LcmSubscriber>(options.realtime_params.lcm_rtp, options.realtime_params.lcm_cpu)) {
   // Copy robot pointer
   robot_ = robot_in;
-  
   // Cast joints to JointMoteus (currently JointBase)
   std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joints_moteus;
   for (auto &j : robot_->joints) {
     joints_moteus.push_back(
         std::dynamic_pointer_cast<kodlab::mjbots::JointMoteus>(j));
   }
-  // Initialize mjbots_interface
-  mjbots_interface_ = std::make_shared<kodlab::mjbots::MjbotsHardwareInterface>(
+
+  robot_interface_ = std::make_shared<INTERFACE_TYPE>(
       std::move(joints_moteus), options.realtime_params,
       options.imu_mounting_deg, options.attitude_rate_hz,
       robot_->GetIMUDataSharedPtr(), options.imu_world_offset_deg,
       options.dry_run,
       options.print_torques,
       options.send_pd_commands);
+  
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
+
 
 template<class log_type, class input_type, class robot_type>
 void MjbotsControlLoop<log_type, input_type, robot_type>::SetupOptions(const ControlLoopOptions &options){
@@ -249,13 +261,16 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::PublishLog() {
 template<class log_type, class input_type, class robot_type>
 void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   EnableCtrlC();
-
-  mjbots_interface_->Init();
+  if(!options_.xml_model_path.empty()){
+    robot_interface_->SetModelPath(options_.xml_model_path);
+    robot_interface_->SetFrequency(options_.frequency);
+    robot_interface_->SetInitialState(options_.initial_positions,options_.initial_vels);
+  }
+  robot_interface_->Init();
   robot_->Init();
   lcm_sub_->Init();
   Init();
   SoftStart::InitializeTimer();
-
   float prev_msg_duration = 0;
 
   // Create spinner to time loop
@@ -265,12 +280,11 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   // Create additional timers for other timing information
   real_time_tools::Timer dt_timer;
   real_time_tools::Timer message_duration_timer;
-
   spinner.initialize();
   spinner.spin();
   // If parallelizing loop send a command to process once the loop starts
   if(options_.parallelize_control_loop)
-    mjbots_interface_->SendCommand();
+    robot_interface_->SendCommand();
   spinner.spin();
   dt_timer.tic();
   std::cout<<"Starting main loop"<<std::endl;
@@ -282,10 +296,10 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
 
     // If parallel mode, process the previous reply, then send command to keep cycle time up on pi3hat loop
     if(options_.parallelize_control_loop){
-      mjbots_interface_->ProcessReply();
+      robot_interface_->ProcessReply();
       prev_msg_duration = message_duration_timer.tac();
       message_duration_timer.tic();
-      mjbots_interface_->SendCommand();
+      robot_interface_->SendCommand();
     }
 
     // Calculate torques and log
@@ -297,12 +311,12 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
     // If messages were not sent earlier, send the command and process the reply
     if(!options_.parallelize_control_loop){
       message_duration_timer.tic();
-      mjbots_interface_->SendCommand();
+      robot_interface_->SendCommand();
       // Publishing log can happen now as well
       PublishLog();
       // Process input since that can be parallelized here
       SafeProcessInput();
-      mjbots_interface_->ProcessReply();
+      robot_interface_->ProcessReply();
       prev_msg_duration = message_duration_timer.tac();
     }
     else{
@@ -318,10 +332,10 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
   std::cout << "TODO: Don't segfault" << std::endl;
 
   // Send a few stop commands
-  mjbots_interface_->Stop();
+  robot_interface_->Stop();
 
   // try to Shutdown, but fail
-  mjbots_interface_->Shutdown();
+  robot_interface_->Shutdown();
   if (input_) {
     lcm_sub_->Join();
   }

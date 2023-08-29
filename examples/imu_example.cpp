@@ -27,7 +27,7 @@ private:
    * @note This is is a shared pointer to a continually updated `IMUData`
    *       object.  There is no need to update in the control loop itself.
    */
-  const std::shared_ptr<kodlab::IMUData<float>> imu_ = mjbots_interface_->GetIMUDataSharedPtr();
+  const std::shared_ptr<kodlab::IMUData<float>> imu_ = robot_interface_->GetIMUDataSharedPtr();
 
   /**
    * @brief Read-only IMU data object
@@ -43,7 +43,7 @@ private:
   void Update() override
   {
     // Update Read-Only IMUData
-    imu_read_only_ = mjbots_interface_->GetIMUData();
+    imu_read_only_ = robot_interface_->GetIMUData();
 
     // Read Various IMUData Information from `imu_`
     const Eigen::Quaternionf quat = imu_->get_quat();    // attitude quaternion
