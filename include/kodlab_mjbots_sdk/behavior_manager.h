@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <utility>
 #include "kodlab_mjbots_sdk/robot_base.h"
+#include "kodlab_mjbots_sdk/interfaces.h"
 #include "kodlab_mjbots_sdk/behavior.h"
 #include "kodlab_mjbots_sdk/off_behavior.h"
 #include "kodlab_mjbots_sdk/log.h"
@@ -99,6 +100,8 @@ class BehaviorManager {
    */
   bool switching_behaviors_ = false;
 
+  std::shared_ptr<INTERFACE_TYPE> robot_interface_;
+
   /**
    * @brief Constructs and initializes a behavior
    * @tparam BehaviorType `kodlab::Behavior`-derived type
@@ -112,6 +115,7 @@ class BehaviorManager {
     static_assert(std::is_base_of<kodlab::Behavior<Robot>, BehaviorType>::value,
                   "BehaviorType must be a `kodlab::Behavior`-derived type");
     auto b = std::make_unique<BehaviorType>(args...);
+    b->set_robot_interface(robot_interface_);
     if (b->Init()) {
       b->set_initialized();
       return std::move(b);
@@ -126,7 +130,9 @@ class BehaviorManager {
    * @brief Construct a behavior manager object
    * @param robot pointer to robot that the behavior is executing on
    */
-  BehaviorManager(std::shared_ptr<Robot> robot) : robot_(robot) {
+  BehaviorManager(std::shared_ptr<Robot> robot,
+                  std::shared_ptr<INTERFACE_TYPE> robot_interface = nullptr)
+      : robot_(robot), robot_interface_(robot_interface){
     default_name_ = "OFF";
     AddBehavior<OffBehavior<Robot>>(robot_, default_name_);
   }

@@ -23,7 +23,7 @@
 
 # Set mujoco minimum required version
 set(mujoco_MIN_VERSION 2.3.0)
-
+set( CMAKE_MESSAGE_LOG_LEVEL "DEBUG" )
 # Set mujoco install version
 if (DEFINED ENV{mujoco_INSTALL_VERSION})
   set(mujoco_INSTALL_VERSION $ENV{mujoco_INSTALL_VERSION})

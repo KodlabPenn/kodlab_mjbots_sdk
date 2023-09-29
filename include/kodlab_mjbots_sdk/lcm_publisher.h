@@ -116,6 +116,8 @@ class LcmPublisher {
    */
   [[nodiscard]] const Message get_message_data() const { return *message_; }
 
+  void set_message_data(const Message &msg) { *message_ = msg; }
+
  private:
 
   /**

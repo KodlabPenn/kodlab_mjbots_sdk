@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <future>
 #include <memory>
 #include <optional>
@@ -22,6 +23,10 @@
 #include "kodlab_mjbots_sdk/imu_data.h"
 #include "kodlab_mjbots_sdk/robot_interface.h"
 #include "kodlab_mjbots_sdk/abstract_realtime_object.h"
+
+#include "kodlab_mjbots_sdk/lcm_publisher.h"
+#include "lcm/lcm-cpp.hpp"
+#include "MujocoData.hpp"
 
 #include <iostream>
 #include <mujoco/mjmodel.h>
@@ -48,8 +53,6 @@ class MujocoAnimator : public AbstractRealtimeObject{
    }
 
   void Init(std::string xml_model_path){
-    // activate software
-    mj_activate("~/.mujoco/mujoco-2.3.3/bin/mjkey.txt");
 
     // load and compile model
     char error[1000] = "Could not load binary model";
@@ -70,6 +73,13 @@ class MujocoAnimator : public AbstractRealtimeObject{
       // update scene and render
     mutex_ptr_->lock();
     mjv_updateScene(mj_model, mj_data, &opt, NULL, &cam, mjCAT_ALL, &scn);
+    for(auto& geom_keyvalue: additional_geoms_map_){
+      mjvGeom* dummy = scn.geoms + scn.ngeom;
+      *dummy = *(geom_keyvalue.second);
+      scn.ngeom++;
+      // std::cout << "Add " + geom_keyvalue.first << " as ngeom:" << scn.ngeom << std::endl;
+    }
+
     mutex_ptr_->unlock();
     mjr_render(viewport, &scn, &con);
     // swap OpenGL buffers (blocking call due to v-sync)
@@ -104,7 +114,7 @@ class MujocoAnimator : public AbstractRealtimeObject{
     glfwSetMouseButtonCallback(window_, mouseCallbackStatic);
     glfwSetScrollCallback(window_, scrollCallbackStatic);
     // sleep(3);
-    while (!CTRL_C_DETECTED) {
+    while (!CtrlCDetected()) {
     // while (true) {
       Update();      //update scene
       std::this_thread::sleep_for(std::chrono::microseconds((int)(1e6/frame_rate_)));
@@ -117,7 +127,6 @@ class MujocoAnimator : public AbstractRealtimeObject{
     // free MuJoCo model and data, deactivate
     mj_deleteData(mj_data);
     mj_deleteModel(mj_model);
-    mj_deactivate();
   }
 
 
@@ -125,7 +134,11 @@ class MujocoAnimator : public AbstractRealtimeObject{
   mjModel* getModel(){return mj_model;}
   mjData* getData(){return mj_data;}
   std::mutex* getMutex(){return mutex_ptr_;}
-  private:
+  std::unordered_map<std::string, 
+                     std::unique_ptr<mjvGeom>>& getAdditionalGeoms(){return additional_geoms_map_;}
+  bool getPause(){return pause;}
+
+ private:
   mjModel* mj_model; 
   mjData* mj_data; 
 
@@ -135,10 +148,13 @@ class MujocoAnimator : public AbstractRealtimeObject{
   mjrContext con;                     // custom GPU context
   
   GLFWwindow* window_;
+  std::unordered_map<std::string, 
+                     std::unique_ptr<mjvGeom>> additional_geoms_map_;
   // mouse interaction
   bool button_left = false;
   bool button_middle = false;
   bool button_right =  false;
+  bool pause = false;
   double lastx = 0;
   double lasty = 0;
 
@@ -164,6 +180,10 @@ class MujocoAnimator : public AbstractRealtimeObject{
       {
           mj_resetData(mj_model, mj_data);
           mj_forward(mj_model, mj_data);
+      }else if( act==GLFW_PRESS && key==GLFW_KEY_SPACE ){
+          pause = !pause;
+      }else if( act==GLFW_PRESS && key==GLFW_KEY_ESCAPE){ 
+          ActivateCtrlC();
       }
   }
 
@@ -337,6 +357,9 @@ class MjbotsSimulationInterface : public kodlab::RobotInterface {
     for (double p:initial_pos) initial_pos_.push_back(p);
     for (double v:initial_vel) initial_vel_.push_back(v);
   }
+  mjModel* GetModel(){return mj_model_;}
+  mjData* GetData(){return mj_data_;}
+  MujocoAnimator* GetAnimator(){return &mj_animator_;}
  private:
   int control_frequency;                                     /// Control frequency (Now used as simulation frequency as well)
   std::string xml_model_path;
@@ -353,6 +376,12 @@ class MjbotsSimulationInterface : public kodlab::RobotInterface {
   mjModel* mj_model_ = NULL;                  // MuJoCo model
   mjData* mj_data_ = NULL;                   // MuJoCo data
   
+  std::shared_ptr<lcm::LCM> lcm_;
+  /**
+   * @brief LCM output publisher.
+   */
+  LcmPublisher<MujocoData> publisher_;
+
 
   std::mutex* mutex_ptr_ = nullptr;
 };

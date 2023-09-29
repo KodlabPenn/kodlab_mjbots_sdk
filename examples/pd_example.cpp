@@ -54,7 +54,8 @@ class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog,VoidLcm
 int main(int argc, char **argv) {
   //Setup joints
   std::vector<kodlab::mjbots::JointMoteus> joints;
-  joints.emplace_back(100,
+  joints.emplace_back("pivot",
+                      100,
                       4,
                       1,
                       0,
@@ -76,7 +77,7 @@ int main(int argc, char **argv) {
   options.imu_mounting_deg.roll = 0;
   options.imu_mounting_deg.pitch = 180;
   options.attitude_rate_hz = 1000;
-  options.xml_model_path="../../model/invertedPendulum.xml";
+  options.xml_model_path="../model/invertedPendulum.xml";
   options.initial_positions.push_back(2.5);
   options.initial_vels.push_back(0);
   // Create control loop

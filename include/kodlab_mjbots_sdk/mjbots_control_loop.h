@@ -293,11 +293,19 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
     float sleep_duration = spinner.predict_sleeping_time_micro();
     spinner.spin();
     time_now_ = dt_timer.tac();
+#if defined(SIMULATION) && defined(SIM_TIME_GAIN)
+   time_now_ *= SIM_TIME_GAIN;
+#endif
 
     // If parallel mode, process the previous reply, then send command to keep cycle time up on pi3hat loop
     if(options_.parallelize_control_loop){
+
       robot_interface_->ProcessReply();
+      
       prev_msg_duration = message_duration_timer.tac();
+#if defined(SIMULATION) && defined(SIM_TIME_GAIN)
+     prev_msg_duration *= SIM_TIME_GAIN;
+#endif
       message_duration_timer.tic();
       robot_interface_->SendCommand();
     }
@@ -318,6 +326,9 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
       SafeProcessInput();
       robot_interface_->ProcessReply();
       prev_msg_duration = message_duration_timer.tac();
+#if defined(SIMULATION) && defined(SIM_TIME_GAIN)
+     prev_msg_duration *= SIM_TIME_GAIN;
+#endif
     }
     else{
       // Publish log for parallel loop

@@ -1,5 +1,5 @@
 # Setup project
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.21)
 project(lodepng)
 
 set(CMAKE_CXX_STANDARD 17)

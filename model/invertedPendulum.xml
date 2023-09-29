@@ -79,7 +79,7 @@ POSSIBILITY OF SUCH DAMAGE.
 	</tendon>
 	
 	<actuator>
-        <motor joint='pivot' name='motor' gear="1" forcelimited="true" forcerange="-10 10"/>
+        <motor name='pivot_act' joint='pivot' gear="1" forcelimited="true" forcerange="-10 10"/>
 	</actuator>
 
 	<sensor>

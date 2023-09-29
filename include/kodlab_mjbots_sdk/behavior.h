@@ -16,6 +16,7 @@
 #include <type_traits>
 #include <utility>
 #include "kodlab_mjbots_sdk/robot_base.h"
+#include "kodlab_mjbots_sdk/interfaces.h"
 #include "kodlab_mjbots_sdk/log.h"
 
 namespace kodlab
@@ -52,6 +53,8 @@ protected:
    * @brief Active state of this behavior
    */
   bool active_ = false;
+
+  std::shared_ptr<INTERFACE_TYPE> robot_interface_ = nullptr;
 
 public:
   /**
@@ -201,6 +204,11 @@ public:
    * @brief Sets initialized flag to true
    */
   void set_initialized() { initialized_ = true; }
+
+  void set_robot_interface(std::shared_ptr<INTERFACE_TYPE> robot_interface) {
+    robot_interface_ = robot_interface; }
+
+  INTERFACE_TYPE* get_robot_interface() {return robot_interface_.get(); }
 };
 
 } // namespace kodlab

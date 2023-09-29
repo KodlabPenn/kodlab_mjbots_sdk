@@ -25,6 +25,9 @@ void torque_limiter::Constrain(float& value, float min_val, float max_val) {
 void SoftStart::ConstrainTorques(std::vector<float> &torques) const {
   if(timer_initialized_){
     float time_since_start_ms = SoftStart::timer_.tac()/1000.0;
+#if defined(SIMULATION) && defined(SIM_TIME_GAIN)
+    time_since_start_ms *= SIM_TIME_GAIN;
+#endif
     if (time_since_start_ms > duration_ms_) {
       torque_limiter::Constrain(torques, -max_torque_, max_torque_);
     } else {
@@ -40,6 +43,9 @@ void SoftStart::ConstrainTorques(std::vector<float> &torques) const {
 void SoftStart::ConstrainTorque(float &torque) const {
   if(timer_initialized_) {
     float time_since_start_ms = SoftStart::timer_.tac() / 1000.0;
+#if defined(SIMULATION) && defined(SIM_TIME_GAIN)
+    time_since_start_ms *= SIM_TIME_GAIN;
+#endif
     if (time_since_start_ms > duration_ms_) {
       torque_limiter::Constrain(torque, -max_torque_, max_torque_);
     } else {

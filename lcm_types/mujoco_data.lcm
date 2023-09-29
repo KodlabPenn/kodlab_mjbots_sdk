@@ -1,0 +1,15 @@
+struct MujocoData
+{
+  float time;
+  int8_t nq;
+  int8_t nv;
+  int8_t na;
+  int8_t nu;
+  int8_t nsensor;
+  int8_t ncon;
+  float qpos[nq];
+  float qvel[nv];
+  float act[na];
+  float ctrl[nu];
+  float sensordata[nsensor];
+}

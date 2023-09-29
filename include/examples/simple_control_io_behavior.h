@@ -89,6 +89,9 @@ class SimpleControlIOBehavior : public kodlab::IOBehavior<SimpleRobot,
   void Update() override {
     // Update time
     time_now_ = timer_.tac();
+#if defined(SIMULATION) && defined(SIM_TIME_GAIN)
+   time_now_ *= SIM_TIME_GAIN;
+#endif
 
     // Retrieve current joint positions
     joint_positions_ = robot_->GetJointPositions();

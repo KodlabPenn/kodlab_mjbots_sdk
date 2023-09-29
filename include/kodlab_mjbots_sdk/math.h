@@ -86,4 +86,4 @@ class Range{
   std::pair<EigenOrScalar, EigenOrScalar> pair_;
 };
 
-}
+} // namespace kodlab::math

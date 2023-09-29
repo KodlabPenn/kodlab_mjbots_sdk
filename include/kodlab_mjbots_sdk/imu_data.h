@@ -263,7 +263,7 @@ public:
    * various representations
    * @param stream[optional] output stream
    */
-  void PrintIMUData(FILE* stream = stdout)
+  void PrintIMUData(FILE* stream = stdout) const
   {
     // Gather IMUData Data
     Eigen::Quaternionf qr = get_quat_raw();

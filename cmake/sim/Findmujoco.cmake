@@ -22,10 +22,11 @@
 #
 
 include(FindPackageHandleStandardArgs)
-
+message("MUJOCO VERSION::")
+message(${mujoco_INSTALL_VERSION})
 # Find library and include directory
 find_library(mujoco_LIBRARY
-  NAMES mujoco mujoco.${MUJOCO_VERSION}
+  NAMES mujoco mujoco.${mujoco_INSTALL_VERSION}
   HINTS ${mujoco_INSTALL_PATH}/lib ${mujoco_INSTALL_PATH}/bin
   NO_DEFAULT_PATH)
 find_path(mujoco_INCLUDE_DIR

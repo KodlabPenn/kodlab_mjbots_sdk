@@ -47,6 +47,7 @@ class MjbotsBehaviorLoop : public MjbotsControlLoop<Log, Input, Robot> {
    *       necessary internal updates are called. This is not recommended.
    */
   void Update() override {
+
     this->robot_->Update();
     behavior_manager_.Update();
   }
@@ -61,7 +62,7 @@ class MjbotsBehaviorLoop : public MjbotsControlLoop<Log, Input, Robot> {
   MjbotsBehaviorLoop(std::vector<kodlab::mjbots::JointMoteus> joints,
                      const ControlLoopOptions &options)
       : MjbotsControlLoop<Log, Input, Robot>(joints, options),
-        behavior_manager_{this->robot_} {}
+        behavior_manager_{this->robot_,this->robot_interface_} {}
 
   /**
    * @brief Construct an Mjbots behavior loop based on an options struct
@@ -72,7 +73,7 @@ class MjbotsBehaviorLoop : public MjbotsControlLoop<Log, Input, Robot> {
   MjbotsBehaviorLoop(std::vector<std::shared_ptr<kodlab::mjbots::JointMoteus>> joints,
                      const ControlLoopOptions &options)
       : MjbotsControlLoop<Log, Input, Robot>(joints, options),
-        behavior_manager_{this->robot_} {}
+        behavior_manager_{this->robot_,this->robot_interface_} {}
 
   /**
    * @brief Construct an Mjbots behavior loop based on an options struct
@@ -83,7 +84,7 @@ class MjbotsBehaviorLoop : public MjbotsControlLoop<Log, Input, Robot> {
   MjbotsBehaviorLoop(std::shared_ptr<Robot> robot_in,
                      const ControlLoopOptions &options)
       : MjbotsControlLoop<Log, Input, Robot>(robot_in, options),
-        behavior_manager_{this->robot_} {}
+        behavior_manager_{this->robot_,this->robot_interface_} {}
 
   /**
    * @brief Destructor

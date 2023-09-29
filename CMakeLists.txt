@@ -3,10 +3,14 @@ project(kodlab_mjbots_sdk)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(Simulation OFF CACHE BOOL "Simulation") 
+set(Simulation ON CACHE BOOL "Simulation") 
 
-if (Simulation) 
+if (Simulation)     
+    message("|||||||||||||||||||||||||||||||||||||||||||")
+    message("|||||||||| SIMULATION IS ACTIVE |||||||||||")
+    message("|||||||||||||||||||||||||||||||||||||||||||")
     add_definitions(-DSIMULATION=ON)
+    # Define the compiler
 endif()
 # Only do these if this is the main project, and not if it is included through add_subdirectory
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
