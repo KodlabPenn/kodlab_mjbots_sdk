@@ -419,7 +419,7 @@ class PIDController {
                   const VectorNS & derivative_setpoint,
                   double time_step) {
     
-    set_setpoint(setpoint, derivative_setpoint);
+    set_setpoints(setpoint, derivative_setpoint);
     return Update(state, derivative_state, time_step);
   }
 
@@ -440,7 +440,7 @@ class PIDController {
                 double time_step) {
     //checking if using for scalar PID
     static_assert(N==1, "Using Scalar function in vector PID");
-    set_setpoint(setpoint, derivative_setpoint);
+    set_setpoints(setpoint, derivative_setpoint);
     
     // Calling Nominal Update function.
     return Update(state * VectorNS::Ones(), 
