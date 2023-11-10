@@ -3,11 +3,8 @@
 # Optionally glob, but only for CMake 3.12 or later:
 option(Simulation "Simulation" OFF)
 
-set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/common_header.h"
-                # "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat.h"
+set(BASE_HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/common_header.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/moteus_protocol.h"
-                # "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
-                # "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_hardware_interface.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/robot_interface.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/type_traits.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/polar_leg.h"
@@ -38,45 +35,71 @@ set(HEADER_LIST "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/commo
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_spin_joints_behavior.h"
                 "${kodlab_mjbots_sdk_SOURCE_DIR}/include/examples/simple_control_io_behavior.h"
 )
-set(SIM_HEADER_LIST                    
-                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_simulation_interface.h"
-)
 
-set(SOURCE_LIST "common_header.cpp"
-                # "pi3hat.cpp" 
-                # "mjbots_hardware_interface.cpp"
+set(BASE_SOURCE_LIST "common_header.cpp"
                 "polar_leg.cpp"
                 "soft_start.cpp"
                 "abstract_realtime_object.cpp"
                 "lcm_subscriber.cpp"
                 "robot_base.cpp"
                 "joint_base.cpp"
-                "joint_moteus.cpp"
                 "cartesian_leg.cpp"
+                "joint_moteus.cpp"
 )
+
+
+
+# dependencies specific to simulation
+set(SIM_HEADER_LIST                    
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_simulation_interface.h"
+)
+
 set(SIM_SOURCE_LIST
                 "mjbots_simulation_interface.cpp"
 )
 
-set(ALL_SOURCE 
-        ${SOURCE_LIST} 
-        ${SIM_SOURCE_LIST}
+
+
+# dependencies specific to hardware
+set(HARDWARE_HEADER_LIST
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/pi3hat_moteus_interface.h"
+                "${kodlab_mjbots_sdk_SOURCE_DIR}/include/kodlab_mjbots_sdk/mjbots_hardware_interface.h"
 )
 
-set(ALL_HEADER 
-        ${HEADER_LIST} 
-        ${SIM_HEADER_LIST}
+set(HARDWARE_SOURCE_LIST
+                "pi3hat.cpp" 
+                "mjbots_hardware_interface.cpp"
 )
 
 
 
 
-# Make an automatic library - will be static or dynamic based on user setting
+# select either simulation or hardware dependencies
 if(Simulation)
-        add_library(kodlab_mjbots_sdk  ${ALL_SOURCE} ${ALL_HEADER} )
+        set(INTERFACE_SOURCE_LIST ${SIM_SOURCE_LIST})
+        set(INTERFACE_HEADER_LIST ${SIM_HEADER_LIST})
 else()
-        add_library(kodlab_mjbots_sdk  ${SOURCE_LIST} ${HEADER_LIST} )
+        set(INTERFACE_SOURCE_LIST ${HARDWARE_SOURCE_LIST})
+        set(INTERFACE_HEADER_LIST ${HARDWARE_HEADER_LIST})
 endif()
+
+
+
+
+set(SOURCE_LIST
+        ${BASE_SOURCE_LIST}
+        ${INTERFACE_SOURCE_LIST}
+)
+
+set(HEADER_LIST
+        ${BASE_HEADER_LIST}
+        ${INTERFACE_HEADER_LIST}
+)
+
+add_library(kodlab_mjbots_sdk ${SOURCE_LIST} ${HEADER_LIST} )
+
+
 # We need this directory, and users of our library will need it too
 target_include_directories(kodlab_mjbots_sdk PUBLIC ../include ../thirdparty/Eigen ../lcm_types ../thirdparty/lodepng
         $ENV{RASPBIAN_ROOTFS}/opt/vc/include
