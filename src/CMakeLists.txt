@@ -51,6 +51,7 @@ set(SOURCE_LIST "common_header.cpp"
                 "lcm_subscriber.cpp"
                 "robot_base.cpp"
                 "joint_base.cpp"
+                "joint_moteus.cpp"
                 "cartesian_leg.cpp"
 )
 set(SIM_SOURCE_LIST

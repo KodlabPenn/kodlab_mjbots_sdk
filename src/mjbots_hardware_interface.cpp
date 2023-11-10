@@ -14,19 +14,14 @@
 
 namespace kodlab::mjbots {
 void MjbotsHardwareInterface::InitializeCommand() {
-  for (const auto &joint : joints) {
-    commands_.push_back({});
-    commands_.back().id = joint->get_can_id(); //id
-  }
-
   ::mjbots::moteus::PositionResolution res; // This is just for the command
-  if(send_pd_commands_){
+  if(use_pd_commands_){
     res.position = ::mjbots::moteus::Resolution::kInt16;
     res.velocity = ::mjbots::moteus::Resolution::kInt16;
     res.feedforward_torque = ::mjbots::moteus::Resolution::kInt16;
     res.kp_scale = ::mjbots::moteus::Resolution::kInt16;
     res.kd_scale = ::mjbots::moteus::Resolution::kInt16;
-    res.maximum_torque = ::mjbots::moteus::Resolution::kInt8;
+    res.maximum_torque = ::mjbots::moteus::Resolution::kInt16;
   }else{
     res.position = ::mjbots::moteus::Resolution::kIgnore;
     res.velocity = ::mjbots::moteus::Resolution::kIgnore;
@@ -37,12 +32,13 @@ void MjbotsHardwareInterface::InitializeCommand() {
   }
   res.stop_position = ::mjbots::moteus::Resolution::kIgnore;
   res.watchdog_timeout = ::mjbots::moteus::Resolution::kIgnore;
-  for (auto &cmd : commands_) {
-    cmd.resolution = res;
-    cmd.mode = ::mjbots::moteus::Mode::kStopped;
-    if(send_pd_commands_){
-      cmd.query.torque = ::mjbots::moteus::Resolution::kInt16;
-    }
+
+  for (const auto &joint : joints) {
+    commands_.push_back({});
+    commands_.back().id = joint->get_can_id(); //id
+    commands_.back().query = joint->get_query_command(); //query
+    commands_.back().resolution = res;
+    commands_.back().mode = ::mjbots::moteus::Mode::kStopped;
   }
 }
 
@@ -70,11 +66,11 @@ MjbotsHardwareInterface::MjbotsHardwareInterface(std::vector<std::shared_ptr<Joi
                                                  std::optional<::mjbots::pi3hat::Euler> imu_world_offset_deg,
                                                  bool dry_run,
                                                  bool print_torques,
-                                                 bool send_pd_commands)
+                                                 bool use_pd_commands)
     : imu_data_(imu_data_ptr ? imu_data_ptr : std::make_shared<::kodlab::IMUData<float>>()),
       dry_run_(dry_run),
       print_torques_(print_torques),
-      send_pd_commands_(send_pd_commands)
+      use_pd_commands_(use_pd_commands)
 { 
   LOG_IF_WARN(dry_run_, "\nDRY RUN: NO TORQUES COMMANDED");
   joints = joint_ptrs;
@@ -129,11 +125,10 @@ void MjbotsHardwareInterface::ProcessReply() {
   // Copy results to object so controller can use
   for (auto & joint : joints) {
     const auto servo_reply = Get(replies_, joint->get_can_id());
-    if(std::isnan(servo_reply.position)){
+    if(joint->get_query_command().any_set() && servo_reply.all_unset()){
       std::cout<<"Missing can frame for servo: " << joint->get_can_id()<< std::endl;
     } else{
-      joint->UpdateMoteus(servo_reply.position, servo_reply.velocity,
-                          send_pd_commands_ ? servo_reply.torque : 0,servo_reply.mode);
+      joint->UpdateMoteus(servo_reply);
     }
   }
   imu_data_->Update(*(moteus_data_.attitude));
@@ -144,7 +139,7 @@ void MjbotsHardwareInterface::SendCommand() {
 
   for (int servo = 0; servo < num_joints_; servo++) {// TODO Move to a seperate update method (allow non-ff torque commands)?
     commands_[servo].position.feedforward_torque = (dry_run_ ? 0 : joints[servo]->get_servo_torque());
-    if(send_pd_commands_){
+    if(use_pd_commands_){
       commands_[servo].position.position = joints[servo]->get_moteus_position_target();
       commands_[servo].position.velocity = joints[servo]->get_moteus_velocity_target();
       commands_[servo].position.kp_scale = dry_run_ ? 0 : joints[servo]->get_kp_scale();
@@ -161,6 +156,10 @@ void MjbotsHardwareInterface::SendCommand() {
   }
 
   moteus_interface_->Cycle(moteus_data_);
+}
+
+std::vector<std::shared_ptr<JointMoteus>> MjbotsHardwareInterface::GetJoints() {
+  return joints;
 }
 
 std::vector<::mjbots::moteus::Mode> MjbotsHardwareInterface::GetJointModes() {

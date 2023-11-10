@@ -117,6 +117,7 @@ enum Register : uint32_t {
 };
 
 enum class Mode {
+  kUnset = -1,
   kStopped = 0,
   kFault = 1,
   kEnabling = 2,
@@ -131,6 +132,33 @@ enum class Mode {
   kPositionTimeout = 11,
   kZeroVelocity = 12,
   kNumModes,
+};
+
+enum class Fault {
+  kUnset = -1,
+  kSuccess = 0,
+
+  kDmaStreamTransferError = 1,
+  kDmaStreamFifoError = 2,
+  kUartOverrunError = 3,
+  kUartFramingError = 4,
+  kUartNoiseError = 5,
+  kUartBufferOverrunError = 6,
+  kUartParityError = 7,
+
+  kCalibrationFault = 32,
+  kMotorDriverFault = 33,
+  kOverVoltage = 34,
+  kEncoderFault = 35,
+  kMotorNotConfigured = 36,
+  kPwmCycleOverrun = 37,
+  kOverTemperature = 38,
+  kStartOutsideLimit = 39,
+  kUnderVoltage = 40,
+  kConfigChanged = 41,
+  kThetaInvalid = 42,
+  kPositionInvalid = 43,
+  kDriverEnableFault = 44,
 };
 
 enum class Resolution {
@@ -652,7 +680,7 @@ inline void EmitQueryCommand(
 }
 
 struct QueryResult {
-  Mode mode = Mode::kStopped;
+  Mode mode = Mode::kUnset;
   double position = std::numeric_limits<double>::quiet_NaN();
   double velocity = std::numeric_limits<double>::quiet_NaN();
   double torque = std::numeric_limits<double>::quiet_NaN();
@@ -661,7 +689,20 @@ struct QueryResult {
   bool rezero_state = false;
   double voltage = std::numeric_limits<double>::quiet_NaN();
   double temperature = std::numeric_limits<double>::quiet_NaN();
-  int fault = 0;
+  Fault fault = Fault::kUnset;
+
+  bool all_unset() const {
+    return mode == Mode::kUnset &&
+        position == std::numeric_limits<double>::quiet_NaN() &&
+        velocity == std::numeric_limits<double>::quiet_NaN() &&
+        torque == std::numeric_limits<double>::quiet_NaN() &&
+        q_current == std::numeric_limits<double>::quiet_NaN() &&
+        d_current == std::numeric_limits<double>::quiet_NaN() &&
+        rezero_state == false &&
+        voltage == std::numeric_limits<double>::quiet_NaN() &&
+        temperature == std::numeric_limits<double>::quiet_NaN() &&
+        fault == Fault::kUnset;
+  }
 };
 
 inline QueryResult ParseQueryResult(const uint8_t* data, size_t size) {
@@ -710,7 +751,7 @@ inline QueryResult ParseQueryResult(const uint8_t* data, size_t size) {
         break;
       }
       case Register::kFault: {
-        result.fault = parser.ReadInt(res);
+        result.fault = static_cast<Fault>(parser.ReadInt(res));
         break;
       }
       default: {

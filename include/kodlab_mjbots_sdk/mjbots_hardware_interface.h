@@ -42,7 +42,7 @@ class MjbotsHardwareInterface : public kodlab::RobotInterface {
    * @param imu_world_offset_deg [Optional] IMU orientation offset. Useful for re-orienting gravity, etc.
    * @param dry_run if true, sends zero-torques to Moteus controllers
    * @param print_torques if true, prints torque commands
-   * @param send_pd_commands if true, packets to the moteus include pd gains and setpoints
+   * @param use_pd_commands if true, packets to the moteus include pd gains and setpoints
    */
   MjbotsHardwareInterface(std::vector<std::shared_ptr<JointMoteus>> joint_list,
                        const RealtimeParams &realtime_params,
@@ -52,7 +52,7 @@ class MjbotsHardwareInterface : public kodlab::RobotInterface {
                        std::optional<::mjbots::pi3hat::Euler > imu_world_offset_deg = std::nullopt,
                        bool dry_run = false,
                        bool print_torques = false,
-                       bool send_pd_commands = false
+                       bool use_pd_commands = false
                        );
 
   /**
@@ -91,6 +91,12 @@ class MjbotsHardwareInterface : public kodlab::RobotInterface {
   void Shutdown() override;
 
   /*!
+    * @brief Get a vector of shared_ptrs to joints 
+    * @return a vector of shared pointers to the desired joints
+    */
+  std::vector<std::shared_ptr<JointMoteus>> GetJoints();
+
+  /*!
    * @brief accessor for the joint modes
    * @return the joint modes
    */
@@ -120,7 +126,7 @@ class MjbotsHardwareInterface : public kodlab::RobotInterface {
 
   bool dry_run_;                                     ///< dry run active flag
   bool print_torques_;                               ///< print torques active flag
-  bool send_pd_commands_;                            ///< Include pd gains and setpoints in the moteus packet
+  bool use_pd_commands_;                            ///< Include pd gains and setpoints in the moteus packet
   std::shared_ptr<::kodlab::IMUData<float>> imu_data_;                           /// Robot IMU data
 
   

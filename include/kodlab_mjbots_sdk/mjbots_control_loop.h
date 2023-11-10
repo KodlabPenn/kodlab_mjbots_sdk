@@ -48,7 +48,8 @@ struct ControlLoopOptions {
                                             /// 400, 200, 100.
   bool dry_run = false;  ///< If true, torques sent to moteus boards will always be zero
   bool print_torques = false;  ///< If true, torque commands will be printed to console
-  bool send_pd_commands = false; ///< If true, the control loop will send pd setpoints & gains in addition to ffwd torque commands
+  bool use_pd_commands = false; ///< If true, the control loop will send pd setpoints & gains in addition to ffwd torque commands
+  bool open_loop = false; ///< If true, open loop control of the robot is permitted
   std::string xml_model_path=""; /// Path of robot xml model file
   std::vector<double> initial_positions; /// initial positions of the robot
   std::vector<double> initial_vels; /// initial velocities of the robot
@@ -178,7 +179,7 @@ class MjbotsControlLoop : public AbstractRealtimeObject {
 
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::vector<kodlab::mjbots::JointMoteus> joints, const ControlLoopOptions &options)
-  : MjbotsControlLoop<log_type, input_type,robot_type>( make_share_vector(joints), options){}
+  : MjbotsControlLoop<log_type, input_type,robot_type>(make_share_vector(joints), options){}
 
 template<class log_type, class input_type, class robot_type>
 MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(
@@ -200,6 +201,13 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
     joints_moteus.push_back(
         std::dynamic_pointer_cast<kodlab::mjbots::JointMoteus>(j));
   }
+  // Open loop check
+  for(const auto & j : joints_moteus){
+      if(!options.open_loop && j->is_open_loop_query()){
+        LOG_FATAL("ControlLoopOptions has open_loop = false, but joint moteus QueryCommand struct does not query position and/or velocity from moteus");
+        kodlab::ActivateCtrlC();
+      }
+  }
 
   robot_interface_ = std::make_shared<INTERFACE_TYPE>(
       std::move(joints_moteus), options.realtime_params,
@@ -207,8 +215,8 @@ MjbotsControlLoop<log_type, input_type, robot_type>::MjbotsControlLoop(std::shar
       robot_->GetIMUDataSharedPtr(), options.imu_world_offset_deg,
       options.dry_run,
       options.print_torques,
-      options.send_pd_commands);
-  
+      options.use_pd_commands
+  );
   num_joints_ = robot_->joints.size();
   SetupOptions(options);
 }
