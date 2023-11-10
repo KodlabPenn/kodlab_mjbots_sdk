@@ -128,15 +128,6 @@ float JointMoteus::get_velocity() const {
   }
 }
 
-float JointMoteus::get_servo_torque() const {
-  if(query_type_.torque == ::mjbots::moteus::Resolution::kIgnore){
-    LOG_WARN("Torque resolution in QueryCommand is set to kIgnore, while attempting to get value");
-    return 0;
-  } else {
-    return servo_torque_;
-  }
-}
-
 float JointMoteus::get_measured_torque() const {
   if(query_type_.torque == ::mjbots::moteus::Resolution::kIgnore){
     LOG_WARN("Torque resolution in QueryCommand is set to kIgnore, while attempting to get value");
