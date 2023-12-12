@@ -256,6 +256,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::AddTimingLog(float t, 
   if (logging_) {
     log_data_->timestamp = t;
     log_data_->margin = margin;
+    printf("\t margin [us]: %.f \n", margin);
     log_data_->message_duration = message_duration;
   }
 }
@@ -264,6 +265,7 @@ template<class log_type, class input_type, class robot_type>
 void MjbotsControlLoop<log_type, input_type, robot_type>::PublishLog() {
   if (logging_)
     log_pub_.Publish();
+
 }
 
 template<class log_type, class input_type, class robot_type>
@@ -322,6 +324,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::Run() {
     Update();      //TODO should we give full control to the robot_ instead of feeding update thorugh?
     // robot_->Update();
     PrepareLog();
+
     AddTimingLog(time_now_, sleep_duration, prev_msg_duration);
 
     // If messages were not sent earlier, send the command and process the reply
