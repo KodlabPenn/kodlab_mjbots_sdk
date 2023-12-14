@@ -167,7 +167,6 @@ namespace kodlab
         /*!
          * @brief Get the vector of shared_ptrs to joints 
          * @note Added getter to public member for interface consistency with subvector getters
-         * @param joint_indices set of desired joint indices std::initializer_list of ints
          * @return a vector shared pointers to the desired joints
          */
         std::vector<std::shared_ptr<JointBase>> GetJoints(){return joints;}

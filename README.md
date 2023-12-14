@@ -86,9 +86,9 @@ up the control loop set:
 
 ```cpp
 kodlab::mjbots::ControlLoopOptions options;
-options.send_pd_commands = true;
+options.use_pd_commands = true;
 ```
-By setting `send_pd_commands` to true the robot will now send pd scales and set points to the
+By setting `use_pd_commands` to true the robot will now send pd scales and set points to the
 moteus. This will slow down the communication with the moteus, so only use this option if you
 are actually going to use the pd commands.
 
