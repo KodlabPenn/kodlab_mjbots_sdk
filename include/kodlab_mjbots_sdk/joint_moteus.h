@@ -176,13 +176,6 @@ class JointMoteus: public JointBase
         float get_velocity() const override;
 
         /**
-         * @brief Get the torque command. Overrides function in joint_base.h
-         * 
-         * @return float
-         */
-        float get_servo_torque() const override;
-
-        /**
          * @brief Get the measured joint torque. Overrides function in
          * joint_base.h
          * 
