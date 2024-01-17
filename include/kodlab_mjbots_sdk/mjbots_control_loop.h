@@ -256,7 +256,7 @@ void MjbotsControlLoop<log_type, input_type, robot_type>::AddTimingLog(float t, 
   if (logging_) {
     log_data_->timestamp = t;
     log_data_->margin = margin;
-    printf("\t margin [us]: %.f \n", margin);
+    // printf("\t margin [us]: %.f \n", margin);
     log_data_->message_duration = message_duration;
   }
 }
