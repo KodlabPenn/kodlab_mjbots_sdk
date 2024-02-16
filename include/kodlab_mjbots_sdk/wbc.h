@@ -76,7 +76,7 @@ class Wbc {
 
     Eigen::MatrixXd selection_matrix_actuated_joints = Eigen::MatrixXd::Zero(n_j, n_gj);
 
-    Eigen::MatrixXd urdf_selection_matrix = Eigen::MatrixXd::Zero(n_gj, n_gj);
+    Eigen::MatrixXd urdf_selection_matrix = Eigen::MatrixXd::Identity(n_gj, n_gj);
 
     std::unique_ptr<RigidBodyDynamics::Model> model;
 
@@ -193,7 +193,6 @@ Eigen::VectorXd Wbc<Robot>::updateAndSolve(const Robot& robot_) {
   // Then, update the dependent constraints
   updateContactConstraint();
   updateDynamicsConstraint(robot_);
-
 
 
   // Solve the QP
