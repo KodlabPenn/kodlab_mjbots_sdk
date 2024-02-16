@@ -32,22 +32,21 @@
 
 template<class Robot = kodlab::RobotBase>
 class Wbc {
-
   private:
 
-    static const unsigned int n_limb = 4; // number of limbs
+    // Robot parameters
+    unsigned int n_j; // number of joints (actuated)
+    unsigned int n_vj = 6; // number of virutal joints (floating base, unactuated)
+    unsigned int n_gj = n_vj + n_j; // number of generalized joints
 
-    static const unsigned int n_fb = 6; // number of floating base joints (unactuated)
-    static const unsigned int n_u = 3 * n_limb + 1; // number of actuated joints (limb joints + spine joint)
-    static const unsigned int n_vdot = n_fb + n_u; // number of generalized joint velocities (actuated joints + unactuated joints)
+    unsigned int n_limb = 4; // number of limbs
+    unsigned int n_cf = 3 * n_limb; // number of contact forces
 
-    static const unsigned int n_tau = n_u; // number of joint torques
-    static const unsigned int n_cf = 3 * n_limb; // number of contact forces
+    // WBC parameters
+    unsigned int n_dc = n_gj + n_j + n_cf; // number of decision variables
 
-    static const unsigned int n_dc = n_vdot + n_tau + n_cf; // number of decision variables
-
-    static const unsigned int n_ct_fr = 5 * n_limb; // number of friction constraints
-    static const unsigned int n_ct = n_vdot + n_cf + n_ct_fr + n_u; // number of constraints
+    unsigned int n_ct_fr = 5 * n_limb; // number of friction constraints
+    unsigned int n_ct = n_gj + n_cf + n_ct_fr + n_j; // number of constraints
 
 
     Eigen::VectorXd q;
@@ -67,7 +66,7 @@ class Wbc {
 
     Eigen::VectorXd bias_vector;
 
-    Eigen::MatrixXd contact_jacobian_T = Eigen::MatrixXd::Zero(n_vdot, n_cf);
+    Eigen::MatrixXd contact_jacobian_T = Eigen::MatrixXd::Zero(n_gj, n_cf);
 
     Eigen::MatrixXd weights = Eigen::MatrixXd::Zero(n_dc, n_dc);
 
@@ -75,9 +74,9 @@ class Wbc {
 
     Eigen::MatrixXd task_jacobian = Eigen::MatrixXd::Identity(n_dc, n_dc);
 
-    Eigen::MatrixXd selection_matrix_actuated_joints = Eigen::MatrixXd::Zero(n_u, n_vdot);
+    Eigen::MatrixXd selection_matrix_actuated_joints = Eigen::MatrixXd::Zero(n_j, n_gj);
 
-    Eigen::MatrixXd selection_matrix_rbdl = Eigen::MatrixXd::Zero(n_vdot, n_vdot);
+    Eigen::MatrixXd urdf_selection_matrix = Eigen::MatrixXd::Zero(n_gj, n_gj);
 
     std::unique_ptr<RigidBodyDynamics::Model> model;
 
@@ -106,22 +105,27 @@ class Wbc {
   
   public:
 
-    Wbc() 
+    Wbc() = default;
+  
+    Wbc(unsigned int n_j, const char* urdf_path) : n_j(n_j)
     {
-
+      
       /// LOAD MODEL
-      const char* urdf_path = "/home/griffin/Documents/twist_mjbots/model/twist.urdf";
       model = std::make_unique<RigidBodyDynamics::Model>();
       if (!RigidBodyDynamics::Addons::URDFReadFromFile (urdf_path, model.get(), false)) {
         std::cerr << "Error loading model " << urdf_path << std::endl;
         abort();
       }
-      /// LOAD MODEL
+
+      // confirm urdf model dof count matches n_gj
+      if (model->dof_count != n_gj) {
+        std::cerr << "Error: urdf model dof count (" 
+                << model->dof_count << ") does not match n_gj" 
+                << n_gj << std::endl;
+        abort();
+      }
 
       this->dof = model->qdot_size;
-
-      // std::cout << "\n model->qdot_size: " << model->qdot_size << std::endl;
-      // std::cout << "\n model->q_size: " << model->q_size << std::endl;
 
       // Initialize matrix sizes based upon model dof
       q = Eigen::VectorXd::Zero(dof);
@@ -135,21 +139,8 @@ class Wbc {
 
       bias_vector = Eigen::VectorXd::Zero(dof);
 
-      selection_matrix_actuated_joints << Eigen::MatrixXd::Zero(n_u, n_fb), Eigen::MatrixXd::Identity(n_u, n_u); // This just turns joint torques (8x1) into generalized joint torques (14x1)
+      selection_matrix_actuated_joints << Eigen::MatrixXd::Zero(n_j, n_vj), Eigen::MatrixXd::Identity(n_j, n_j); // This just turns joint torques (8x1) into generalized joint torques (14x1)
 
-        Eigen::MatrixXd Identity3x3 = Eigen::Matrix<double, 3, 3>::Identity();
-      selection_matrix_rbdl.block<3, 3>(0, 0) = Identity3x3; 
-      selection_matrix_rbdl.block<3, 3>(3, 3) = Identity3x3;
-      selection_matrix_rbdl.block<3, 3>(7, 7) = Identity3x3;
-      selection_matrix_rbdl.block<3, 3>(13, 10) = Identity3x3;
-      selection_matrix_rbdl.block<3, 3>(10, 13) = Identity3x3;
-      selection_matrix_rbdl.block<3, 3>(16, 16) = Identity3x3;
-      selection_matrix_rbdl(6, 18) = 1;
-
-      // std::cout << "\n selection_matrix_rbdl: \n" << selection_matrix_rbdl << std::endl;
-
-      // std::cout << "\n selection_matrix_rbdl.rows(): \n" << selection_matrix_rbdl.rows() 
-      //           << "\n selection_matrix_rbdl.cols(): \n" << selection_matrix_rbdl.cols() << std::endl;
 
       setFrictionConstraint(0.7f, 1.f); // mu = 1, minimum_normal_force = 3N
       setInputConstraint(18.f);
@@ -157,6 +148,10 @@ class Wbc {
     }
 
 
+
+    void setUrdfSelectionMatrix(Eigen::MatrixXd urdf_selection_matrix) {
+      this->urdf_selection_matrix = urdf_selection_matrix;
+    }
 
     void setFbAccelCmd(Eigen::VectorXd fb_accel_cmd);
     void setFbAccelCmd(double fb_accel_cmd);
@@ -226,17 +221,17 @@ template <class Robot>
 void Wbc<Robot>::updateDynamicsConstraint(const Robot& robot_) {
   
   // Update q and qdot
-  for (int i = 0; i < n_u; ++i) {
-    q(i + n_fb) = robot_.GetJointPositions()[i];
-    qdot(i + n_fb) = robot_.GetJointPositions()[i];
+  for (int i = 0; i < n_j; ++i) {
+    q(i + n_vj) = robot_.GetJointPositions()[i];
+    qdot(i + n_vj) = robot_.GetJointPositions()[i];
   }
 
   // Clear the inertia matrix and bias vector
   inertia_matrix.setZero();
   bias_vector.setZero();
 
-  Eigen::VectorXd q_rbdl = selection_matrix_rbdl * q;
-  Eigen::VectorXd qdot_rbdl = selection_matrix_rbdl * qdot;
+  Eigen::VectorXd q_rbdl = urdf_selection_matrix * q;
+  Eigen::VectorXd qdot_rbdl = urdf_selection_matrix * qdot;
 
   Eigen::MatrixXd inertia_matrix_rbdl = Eigen::MatrixXd::Zero(dof, dof);
   Eigen::VectorXd bias_vector_rbdl = Eigen::VectorXd::Zero(dof);
@@ -245,13 +240,13 @@ void Wbc<Robot>::updateDynamicsConstraint(const Robot& robot_) {
   CompositeRigidBodyAlgorithm(*model, q_rbdl, inertia_matrix_rbdl, true);
   NonlinearEffects(*model, q_rbdl, qdot_rbdl, bias_vector_rbdl);
 
-  inertia_matrix = selection_matrix_rbdl.transpose() * inertia_matrix_rbdl * selection_matrix_rbdl;
-  bias_vector = selection_matrix_rbdl.transpose() * bias_vector_rbdl;
+  inertia_matrix = urdf_selection_matrix.transpose() * inertia_matrix_rbdl * urdf_selection_matrix;
+  bias_vector = urdf_selection_matrix.transpose() * bias_vector_rbdl;
 
   // Update constraint
-  constraint_matrix.middleRows(0, n_vdot) << inertia_matrix, -selection_matrix_actuated_joints.transpose(), -contact_jacobian_T;
-  constraint_lower_bounds.segment(0, n_vdot) = -bias_vector;
-  constraint_upper_bounds.segment(0, n_vdot) = -bias_vector;
+  constraint_matrix.middleRows(0, n_gj) << inertia_matrix, -selection_matrix_actuated_joints.transpose(), -contact_jacobian_T;
+  constraint_lower_bounds.segment(0, n_gj) = -bias_vector;
+  constraint_upper_bounds.segment(0, n_gj) = -bias_vector;
 
   // print this block to verify
   // std::cout << std::fixed << std::setprecision(2);
@@ -290,10 +285,10 @@ void Wbc<Robot>::setFrictionConstraint(float mu, float minimum_normal_force) {
 
 
 
-  friction_constraint_matrix << Eigen::MatrixXd::Zero(n_ct_fr, n_vdot), Eigen::MatrixXd::Zero(n_ct_fr, n_u), friction_constraint_matrix_nonzero_block;
+  friction_constraint_matrix << Eigen::MatrixXd::Zero(n_ct_fr, n_gj), Eigen::MatrixXd::Zero(n_ct_fr, n_j), friction_constraint_matrix_nonzero_block;
 
   // put this into total constraint matrix
-  constraint_matrix.middleRows(n_vdot + n_cf, n_ct_fr) = friction_constraint_matrix;
+  constraint_matrix.middleRows(n_gj + n_cf, n_ct_fr) = friction_constraint_matrix;
 
 
 
@@ -324,8 +319,8 @@ void Wbc<Robot>::setFrictionConstraint(float mu, float minimum_normal_force) {
 
 
   // put this into total constraint lower and upper bound vectors
-  constraint_lower_bounds.segment(n_vdot + n_cf, n_ct_fr) = friction_constraint_lower_bound;
-  constraint_upper_bounds.segment(n_vdot + n_cf, n_ct_fr) = friction_constraint_upper_bound;
+  constraint_lower_bounds.segment(n_gj + n_cf, n_ct_fr) = friction_constraint_lower_bound;
+  constraint_upper_bounds.segment(n_gj + n_cf, n_ct_fr) = friction_constraint_upper_bound;
 
 
   // print this block to verify
@@ -339,7 +334,7 @@ void Wbc<Robot>::setFrictionConstraint(float mu, float minimum_normal_force) {
 template<class Robot>
 void Wbc<Robot>::updateContactJacobianT(const Robot& robot_) {
 
-  Eigen::MatrixXd contact_jacobian_from_floating_base_T = Eigen::MatrixXd::Zero(n_fb, n_cf);
+  Eigen::MatrixXd contact_jacobian_from_floating_base_T = Eigen::MatrixXd::Zero(n_vj, n_cf);
   for (int limbNum = 0; limbNum < n_limb; ++limbNum) {
 
     Eigen::Vector3f p_BTi_B = robot_.get_kinematics().toe_positions.template segment<3>(limbNum * 3); // need .template cuz otherwise the compiler thinks its operater< smh
@@ -347,13 +342,13 @@ void Wbc<Robot>::updateContactJacobianT(const Robot& robot_) {
     Eigen::Vector3f p_TiB_B = -p_BTi_B; // need position vector from toe_i to the body origin
     Eigen::MatrixXf adjointTransform_float = kodlab::geometry::AdjointTransformation(Eigen::Matrix3f::Identity(), p_TiB_B).transpose();
     Eigen::MatrixXd adjointTransform = adjointTransform_float.cast<double>();
-    contact_jacobian_from_floating_base_T.block(0, limbNum * 3, n_fb, 3) = adjointTransform.block(0, 0, n_fb, 3); 
+    contact_jacobian_from_floating_base_T.block(0, limbNum * 3, n_vj, 3) = adjointTransform.block(0, 0, n_vj, 3); 
   }
-  contact_jacobian_T.block(0, 0, n_fb, n_cf) = contact_jacobian_from_floating_base_T;
+  contact_jacobian_T.block(0, 0, n_vj, n_cf) = contact_jacobian_from_floating_base_T;
 
   Eigen::MatrixXf toe_jacobian_T_float = robot_.get_kinematics().toe_jacobian.transpose();
   Eigen::MatrixXd toe_jacobian_T = toe_jacobian_T_float.cast<double>();
-  contact_jacobian_T.block(n_fb, 0, n_u, n_cf) = toe_jacobian_T;
+  contact_jacobian_T.block(n_vj, 0, n_j, n_cf) = toe_jacobian_T;
 
   // TODO: twist conversion: check this whole updateContactJacobianT function
 
@@ -366,11 +361,11 @@ template<class Robot>
 void Wbc<Robot>::updateContactConstraint(){
 
   // update contact constraint matrix (which is just a certain location in the constraint_matrix)
-  constraint_matrix.middleRows(n_vdot, n_cf) << contact_jacobian_T.transpose(), Eigen::MatrixXd::Zero(n_cf, n_u), Eigen::MatrixXd::Zero(n_cf, n_cf);
+  constraint_matrix.middleRows(n_gj, n_cf) << contact_jacobian_T.transpose(), Eigen::MatrixXd::Zero(n_cf, n_j), Eigen::MatrixXd::Zero(n_cf, n_cf);
 
   // put this into total constraint lower and upper bound vectors
-  constraint_lower_bounds.segment(n_vdot, n_cf) = Eigen::VectorXd::Zero(n_cf); //an equality constraint
-  constraint_upper_bounds.segment(n_vdot, n_cf) = Eigen::VectorXd::Zero(n_cf);
+  constraint_lower_bounds.segment(n_gj, n_cf) = Eigen::VectorXd::Zero(n_cf); //an equality constraint
+  constraint_upper_bounds.segment(n_gj, n_cf) = Eigen::VectorXd::Zero(n_cf);
 
 }
 
@@ -379,26 +374,26 @@ void Wbc<Robot>::setInputConstraint(float tau_max) {
 
   //// THE INPUT/TORQUE LIMIT CONSTRAINT MATRIX ////
 
-  Eigen::MatrixXd input_constraint_matrix = Eigen::MatrixXd::Zero(n_u, n_dc);
+  Eigen::MatrixXd input_constraint_matrix = Eigen::MatrixXd::Zero(n_j, n_dc);
 
-  Eigen::MatrixXd input_constraint_matrix_nonzero_block = Eigen::MatrixXd::Identity(n_u, n_u);
+  Eigen::MatrixXd input_constraint_matrix_nonzero_block = Eigen::MatrixXd::Identity(n_j, n_j);
 
-  input_constraint_matrix.block(0, n_vdot, n_u, n_u) = input_constraint_matrix_nonzero_block;
+  input_constraint_matrix.block(0, n_gj, n_j, n_j) = input_constraint_matrix_nonzero_block;
 
   // put this into total constraint matrix
-  constraint_matrix.middleRows(n_vdot + n_cf + n_ct_fr, n_u) = input_constraint_matrix;
+  constraint_matrix.middleRows(n_gj + n_cf + n_ct_fr, n_j) = input_constraint_matrix;
 
 
   //// THE INPUT/TORQUE LIMIT CONSTRAINT LOWER & UPPER BOUNDS ////
 
-  Eigen::VectorXd input_constraint_lower_bound = -tau_max * Eigen::VectorXd::Ones(n_u);
+  Eigen::VectorXd input_constraint_lower_bound = -tau_max * Eigen::VectorXd::Ones(n_j);
 
-  Eigen::VectorXd input_constraint_upper_bound = tau_max * Eigen::VectorXd::Ones(n_u);
+  Eigen::VectorXd input_constraint_upper_bound = tau_max * Eigen::VectorXd::Ones(n_j);
 
 
   // put this into total constraint lower and upper bound vectors
-  constraint_lower_bounds.segment(n_vdot + n_cf + n_ct_fr, n_u) = input_constraint_lower_bound;
-  constraint_upper_bounds.segment(n_vdot + n_cf + n_ct_fr, n_u) = input_constraint_upper_bound;
+  constraint_lower_bounds.segment(n_gj + n_cf + n_ct_fr, n_j) = input_constraint_lower_bound;
+  constraint_upper_bounds.segment(n_gj + n_cf + n_ct_fr, n_j) = input_constraint_upper_bound;
 
 
 }
@@ -421,7 +416,7 @@ void Wbc<Robot>::updateObjectiveVector() {
 template<class Robot>
 void Wbc<Robot>::setFbAccelCmd(Eigen::VectorXd fb_accel_cmd) {
 
-  command.segment(0, n_fb) = fb_accel_cmd;
+  command.segment(0, n_vj) = fb_accel_cmd;
 
   Wbc::updateObjectiveVector();
 
@@ -430,7 +425,7 @@ void Wbc<Robot>::setFbAccelCmd(Eigen::VectorXd fb_accel_cmd) {
 template<class Robot>
 void Wbc<Robot>::setFbAccelCmd(double fb_accel_cmd) {
 
-  Wbc::setFbAccelCmd(Eigen::VectorXd::Constant(n_fb, fb_accel_cmd));
+  Wbc::setFbAccelCmd(Eigen::VectorXd::Constant(n_vj, fb_accel_cmd));
 
 
 }
@@ -438,7 +433,7 @@ void Wbc<Robot>::setFbAccelCmd(double fb_accel_cmd) {
 template<class Robot>
 void Wbc<Robot>::setJointAccelCmd(Eigen::VectorXd joint_accel_cmd) {
 
-  command.segment(n_fb, n_u) = joint_accel_cmd;
+  command.segment(n_vj, n_j) = joint_accel_cmd;
 
   Wbc::updateObjectiveVector();
 
@@ -447,7 +442,7 @@ void Wbc<Robot>::setJointAccelCmd(Eigen::VectorXd joint_accel_cmd) {
 template<class Robot>
 void Wbc<Robot>::setJointAccelCmd(double joint_accel_cmd) {
   
-    Wbc::setJointAccelCmd(Eigen::VectorXd::Constant(n_u, joint_accel_cmd));
+    Wbc::setJointAccelCmd(Eigen::VectorXd::Constant(n_j, joint_accel_cmd));
   
     Wbc::updateObjectiveVector();
 }
@@ -456,7 +451,7 @@ void Wbc<Robot>::setJointAccelCmd(double joint_accel_cmd) {
 template<class Robot>
 void Wbc<Robot>::setJointTorqueCmd(Eigen::VectorXd joint_torque_cmd) {
 
-  command.segment(n_vdot, n_u) = joint_torque_cmd;
+  command.segment(n_gj, n_j) = joint_torque_cmd;
 
   Wbc::updateObjectiveVector();
 
@@ -465,7 +460,7 @@ void Wbc<Robot>::setJointTorqueCmd(Eigen::VectorXd joint_torque_cmd) {
 template<class Robot>
 void Wbc<Robot>::setContactForcesCmd(Eigen::VectorXd contact_forces_cmd) {
 
-  command.segment(n_vdot + n_u, n_cf) = contact_forces_cmd;
+  command.segment(n_gj + n_j, n_cf) = contact_forces_cmd;
 
   Wbc::updateObjectiveVector();
 
@@ -474,7 +469,7 @@ void Wbc<Robot>::setContactForcesCmd(Eigen::VectorXd contact_forces_cmd) {
 template<class Robot>
 void Wbc<Robot>::setFbAccelCosts(Eigen::VectorXd fb_accel_costs) {
 
-  weights.block(0, 0, n_fb, n_fb) = fb_accel_costs.asDiagonal();
+  weights.block(0, 0, n_vj, n_vj) = fb_accel_costs.asDiagonal();
 
   Wbc::updateObjectiveMatrix();
   Wbc::updateObjectiveVector();
@@ -483,14 +478,14 @@ void Wbc<Robot>::setFbAccelCosts(Eigen::VectorXd fb_accel_costs) {
 template<class Robot>
 void Wbc<Robot>::setFbAccelCosts(double fb_accel_costs) {
 
-  Wbc::setFbAccelCosts(Eigen::Vector<double, n_fb>::Constant(fb_accel_costs));
+  Wbc::setFbAccelCosts(Eigen::VectorXd::Constant(n_vj, fb_accel_costs));
 
 }
 
 template<class Robot>
 void Wbc<Robot>::setJointAccelCosts(Eigen::VectorXd joint_accel_costs) {
 
-  weights.block(n_fb, n_fb, n_u, n_u) = joint_accel_costs.asDiagonal();
+  weights.block(n_vj, n_vj, n_j, n_j) = joint_accel_costs.asDiagonal();
 
   Wbc::updateObjectiveMatrix();
   Wbc::updateObjectiveVector();
@@ -500,14 +495,14 @@ void Wbc<Robot>::setJointAccelCosts(Eigen::VectorXd joint_accel_costs) {
 template<class Robot>
 void Wbc<Robot>::setJointAccelCosts(double joint_accel_costs) {
 
-  Wbc::setJointAccelCosts(Eigen::VectorXd::Constant(n_u, joint_accel_costs));
+  Wbc::setJointAccelCosts(Eigen::VectorXd::Constant(n_j, joint_accel_costs));
 
 }
 
 template<class Robot>
 void Wbc<Robot>::setJointTorqueCosts(Eigen::VectorXd joint_torque_costs) {
 
-  weights.block(n_vdot, n_vdot, n_u, n_u) = joint_torque_costs.asDiagonal();
+  weights.block(n_gj, n_gj, n_j, n_j) = joint_torque_costs.asDiagonal();
 
   Wbc::updateObjectiveMatrix();
   Wbc::updateObjectiveVector();
@@ -517,14 +512,14 @@ void Wbc<Robot>::setJointTorqueCosts(Eigen::VectorXd joint_torque_costs) {
 template<class Robot>
 void Wbc<Robot>::setJointTorqueCosts(double joint_torque_costs) {
 
-  Wbc::setJointTorqueCosts(Eigen::VectorXd::Constant(n_u, joint_torque_costs));
+  Wbc::setJointTorqueCosts(Eigen::VectorXd::Constant(n_j, joint_torque_costs));
 
 }
 
 template<class Robot>
 void Wbc<Robot>::setContactForceCosts(Eigen::VectorXd contact_force_costs) {
 
-  weights.block(n_vdot + n_u, n_vdot + n_u, n_cf, n_cf) = contact_force_costs.asDiagonal();
+  weights.block(n_gj + n_j, n_gj + n_j, n_cf, n_cf) = contact_force_costs.asDiagonal();
 
   Wbc::updateObjectiveMatrix();
   Wbc::updateObjectiveVector();
