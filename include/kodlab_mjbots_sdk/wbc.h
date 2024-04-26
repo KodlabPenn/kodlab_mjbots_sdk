@@ -50,7 +50,6 @@ class Wbc {
 
 
     Eigen::VectorXd q;
-
     Eigen::VectorXd qdot;
 
     // Store objective matrix and vector (dense)
@@ -62,23 +61,28 @@ class Wbc {
     Eigen::VectorXd constraint_lower_bounds = Eigen::VectorXd::Zero(n_ct);
     Eigen::VectorXd constraint_upper_bounds = Eigen::VectorXd::Zero(n_ct);
 
-    Eigen::MatrixXd inertia_matrix;
-
-    Eigen::VectorXd bias_vector;
-
-    Eigen::MatrixXd contact_jacobian_T = Eigen::MatrixXd::Zero(n_gj, n_cf);
-
+    // WBC
     Eigen::MatrixXd weights = Eigen::MatrixXd::Zero(n_dc, n_dc);
-
     Eigen::VectorXd command = Eigen::VectorXd::Zero(n_dc);
 
-    Eigen::MatrixXd task_jacobian = Eigen::MatrixXd::Identity(n_dc, n_dc);
+    // Dynamics
+    Eigen::MatrixXd inertia_matrix;
+    Eigen::VectorXd bias_vector;
 
+    // Kinematics
+    Eigen::MatrixXd contact_jacobian_T = Eigen::MatrixXd::Zero(n_gj, n_cf);
+    Eigen::MatrixXd task_jacobian = Eigen::MatrixXd::Identity(n_dc, n_dc);
     Eigen::MatrixXd selection_matrix_actuated_joints = Eigen::MatrixXd::Zero(n_j, n_gj);
 
+    // RBDL
     Eigen::MatrixXd urdf_selection_matrix = Eigen::MatrixXd::Identity(n_gj, n_gj);
-
     std::unique_ptr<RigidBodyDynamics::Model> model;
+
+
+    float mu = 1.f; // friction coefficient (default = 1)
+    float minimum_normal_force = 1.f; // minimum normal force (default = 1N)
+    float tau_max = 10.f; // maximum joint torque (default = 10Nm)
+
 
     int dof;
 
@@ -98,9 +102,10 @@ class Wbc {
 
     void updateContactConstraint();
 
-    void setFrictionConstraint(float mu, float minimum_normal_force);
+    void updateFrictionConstraint();
 
-    void setInputConstraint(float tau_max);
+    void updateInputConstraint();
+
 
   
   public:
@@ -141,9 +146,11 @@ class Wbc {
 
       selection_matrix_actuated_joints << Eigen::MatrixXd::Zero(n_j, n_vj), Eigen::MatrixXd::Identity(n_j, n_j); // This just turns joint torques (8x1) into generalized joint torques (14x1)
 
+      // setFrictionConstraint(0.7f, 1.f); // mu = 1, minimum_normal_force = 3N
+      // setInputConstraint(18.f);
 
-      setFrictionConstraint(0.7f, 1.f); // mu = 1, minimum_normal_force = 3N
-      setInputConstraint(18.f);
+      updateFrictionConstraint();
+      updateInputConstraint();
 
     }
 
@@ -173,6 +180,10 @@ class Wbc {
     void setJointTorqueCosts(double joint_torque_costs);
 
     void setContactForceCosts(Eigen::VectorXd contact_force_costs);
+
+    void setMaxFrictionCoeff(float mu);
+    void setMinNormalForce(float minimum_normal_force);
+    void setMaxJointTorque(float tau_max);
 
     Eigen::VectorXd updateAndSolve(const Robot& robot_);
 
@@ -257,7 +268,7 @@ void Wbc<Robot>::updateDynamicsConstraint(const Robot& robot_) {
 }
 
 template<class Robot>
-void Wbc<Robot>::setFrictionConstraint(float mu, float minimum_normal_force) {
+void Wbc<Robot>::updateFrictionConstraint() {
 
   //// THE FRICTION CONSTRAINT MATRIX ////
 
@@ -267,7 +278,7 @@ void Wbc<Robot>::setFrictionConstraint(float mu, float minimum_normal_force) {
 
   // construct an arbitrary 3x3 block representing friction constraint for 1 toe
 
-  double max_tangential_friction = (std::sqrt(2.0) / 2.0) * mu;
+  double max_tangential_friction = (std::sqrt(2.0) / 2.0) * this->mu;
 
   Eigen::Matrix<double, 5, 3> friction_constraint_matrix_one_toe;
 
@@ -299,7 +310,7 @@ void Wbc<Robot>::setFrictionConstraint(float mu, float minimum_normal_force) {
   Eigen::VectorXd friction_constraint_lower_bound = Eigen::VectorXd::Zero(n_ct_fr);
 
   Eigen::Vector5d friction_constraint_lower_bound_one_toe; 
-    friction_constraint_lower_bound_one_toe << 0, -kInfinity , 0, -kInfinity, minimum_normal_force; 
+    friction_constraint_lower_bound_one_toe << 0, -kInfinity , 0, -kInfinity, this->minimum_normal_force; 
 
   friction_constraint_lower_bound << friction_constraint_lower_bound_one_toe, 
                                       friction_constraint_lower_bound_one_toe, 
@@ -369,7 +380,7 @@ void Wbc<Robot>::updateContactConstraint(){
 }
 
 template<class Robot>
-void Wbc<Robot>::setInputConstraint(float tau_max) {
+void Wbc<Robot>::updateInputConstraint() {
 
   //// THE INPUT/TORQUE LIMIT CONSTRAINT MATRIX ////
 
@@ -385,9 +396,9 @@ void Wbc<Robot>::setInputConstraint(float tau_max) {
 
   //// THE INPUT/TORQUE LIMIT CONSTRAINT LOWER & UPPER BOUNDS ////
 
-  Eigen::VectorXd input_constraint_lower_bound = -tau_max * Eigen::VectorXd::Ones(n_j);
+  Eigen::VectorXd input_constraint_lower_bound = -this->tau_max * Eigen::VectorXd::Ones(n_j);
 
-  Eigen::VectorXd input_constraint_upper_bound = tau_max * Eigen::VectorXd::Ones(n_j);
+  Eigen::VectorXd input_constraint_upper_bound = this->tau_max * Eigen::VectorXd::Ones(n_j);
 
 
   // put this into total constraint lower and upper bound vectors
@@ -525,4 +536,33 @@ void Wbc<Robot>::setContactForceCosts(Eigen::VectorXd contact_force_costs) {
 
 }
 
+
+
+template<class Robot>
+void Wbc<Robot>::setMaxFrictionCoeff(float mu) {
+
+  this->mu = mu;
+
+  updateFrictionConstraint();
+
+}
+
+template<class Robot>
+void Wbc<Robot>::setMinNormalForce(float minimum_normal_force) {
+
+  this->minimum_normal_force = minimum_normal_force;
+
+  updateFrictionConstraint();
+
+}
+
+
+template<class Robot>
+void Wbc<Robot>::setMaxJointTorque(float tau_max) {
+
+  this->tau_max = tau_max;
+
+  updateInputConstraint();
+
+}
 
