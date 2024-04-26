@@ -119,6 +119,10 @@ else()
         target_link_libraries(kodlab_mjbots_sdk PUBLIC $ENV{RASPBIAN_ROOTFS}/opt/vc/lib/libbcm_host.so)
 endif()
 
+# WBC libraries
+target_link_libraries(kodlab_mjbots_sdk PUBLIC osqp-cpp)
+target_link_libraries(kodlab_mjbots_sdk PUBLIC rbdl rbdl_urdfreader)
+
 target_link_libraries(kodlab_mjbots_sdk PRIVATE ${LCM_NAMESPACE}lcm)
 
 # All users of this library will need at least C++17

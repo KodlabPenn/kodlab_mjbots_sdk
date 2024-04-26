@@ -35,3 +35,10 @@ add_subdirectory(examples)
 add_subdirectory(thirdparty/real_time_tools)
 add_subdirectory(thirdparty/yaml-cpp)
 add_subdirectory(thirdparty/lodepng)
+
+
+# libraries for whole body controller
+add_subdirectory(thirdparty/abseil-cpp)
+add_subdirectory(thirdparty/osqp) # osqp-cpp is picky, let them find this themself
+add_subdirectory(thirdparty/osqp-cpp)
+add_subdirectory(thirdparty/rbdl)

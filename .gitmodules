@@ -4,3 +4,15 @@
 [submodule "thirdparty/yaml-cpp"]
 	path = thirdparty/yaml-cpp
 	url = git@github.com:jbeder/yaml-cpp.git
+[submodule "thirdparty/osqp"]
+	path = thirdparty/osqp
+	url = git@github.com:griffinaddison/osqp.git
+[submodule "thirdparty/osqp-cpp"]
+	path = thirdparty/osqp-cpp
+	url = git@github.com:google/osqp-cpp.git
+[submodule "thirdparty/rbdl"]
+	path = thirdparty/rbdl
+	url = git@github.com:rbdl/rbdl.git
+[submodule "thirdparty/abseil-cpp"]
+	path = thirdparty/abseil-cpp
+	url = git@github.com:abseil/abseil-cpp.git
