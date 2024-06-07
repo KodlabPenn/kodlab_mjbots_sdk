@@ -16,6 +16,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+namespace kodlab::examples {
+
 class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
   void Update() override {
@@ -41,6 +43,9 @@ class Spin_Joint : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
     }
   }
 };
+
+} // kodlab::examples
+
 
 int main(int argc, char **argv) {
   //Setup joints
@@ -78,7 +83,7 @@ int main(int argc, char **argv) {
 
   // Create control loop
   LOG_INFO("Constructing Spin_Joint with %zu joints.", joints.size());
-  Spin_Joint control_loop(std::move(joints), options);
+  kodlab::examples::Spin_Joint control_loop(std::move(joints), options);
   // Starts the loop, and then join it
   control_loop.Start();
   control_loop.Join();

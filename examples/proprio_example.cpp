@@ -18,6 +18,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+namespace kodlab::examples {
+
 class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
   void Update() override {
@@ -78,6 +80,9 @@ class ProprioJoints : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   }
 };
 
+} // kodlab::examples
+
+
 int main(int argc, char **argv) {
 
   //Setup joints
@@ -93,7 +98,7 @@ int main(int argc, char **argv) {
   options.realtime_params.can_cpu  = 2;
   
   // Create control loop
-  ProprioJoints control_loop(std::move(joints), options);
+  kodlab::examples::ProprioJoints control_loop(std::move(joints), options);
 
   // Starts the loop, and then join it
   control_loop.Start();

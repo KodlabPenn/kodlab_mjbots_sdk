@@ -18,6 +18,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+namespace kodlab::examples {
+
 class Joints3DoF : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   using MjbotsControlLoop::MjbotsControlLoop;
   void Update() override {
@@ -60,6 +62,9 @@ class Joints3DoF : public kodlab::mjbots::MjbotsControlLoop<ManyMotorLog> {
   }
 };
 
+} // kodlab::examples
+
+
 int main(int argc, char **argv) {
 
   //Setup joints
@@ -77,7 +82,7 @@ int main(int argc, char **argv) {
   options.parallelize_control_loop = true; 
 
   // Create control loop
-  Joints3DoF control_loop(std::move(joints), options);
+  kodlab::examples::Joints3DoF control_loop(std::move(joints), options);
 
   // Starts the loop, and then join it
   control_loop.Start();
