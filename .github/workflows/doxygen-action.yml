@@ -1,0 +1,27 @@
+name: Doxygen Documentation
+
+on:
+  push:
+    branches:
+      - master
+  page_build:
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1.9.4
+      - name: Build Doxygen documentation
+        uses: mattnotmitt/doxygen-action@v1
+        with:
+          doxyfile-path: ./Doxyfile
+      - name: Deploy Documentation
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/html
+          publish_branch: gh-pages
+          commit_message: '[ci skip] ${{ github.event.head_commit.message }}'
